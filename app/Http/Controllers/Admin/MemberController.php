@@ -34,6 +34,8 @@ class MemberController extends Controller
             abort(404);
         }
 
+        $member->load('member');
+
         return inertia('admin/members/Show', [
             'member' => $member,
         ]);
@@ -62,5 +64,55 @@ class MemberController extends Controller
 
         return redirect()->route('admin.members.index')
             ->with('toast', ['type' => 'success', 'message' => 'Member berhasil ditambahkan.']);
+    }
+
+    public function edit(User $member): Response
+    {
+        if ($member->role !== 'member') {
+            abort(404);
+        }
+
+        return inertia('admin/members/Edit', [
+            'member' => $member,
+        ]);
+    }
+
+    public function update(Request $request, User $member)
+    {
+        if ($member->role !== 'member') {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,'.$member->id,
+            'password' => 'nullable|string|min:8',
+        ]);
+
+        $data = [
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+        ];
+
+        if (! empty($validated['password'])) {
+            $data['password'] = bcrypt($validated['password']);
+        }
+
+        $member->update($data);
+
+        return redirect()->route('admin.members.index')
+            ->with('toast', ['type' => 'success', 'message' => 'Member berhasil diperbarui.']);
+    }
+
+    public function destroy(User $member)
+    {
+        if ($member->role !== 'member') {
+            abort(404);
+        }
+
+        $member->delete(); // soft delete
+
+        return redirect()->route('admin.members.index')
+            ->with('toast', ['type' => 'success', 'message' => 'Member berhasil dinonaktifkan.']);
     }
 }

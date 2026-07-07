@@ -41,7 +41,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Admin routes (desktop - for admin & kasir)
     Route::middleware('role:admin,kasir')->prefix('admin')->name('admin.')->group(function () {
         Route::get('dashboard', AdminDashboardController::class)->name('dashboard');
-        Route::resource('members', MemberController::class)->except(['edit', 'update', 'destroy']);
+        Route::resource('members', MemberController::class);
         Route::resource('rewards', RewardController::class);
         Route::get('deposits', [DepositController::class, 'index'])->name('deposits.index');
         Route::post('deposits', [DepositController::class, 'store'])->name('deposits.store');

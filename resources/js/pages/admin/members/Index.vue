@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import Heading from '@/components/Heading.vue';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
 import type { User } from '@/types';
@@ -26,70 +23,115 @@ const form = useForm({
     search: filters.search ?? '',
 });
 
+const deleteForm = useForm({});
+
 function submit() {
     form.get(route('admin.members.index'), { preserveState: true, replace: true });
+}
+
+function destroy(id: number) {
+    if (confirm('Nonaktifkan member ini? Member tidak akan bisa login.')) {
+        deleteForm.delete(route('admin.members.destroy', id));
+    }
 }
 </script>
 
 <template>
     <Head title="Manajemen Member" />
 
-    <Heading title="Manajemen Member" description="Kelola data member WarungMember" />
+    <div class="mx-6 pt-6">
+        <!-- Header -->
+        <header class="mb-6 space-y-0.5">
+            <h2 class="text-[28px] font-bold leading-[1.2] tracking-[-1.2px] text-[#000000]">
+                Manajemen Member
+            </h2>
+            <p class="text-sm leading-[1.4] text-[#62625b]">
+                Kelola data member WarungMember
+            </p>
+        </header>
 
-    <div class="mb-4 flex items-center gap-3 mx-6">
-        <form @submit.prevent="submit" class="flex-1">
-            <Input v-model="form.search" placeholder="Cari nama atau email..." />
-        </form>
-        <Button as="child">
-            <Link :href="route('admin.members.create')">+ Tambah</Link>
-        </Button>
-    </div>
+        <!-- Toolbar -->
+        <div class="mb-6 flex items-center gap-3">
+            <form @submit.prevent="submit" class="flex-1">
+                <input
+                    v-model="form.search"
+                    placeholder="Cari nama atau email..."
+                    class="w-full rounded-full border-0 bg-[#f6f6f3] px-4 py-3 text-sm leading-[1.4] text-[#000000] placeholder:text-[#91918c] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#c8c8c1]"
+                />
+            </form>
+            <Button as="child">
+                <Link :href="route('admin.members.create')">+ Tambah</Link>
+            </Button>
+        </div>
 
-    <Card>
-        <CardHeader>
-            <CardTitle>Daftar Member ({{ members.total }})</CardTitle>
-        </CardHeader>
-        <CardContent>
-            <div v-if="members.data.length === 0" class="py-8 text-center text-muted-foreground">
-                Belum ada member terdaftar.
-            </div>
-            <table v-else class="w-full text-sm">
+        <!-- Member List -->
+        <div v-if="members.data.length === 0" class="rounded-2xl bg-[#f6f6f3] py-16 text-center">
+            <p class="text-sm leading-[1.4] text-[#62625b]">Belum ada member terdaftar.</p>
+        </div>
+
+        <div v-else class="overflow-hidden rounded-2xl border border-[#dadad3] bg-white">
+            <table class="w-full">
                 <thead>
-                    <tr class="border-b text-left">
-                        <th class="pb-2 font-medium text-muted-foreground">Nama</th>
-                        <th class="pb-2 font-medium text-muted-foreground">Email</th>
-                        <th class="pb-2 font-medium text-muted-foreground">Tanggal Daftar</th>
-                        <th class="pb-2 font-medium text-muted-foreground">Aksi</th>
+                    <tr class="border-b border-[#dadad3]">
+                        <th class="px-5 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000]">Nama</th>
+                        <th class="px-5 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000]">Email</th>
+                        <th class="px-5 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000]">Tanggal Daftar</th>
+                        <th class="px-5 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000]">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="member in members.data" :key="member.id" class="border-b last:border-0">
-                        <td class="py-2.5">{{ member.name }}</td>
-                        <td class="py-2.5 text-muted-foreground">{{ member.email }}</td>
-                        <td class="py-2.5 text-muted-foreground">{{ new Date(member.created_at).toLocaleDateString('id-ID') }}</td>
-                        <td class="py-2.5">
-                            <Button variant="outline" size="sm" as="child">
-                                <Link :href="route('admin.members.show', member.id)">Detail</Link>
-                            </Button>
+                    <tr v-for="member in members.data" :key="member.id" class="border-b border-[#e5e5e0] last:border-0 hover:bg-[#fbfbf9] transition-colors">
+                        <td class="px-5 py-3 text-sm leading-[1.4] font-semibold text-[#000000]">{{ member.name }}</td>
+                        <td class="px-5 py-3 text-sm leading-[1.4] text-[#62625b]">{{ member.email }}</td>
+                        <td class="px-5 py-3 text-sm leading-[1.4] text-[#62625b]">{{ new Date(member.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) }}</td>
+                        <td class="px-5 py-3">
+                            <div class="flex gap-1.5">
+                                <Link
+                                    :href="route('admin.members.show', member.id)"
+                                    class="inline-flex h-9 items-center rounded-full bg-[#f6f6f3] px-4 text-sm font-bold leading-[1] text-[#000000] transition-colors hover:bg-[#e5e5e0]"
+                                >
+                                    Detail
+                                </Link>
+                                <Link
+                                    :href="route('admin.members.edit', member.id)"
+                                    class="inline-flex h-9 items-center rounded-full bg-[#f6f6f3] px-4 text-sm font-bold leading-[1] text-[#000000] transition-colors hover:bg-[#e5e5e0]"
+                                >
+                                    Edit
+                                </Link>
+                                <button
+                                    @click="destroy(member.id)"
+                                    :disabled="deleteForm.processing"
+                                    class="inline-flex h-9 items-center rounded-full bg-[#f6f6f3] px-4 text-sm font-bold leading-[1] text-[#000000] transition-colors hover:bg-[#e60023] hover:text-white"
+                                >
+                                    Hapus
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
             </table>
 
             <!-- Pagination -->
-            <div v-if="members.last_page > 1" class="mt-4 flex items-center justify-between text-sm text-muted-foreground">
-                <span>Menampilkan {{ members.from }}-{{ members.to }} dari {{ members.total }}</span>
+            <div v-if="members.last_page > 1" class="flex items-center justify-between border-t border-[#dadad3] px-5 py-3">
+                <span class="text-sm leading-[1.4] text-[#62625b]">
+                    {{ members.from }}-{{ members.to }} dari {{ members.total }}
+                </span>
                 <div class="flex gap-1">
                     <Link
                         v-for="page in members.last_page"
                         :key="page"
                         :href="route('admin.members.index', { page, search: filters.search })"
-                        :class="['rounded px-2.5 py-1 text-sm', page === members.current_page ? 'bg-orange-600 text-white' : 'hover:bg-gray-100']"
+                        :class="[
+                            'inline-flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold leading-[1] transition-colors',
+                            page === members.current_page
+                                ? 'bg-[#000000] text-white'
+                                : 'text-[#000000] hover:bg-[#f6f6f3]',
+                        ]"
                     >
                         {{ page }}
                     </Link>
                 </div>
             </div>
-        </CardContent>
-    </Card>
+        </div>
+    </div>
 </template>
