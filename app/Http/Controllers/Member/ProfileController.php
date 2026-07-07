@@ -43,6 +43,16 @@ class ProfileController extends Controller
         ]);
     }
 
+    public function terms(): Response
+    {
+        return inertia('member/profile/Terms');
+    }
+
+    public function privacy(): Response
+    {
+        return inertia('member/profile/Privacy');
+    }
+
     public function update(Request $request)
     {
         $user = Auth::user();

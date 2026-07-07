@@ -16,18 +16,24 @@ class OrderController extends Controller
 {
     public function index(): Response
     {
+        $outlets = Outlet::where('is_active', true)->get();
+        $lastOutletId = auth()->user()->member?->last_outlet_id;
+
+        return inertia('member/orders/Index', [
+            'outlets' => $outlets,
+            'lastOutletId' => $lastOutletId,
+        ]);
+    }
+
+    public function history(): Response
+    {
         $orders = Order::with(['items.product', 'outlet'])
             ->where('user_id', auth()->id())
             ->latest()
             ->get();
 
-        $outlets = Outlet::where('is_active', true)->get();
-        $lastOutletId = auth()->user()->member?->last_outlet_id;
-
-        return inertia('member/orders/Index', [
+        return inertia('member/orders/History', [
             'orders' => $orders,
-            'outlets' => $outlets,
-            'lastOutletId' => $lastOutletId,
         ]);
     }
 

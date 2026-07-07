@@ -36,10 +36,10 @@ const menuItems: MenuItem[] = [
         href: route('member.profile.edit'),
     },
     {
-        title: 'Riwayat Transaksi',
-        subtitle: 'Lihat riwayat pembelian & poin',
+        title: 'Riwayat Order',
+        subtitle: 'Lihat riwayat order kamu',
         icon: 'history',
-        href: route('member.points'),
+        href: route('member.orders.history'),
     },
     {
         title: 'Chat WhatsApp CS',
@@ -52,13 +52,13 @@ const menuItems: MenuItem[] = [
         title: 'Syarat & Ketentuan',
         subtitle: 'Baca aturan program loyalitas',
         icon: 'file',
-        href: '#',
+        href: route('member.terms'),
     },
     {
         title: 'Kebijakan Privasi',
         subtitle: 'Cara kami menjaga data kamu',
         icon: 'shield',
-        href: '#',
+        href: route('member.privacy'),
     },
     {
         title: 'Tentang WarungMember',

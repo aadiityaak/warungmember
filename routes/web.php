@@ -46,7 +46,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('profile', [ProfileController::class, 'index'])->name('profile');
         Route::get('profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::put('profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::get('terms', [ProfileController::class, 'terms'])->name('terms');
+        Route::get('privacy', [ProfileController::class, 'privacy'])->name('privacy');
         Route::get('products', [MemberProductController::class, 'index'])->name('products.index');
+        Route::get('orders/history', [MemberOrderController::class, 'history'])->name('orders.history');
         Route::resource('orders', MemberOrderController::class)->only(['index', 'store']);
         Route::get('outlets', [MemberOutletController::class, 'index'])->name('outlets.index');
         Route::get('cart', [CartController::class, 'index'])->name('cart.index');
