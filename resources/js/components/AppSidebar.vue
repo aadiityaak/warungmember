@@ -14,33 +14,38 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
+import { dashboard } from '@/routes/admin';
+import { index as membersIndex } from '@/routes/admin/members';
+import { index as rewardsIndex } from '@/routes/admin/rewards';
+import { index as depositsIndex } from '@/routes/admin/deposits';
+import { index as vouchersIndex } from '@/routes/admin/vouchers';
+import { edit as editProfile } from '@/routes/profile';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
-        href: route('admin.dashboard'),
+        href: dashboard(),
         icon: LayoutGrid,
     },
     {
         title: 'Member',
-        href: route('admin.members.index'),
+        href: membersIndex(),
         icon: Users,
     },
     {
         title: 'Reward',
-        href: route('admin.rewards.index'),
+        href: rewardsIndex(),
         icon: Gift,
     },
     {
         title: 'Deposit',
-        href: route('admin.deposits.index'),
+        href: depositsIndex(),
         icon: CreditCard,
     },
     {
         title: 'Voucher',
-        href: route('admin.vouchers.index'),
+        href: vouchersIndex(),
         icon: Ticket,
     },
 ];
@@ -48,7 +53,7 @@ const mainNavItems: NavItem[] = [
 const footerNavItems: NavItem[] = [
     {
         title: 'Pengaturan',
-        href: route('profile.edit'),
+        href: editProfile(),
         icon: Settings,
     },
 ];

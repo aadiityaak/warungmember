@@ -1,9 +1,11 @@
 import { createInertiaApp } from '@inertiajs/vue3';
-import { initializeTheme } from '@/composables/useAppearance';
+import { createSSRApp, h } from 'vue';
+import './ziggy';
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
+import { initializeTheme } from '@/composables/useAppearance';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -24,9 +26,15 @@ createInertiaApp({
     progress: {
         color: '#4B5563',
     },
+    setup({ el, App, props, plugin }) {
+        const app = createSSRApp({ render: () => h(App, props) });
+        app.use(plugin);
+        app.config.globalProperties.route = window.route;
+        app.mount(el);
+        return app;
+    },
 });
 
-// This will set light / dark mode on page load...
 initializeTheme();
 
 // This will listen for flash toast data from the server...
