@@ -1,0 +1,68 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Outlet;
+use Illuminate\Http\Request;
+use Inertia\Response;
+
+class OutletController extends Controller
+{
+    public function index(): Response
+    {
+        return inertia('admin/outlets/Index', [
+            'outlets' => Outlet::latest()->get(),
+        ]);
+    }
+
+    public function create(): Response
+    {
+        return inertia('admin/outlets/Create');
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'address' => 'nullable|string',
+            'phone' => 'nullable|string|max:20',
+            'is_active' => 'boolean',
+        ]);
+
+        Outlet::create($validated);
+
+        return redirect()->route('admin.outlets.index')
+            ->with('toast', ['type' => 'success', 'message' => 'Outlet berhasil ditambahkan.']);
+    }
+
+    public function edit(Outlet $outlet): Response
+    {
+        return inertia('admin/outlets/Edit', [
+            'outlet' => $outlet,
+        ]);
+    }
+
+    public function update(Request $request, Outlet $outlet)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'address' => 'nullable|string',
+            'phone' => 'nullable|string|max:20',
+            'is_active' => 'boolean',
+        ]);
+
+        $outlet->update($validated);
+
+        return redirect()->route('admin.outlets.index')
+            ->with('toast', ['type' => 'success', 'message' => 'Outlet berhasil diperbarui.']);
+    }
+
+    public function destroy(Outlet $outlet)
+    {
+        $outlet->delete();
+
+        return redirect()->route('admin.outlets.index')
+            ->with('toast', ['type' => 'success', 'message' => 'Outlet berhasil dihapus.']);
+    }
+}

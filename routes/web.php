@@ -3,6 +3,8 @@
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DepositController;
 use App\Http\Controllers\Admin\MemberController;
+use App\Http\Controllers\Admin\OutletController;
+use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\RewardController;
 use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\Member\DashboardController as MemberDashboardController;
@@ -45,6 +47,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('deposits', [DepositController::class, 'store'])->name('deposits.store');
         Route::get('deposits/{member}', [DepositController::class, 'history'])->name('deposits.history');
         Route::resource('vouchers', VoucherController::class)->only(['index', 'create', 'store', 'destroy']);
+        Route::resource('products', ProductController::class);
+        Route::resource('outlets', OutletController::class);
     });
 });
 

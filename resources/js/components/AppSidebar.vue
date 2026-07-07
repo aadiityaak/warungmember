@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { CreditCard, Gift, LayoutGrid, Settings, Ticket, Users } from '@lucide/vue';
+import { CreditCard, Gift, LayoutGrid, Package, Settings, Store, Ticket, Users } from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -19,6 +19,8 @@ import { index as membersIndex } from '@/routes/admin/members';
 import { index as rewardsIndex } from '@/routes/admin/rewards';
 import { index as depositsIndex } from '@/routes/admin/deposits';
 import { index as vouchersIndex } from '@/routes/admin/vouchers';
+import { index as productsIndex } from '@/routes/admin/products';
+import { index as outletsIndex } from '@/routes/admin/outlets';
 import { edit as editProfile } from '@/routes/profile';
 import type { NavItem } from '@/types';
 
@@ -32,6 +34,16 @@ const mainNavItems: NavItem[] = [
         title: 'Member',
         href: membersIndex(),
         icon: Users,
+    },
+    {
+        title: 'Outlet',
+        href: outletsIndex(),
+        icon: Store,
+    },
+    {
+        title: 'Produk',
+        href: productsIndex(),
+        icon: Package,
     },
     {
         title: 'Reward',
