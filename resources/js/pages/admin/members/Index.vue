@@ -36,7 +36,7 @@ function submit() {
 
     <Heading title="Manajemen Member" description="Kelola data member WarungMember" />
 
-    <div class="mb-4 flex items-center gap-3">
+    <div class="mb-4 flex items-center gap-3 mx-6">
         <form @submit.prevent="submit" class="flex-1">
             <Input v-model="form.search" placeholder="Cari nama atau email..." />
         </form>
