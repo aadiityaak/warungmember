@@ -37,7 +37,8 @@ export function useCart() {
     }
 
     function remove(productId: number) {
-        state.items = state.items.filter((i) => i.product_id !== productId);
+        const idx = state.items.findIndex((i) => i.product_id === productId);
+        if (idx !== -1) state.items.splice(idx, 1);
     }
 
     function updateQty(productId: number, qty: number) {
@@ -48,7 +49,7 @@ export function useCart() {
     }
 
     function clear() {
-        state.items = [];
+        state.items.splice(0, state.items.length);
     }
 
     const totalItems = () => state.items.reduce((sum, i) => sum + i.quantity, 0);

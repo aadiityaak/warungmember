@@ -1,32 +1,36 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useCart } from '@/composables/useCart';
 import MemberLayout from '@/layouts/MemberLayout.vue';
 
 defineOptions({ layout: MemberLayout });
 
-const refreshing = ref(false);
-
-function reload() {
-    refreshing.value = true;
-    router.reload({
-        only: ['orders'],
-        onFinish: () => { refreshing.value = false; },
-    });
-}
-
-const { orders } = defineProps<{
+const { orders, outlets } = defineProps<{
     orders: Array<Record<string, any>>;
+    outlets: Array<{ id: number; name: string; address: string | null }>;
 }>();
 
 const cart = useCart();
+const selectedOutlet = ref<number | null>(outlets?.[0]?.id ?? null);
+const paymentMethod = ref<string>('');
 const notes = ref('');
 const errors = ref<Record<string, string>>({});
 const submitting = ref(false);
 
+const canCheckout = computed(() => selectedOutlet.value && paymentMethod.value);
+
+const paymentMethods = [
+    { value: 'cash', label: 'Tunai', icon: 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z' },
+    { value: 'qris', label: 'QRIS', icon: 'M12 4v1m6 11h2m-6 0h-2m4 0v-2a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4-4h2a2 2 0 002-2V5a2 2 0 00-2-2h-2v2M4 17h.01M4 12h.01M4 7h.01' },
+    { value: 'transfer', label: 'Transfer', icon: 'M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4' },
+];
+
 function submit() {
+    if (!canCheckout.value) return;
     const payload = {
+        outlet_id: selectedOutlet.value,
+        payment_method: paymentMethod.value,
         items: cart.items.map((i) => ({ product_id: i.product_id, quantity: i.quantity })),
         notes: notes.value,
     };
@@ -57,6 +61,12 @@ const statusColors: Record<string, string> = {
     completed: 'bg-green-100 text-green-700',
     cancelled: 'bg-[#e5e5e0] text-[#91918c]',
 };
+
+const paymentLabels: Record<string, string> = {
+    cash: 'Tunai',
+    qris: 'QRIS',
+    transfer: 'Transfer',
+};
 </script>
 
 <template>
@@ -81,6 +91,43 @@ const statusColors: Record<string, string> = {
         <div v-if="cart.items.length" class="rounded-2xl border border-[#dadad3] bg-white p-4">
             <h2 class="text-sm font-bold leading-[1.4] text-[#000000] mb-3">Keranjang ({{ cart.totalItems() }} item)</h2>
 
+            <!-- Outlet Selector -->
+            <div class="mb-3">
+                <label class="text-xs font-semibold text-[#000000] mb-1.5 block">Pilih Outlet</label>
+                <select
+                    v-model="selectedOutlet"
+                    class="w-full rounded-xl border border-[#dadad3] bg-[#f6f6f3] px-3 py-2.5 text-sm leading-[1.4] text-[#000000] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E22625]"
+                >
+                    <option :value="null" disabled>-- Pilih Outlet --</option>
+                    <option v-for="o in outlets" :key="o.id" :value="o.id">{{ o.name }}</option>
+                </select>
+                <p v-if="errors.outlet_id" class="text-xs text-red-500 mt-1">{{ errors.outlet_id }}</p>
+            </div>
+
+            <!-- Payment Method -->
+            <div class="mb-3">
+                <label class="text-xs font-semibold text-[#000000] mb-1.5 block">Metode Pembayaran</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button
+                        v-for="pm in paymentMethods"
+                        :key="pm.value"
+                        type="button"
+                        @click="paymentMethod = pm.value"
+                        :class="[
+                            'flex flex-col items-center gap-1 rounded-xl border px-2 py-2.5 text-xs font-semibold transition-colors',
+                            paymentMethod === pm.value
+                                ? 'border-[#E22625] bg-[#E22625]/10 text-[#E22625]'
+                                : 'border-[#dadad3] bg-[#f6f6f3] text-[#62625b] hover:border-[#c8c8c1]',
+                        ]"
+                    >
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="pm.icon" /></svg>
+                        {{ pm.label }}
+                    </button>
+                </div>
+                <p v-if="errors.payment_method" class="text-xs text-red-500 mt-1">{{ errors.payment_method }}</p>
+            </div>
+
+            <!-- Cart Items -->
             <div class="flex flex-col gap-2">
                 <div
                     v-for="item in cart.items"
@@ -124,13 +171,13 @@ const statusColors: Record<string, string> = {
                     placeholder="Catatan (opsional)..."
                     class="w-full rounded-xl border border-[#dadad3] bg-[#f6f6f3] px-3 py-2 text-xs leading-[1.4] text-[#000000] placeholder:text-[#91918c] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E22625]"
                 />
-                <p v-if="errors.notes" class="text-xs text-red-500">{{ errors.notes }}</p>
                 <div class="flex items-center justify-between">
                     <p class="text-sm font-bold text-[#E22625]">Rp{{ cart.totalAmount().toLocaleString('id-ID') }}</p>
                     <button
                         @click="submit"
-                        :disabled="submitting"
-                        class="inline-flex h-9 items-center rounded-full bg-[#E22625] px-5 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                        :disabled="submitting || !canCheckout"
+                        class="inline-flex h-9 items-center rounded-full px-5 text-sm font-bold text-white transition-all"
+                        :class="canCheckout ? 'bg-[#E22625] hover:opacity-90' : 'bg-[#dadad3] cursor-not-allowed'"
                     >
                         Pesan Sekarang
                     </button>
@@ -139,9 +186,9 @@ const statusColors: Record<string, string> = {
         </div>
 
         <!-- Empty Cart -->
-        <div v-else-if="orders.length === 0" class="py-16 text-center">
-            <svg class="mx-auto h-16 w-16 text-[#dadad3]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" /></svg>
-            <p class="mt-4 text-sm text-[#91918c]">Belum ada pesanan</p>
+        <div v-if="cart.items.length === 0 && orders.length === 0" class="py-16 text-center">
+            <svg class="mx-auto h-16 w-16 text-[#dadad3]" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 10a4 4 0 0 1-8 0"/><path d="M3.103 6.034h17.794"/><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z"/></svg>
+            <p class="mt-4 text-sm text-[#91918c]">Belum ada produk di keranjang belanja</p>
             <a
                 :href="route('member.products.index')"
                 class="mt-3 inline-flex h-9 items-center rounded-full bg-[#E22625] px-5 text-sm font-bold text-white"
@@ -152,16 +199,7 @@ const statusColors: Record<string, string> = {
 
         <!-- Order History -->
         <div v-if="orders.length" class="flex flex-col gap-3">
-            <div class="flex items-center justify-between">
-                <h2 class="text-lg font-semibold leading-[1.3] text-[#000000]">Riwayat Pesanan</h2>
-                <button
-                    @click="reload"
-                    :disabled="refreshing"
-                    class="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#91918c] transition-all hover:bg-[#f6f6f3] hover:text-[#000000] disabled:opacity-50"
-                >
-                    <svg :class="['h-4 w-4', refreshing && 'animate-spin']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                </button>
-            </div>
+            <h2 class="text-lg font-semibold leading-[1.3] text-[#000000]">Riwayat Pesanan</h2>
             <div
                 v-for="order in orders"
                 :key="order.id"
@@ -171,9 +209,13 @@ const statusColors: Record<string, string> = {
                     <div>
                         <p class="text-xs leading-[1.4] text-[#91918c]">
                             {{ new Date(order.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}
+                            <span v-if="order.outlet" class="ml-2">· {{ order.outlet.name }}</span>
                         </p>
                     </div>
                     <div class="flex items-center gap-2">
+                        <span v-if="order.payment_method" class="rounded-full bg-[#f6f6f3] px-2 py-0.5 text-[10px] font-semibold text-[#91918c]">
+                            {{ paymentLabels[order.payment_method] ?? order.payment_method }}
+                        </span>
                         <span class="text-sm font-bold text-[#E22625]">Rp{{ order.total_amount.toLocaleString('id-ID') }}</span>
                         <span
                             :class="[

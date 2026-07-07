@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Outlet;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,19 +16,24 @@ class OrderController extends Controller
 {
     public function index(): Response
     {
-        $orders = Order::with(['items.product'])
+        $orders = Order::with(['items.product', 'outlet'])
             ->where('user_id', auth()->id())
             ->latest()
             ->get();
 
+        $outlets = Outlet::where('is_active', true)->get();
+
         return inertia('member/orders/Index', [
             'orders' => $orders,
+            'outlets' => $outlets,
         ]);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'outlet_id' => 'required|exists:outlets,id',
+            'payment_method' => 'required|in:cash,qris,transfer',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
@@ -37,13 +43,14 @@ class OrderController extends Controller
         $order = DB::transaction(function () use ($validated) {
             $order = Order::create([
                 'user_id' => auth()->id(),
+                'outlet_id' => $validated['outlet_id'],
+                'payment_method' => $validated['payment_method'],
                 'status' => 'pending',
                 'total_amount' => 0,
                 'notes' => $validated['notes'] ?? null,
             ]);
 
             $total = 0;
-            $productNames = [];
 
             foreach ($validated['items'] as $item) {
                 $product = Product::findOrFail($item['product_id']);
@@ -58,7 +65,6 @@ class OrderController extends Controller
                     'subtotal' => $subtotal,
                 ]);
 
-                $productNames[] = $product->name.' x'.$item['quantity'];
                 $total += $subtotal;
             }
 
