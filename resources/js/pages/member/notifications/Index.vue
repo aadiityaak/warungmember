@@ -42,6 +42,10 @@ function markAsRead(notificationId: number) {
     router.post(route('member.notifications.read', notificationId));
 }
 
+function markAllRead() {
+    router.post(route('member.notifications.readAll'));
+}
+
 function formatTime(dateStr: string): string {
     const d = new Date(dateStr);
     const now = new Date();
@@ -104,7 +108,17 @@ function parseBody(body: string): Array<{ text: string; highlight: boolean }> {
         </div>
 
         <!-- Notification List -->
-        <div v-else class="flex flex-col gap-2">
+        <div v-else class="flex flex-col gap-3">
+            <!-- Mark All Read -->
+            <div v-if="notifications.data.some((n: any) => !n.read_at)" class="flex justify-end">
+                <button
+                    @click="markAllRead"
+                    class="inline-flex items-center gap-1.5 rounded-full bg-[#f6f6f3] px-3 py-1.5 text-xs font-bold leading-[1] text-[#000000] transition-colors hover:bg-[#000000] hover:text-white"
+                >
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                    Tandai Semua Dibaca
+                </button>
+            </div>
             <button
                 v-for="n in notifications.data"
                 :key="n.id"

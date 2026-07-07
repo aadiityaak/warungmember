@@ -16,16 +16,26 @@ class NotificationController extends Controller
 
         if ($member) {
             $notifications = $member->notifications()
-                ->latest('created_at')
+                ->orderByRaw('read_at IS NULL DESC')
+                ->orderBy('created_at', 'desc')
                 ->paginate(20);
-
-            // Mark all as read when page visited (optional behavior)
-            // $member->notifications()->whereNull('read_at')->update(['read_at' => now()]);
         }
 
         return inertia('member/notifications/Index', [
             'notifications' => $notifications,
         ]);
+    }
+
+    public function markAllRead()
+    {
+        $member = request()->user()->member;
+
+        if ($member) {
+            $member->notifications()->whereNull('read_at')->update(['read_at' => now()]);
+        }
+
+        return back()
+            ->with('toast', ['type' => 'success', 'message' => 'Semua notifikasi sudah dibaca.']);
     }
 
     public function markRead(Notification $notification)

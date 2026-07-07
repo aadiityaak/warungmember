@@ -43,6 +43,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('vouchers', MemberVoucherController::class)->name('vouchers');
         Route::get('notifications', [NotificationController::class, 'index'])->name('notifications');
         Route::post('notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+        Route::post('notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.readAll');
         Route::get('profile', [ProfileController::class, 'index'])->name('profile');
         Route::get('profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::put('profile', [ProfileController::class, 'update'])->name('profile.update');
