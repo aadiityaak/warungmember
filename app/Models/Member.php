@@ -42,6 +42,11 @@ class Member extends Model
         return $this->hasMany(Notification::class);
     }
 
+    public function memberVouchers(): HasMany
+    {
+        return $this->hasMany(MemberVoucher::class);
+    }
+
     public static function booted(): void
     {
         static::creating(function (Member $member) {

@@ -11,6 +11,7 @@ use App\Http\Controllers\Member\DashboardController as MemberDashboardController
 use App\Http\Controllers\Member\DepositController as MemberDepositController;
 use App\Http\Controllers\Member\NotificationController;
 use App\Http\Controllers\Member\PointController;
+use App\Http\Controllers\Member\ProfileController;
 use App\Http\Controllers\Member\RewardController as MemberRewardController;
 use App\Http\Controllers\Member\VoucherController as MemberVoucherController;
 use Illuminate\Support\Facades\Route;
@@ -36,6 +37,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('vouchers', MemberVoucherController::class)->name('vouchers');
         Route::get('notifications', [NotificationController::class, 'index'])->name('notifications');
         Route::post('notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+        Route::get('profile', [ProfileController::class, 'index'])->name('profile');
+        Route::get('profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('profile', [ProfileController::class, 'update'])->name('profile.update');
     });
 
     // Admin routes (desktop - for admin & kasir)
