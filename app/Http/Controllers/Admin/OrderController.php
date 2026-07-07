@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use App\Models\Order;
 use App\Models\PointTransaction;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Response;
@@ -18,8 +19,13 @@ class OrderController extends Controller
             ->latest()
             ->get();
 
+        $products = Product::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
         return inertia('admin/orders/Index', [
             'orders' => $orders,
+            'products' => $products,
         ]);
     }
 
@@ -27,12 +33,45 @@ class OrderController extends Controller
     {
         $validated = $request->validate([
             'status' => 'required|in:pending,processing,completed,cancelled',
+            'notes' => 'nullable|string|max:500',
+            'items' => 'nullable|array',
+            'items.*.product_id' => 'required_with:items|exists:products,id',
+            'items.*.quantity' => 'required_with:items|integer|min:1',
         ]);
 
         $oldStatus = $order->status;
 
         DB::transaction(function () use ($order, $validated, $oldStatus) {
-            $order->update($validated);
+            $orderData = ['status' => $validated['status']];
+
+            if (array_key_exists('notes', $validated)) {
+                $orderData['notes'] = $validated['notes'];
+            }
+
+            $order->update($orderData);
+
+            // Update items if provided
+            if (isset($validated['items'])) {
+                $order->items()->delete();
+
+                $totalAmount = 0;
+                foreach ($validated['items'] as $item) {
+                    $product = Product::findOrFail($item['product_id']);
+                    $price = $product->current_price;
+                    $subtotal = $price * $item['quantity'];
+
+                    $order->items()->create([
+                        'product_id' => $item['product_id'],
+                        'quantity' => $item['quantity'],
+                        'price' => $price,
+                        'subtotal' => $subtotal,
+                    ]);
+
+                    $totalAmount += $subtotal;
+                }
+
+                $order->update(['total_amount' => $totalAmount]);
+            }
 
             $member = $order->user?->member;
             if (! $member) {
@@ -91,6 +130,13 @@ class OrderController extends Controller
             ]);
         });
 
-        return back()->with('success', 'Status pesanan diperbarui.');
+        return back()->with('success', 'Pesanan berhasil diperbarui.');
+    }
+
+    public function destroy(Order $order)
+    {
+        $order->delete();
+
+        return back()->with('success', 'Pesanan berhasil dihapus.');
     }
 }

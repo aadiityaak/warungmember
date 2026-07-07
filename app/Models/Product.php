@@ -36,13 +36,13 @@ class Product extends Model
     public function getCurrentPriceAttribute(): int
     {
         if (! $this->discount_price) {
-            return $this->price;
+            return (int) $this->price;
         }
         if ($this->discount_end_at && now()->gt($this->discount_end_at)) {
-            return $this->price;
+            return (int) $this->price;
         }
 
-        return $this->discount_price;
+        return (int) $this->discount_price;
     }
 
     public function getIsOnDiscountAttribute(): bool

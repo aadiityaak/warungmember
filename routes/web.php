@@ -64,7 +64,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('vouchers', VoucherController::class)->only(['index', 'create', 'store', 'destroy']);
         Route::resource('products', ProductController::class);
         Route::resource('outlets', OutletController::class);
-        Route::resource('orders', AdminOrderController::class)->only(['index', 'update']);
+        Route::resource('orders', AdminOrderController::class)->only(['index', 'update', 'destroy']);
     });
 });
 
