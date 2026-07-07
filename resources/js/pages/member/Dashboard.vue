@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, onMounted, onUnmounted } from 'vue';
 import MemberLayout from '@/layouts/MemberLayout.vue';
 import { Link } from '@inertiajs/vue3';
 
@@ -14,6 +15,36 @@ const { stats } = defineProps<{
     };
 }>();
 
+const banners = [
+    '/storage/banner/1.jpg',
+    '/storage/banner/2.jpg',
+    '/storage/banner/3.jpg',
+];
+
+const current = ref(0);
+let timer: ReturnType<typeof setInterval> | null = null;
+
+function next() {
+    current.value = (current.value + 1) % banners.length;
+}
+
+function prev() {
+    current.value = (current.value - 1 + banners.length) % banners.length;
+}
+
+function goTo(i: number) {
+    current.value = i;
+    resetTimer();
+}
+
+function resetTimer() {
+    if (timer) clearInterval(timer);
+    timer = setInterval(next, 4000);
+}
+
+onMounted(() => resetTimer());
+onUnmounted(() => { if (timer) clearInterval(timer); });
+
 function formatRupiah(n: number): string {
     return 'Rp ' + n.toLocaleString('id-ID');
 }
@@ -26,9 +57,36 @@ function formatRupiah(n: number): string {
             <h2 class="text-[22px] font-semibold leading-[1.25] text-[#000000]">
                 Halo, Selamat Datang!
             </h2>
-            <p class="mt-1 text-sm leading-[1.4] text-[#62625b]">
-                Lihat poin, saldo, dan voucher kamu di sini.
-            </p>
+        </div>
+
+        <!-- Banner Carousel -->
+        <div class="relative overflow-hidden rounded-2xl">
+            <div
+                class="flex transition-transform duration-500 ease-out"
+                :style="{ transform: `translateX(-${current * 100}%)` }"
+            >
+                <img
+                    v-for="(src, i) in banners"
+                    :key="i"
+                    :src="src"
+                    :alt="`Banner ${i + 1}`"
+                    class="w-full shrink-0 object-cover"
+                />
+            </div>
+
+            <!-- Dots -->
+            <div class="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
+                <button
+                    v-for="(_, i) in banners"
+                    :key="i"
+                    @click="goTo(i)"
+                    class="h-2 rounded-full transition-all"
+                    :class="i === current
+                        ? 'w-5 bg-white'
+                        : 'w-2 bg-white/50 hover:bg-white/80'
+                    "
+                />
+            </div>
         </div>
 
         <!-- Stat Cards -->

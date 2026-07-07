@@ -28,7 +28,7 @@ const typeIcons: Record<string, string> = {
 };
 
 const typeColors: Record<string, string> = {
-    promo: 'border-l-orange-500 bg-orange-50',
+    promo: 'border-l-[#E22625] bg-[#E22625]/10',
     voucher: 'border-l-green-500 bg-green-50',
     poin: 'border-l-yellow-500 bg-yellow-50',
     deposit: 'border-l-blue-500 bg-blue-50',
@@ -57,14 +57,14 @@ const typeLabels: Record<string, string> = {
         <Card
             v-for="n in notifications.data"
             :key="n.id"
-            :class="['border-l-4', typeColors[n.type] ?? typeColors.umum, !n.read_at ? 'ring-1 ring-orange-200' : 'opacity-70']"
+            :class="['border-l-4', typeColors[n.type] ?? typeColors.umum, !n.read_at ? 'ring-1 ring-[#E22625]/20' : 'opacity-70']"
         >
             <CardContent class="flex gap-3 p-3">
                 <span class="text-lg">{{ typeIcons[n.type] ?? '📌' }}</span>
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2">
                         <Badge variant="secondary" class="text-[10px]">{{ typeLabels[n.type] ?? n.type }}</Badge>
-                        <span v-if="!n.read_at" class="h-2 w-2 rounded-full bg-orange-500" />
+                        <span v-if="!n.read_at" class="h-2 w-2 rounded-full bg-[#E22625]" />
                     </div>
                     <p class="font-medium text-sm mt-0.5">{{ n.title }}</p>
                     <p class="text-xs text-muted-foreground">{{ n.body }}</p>

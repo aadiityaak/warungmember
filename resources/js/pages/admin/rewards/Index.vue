@@ -64,7 +64,7 @@ function destroy(id: number) {
             <CardContent class="space-y-2">
                 <p class="text-sm text-muted-foreground">{{ reward.description ?? '-' }}</p>
                 <div class="text-sm">
-                    <span class="font-semibold text-orange-600">{{ reward.points_required }}</span> poin
+                    <span class="font-semibold text-[#E22625]">{{ reward.points_required }}</span> poin
                 </div>
                 <div v-if="reward.stock !== null" class="text-sm text-muted-foreground">Stok: {{ reward.stock }}</div>
                 <div v-else class="text-sm text-muted-foreground">Stok: Tidak terbatas</div>

@@ -30,9 +30,9 @@ function redeem(rewardId: number) {
     <Head title="Reward" />
 
     <div class="space-y-4">
-        <div class="rounded-lg bg-orange-50 p-4 text-center">
+        <div class="rounded-lg bg-[#E22625]/10 p-4 text-center">
             <p class="text-sm text-muted-foreground">Poin Kamu</p>
-            <p class="text-3xl font-bold text-orange-600">{{ memberPoints }}</p>
+            <p class="text-3xl font-bold text-[#E22625]">{{ memberPoints }}</p>
         </div>
 
         <h2 class="font-semibold">Katalog Reward</h2>
@@ -50,7 +50,7 @@ function redeem(rewardId: number) {
                     <div class="flex-1 min-w-0">
                         <p class="font-medium truncate">{{ reward.name }}</p>
                         <p class="text-sm text-muted-foreground">{{ reward.description }}</p>
-                        <p class="text-sm font-semibold text-orange-600">{{ reward.points_required }} poin</p>
+                        <p class="text-sm font-semibold text-[#E22625]">{{ reward.points_required }} poin</p>
                         <p v-if="reward.stock !== null" class="text-xs text-muted-foreground">Stok: {{ reward.stock }}</p>
                     </div>
                     <Button

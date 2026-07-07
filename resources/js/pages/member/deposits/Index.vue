@@ -24,7 +24,7 @@ function formatRupiah(n: number): string {
 
 const typeMap: Record<string, { label: string; color: string }> = {
     topup: { label: 'Top-up', color: 'text-green-600' },
-    payment: { label: 'Pembayaran', color: 'text-orange-600' },
+    payment: { label: 'Pembayaran', color: 'text-[#E22625]' },
     refund: { label: 'Refund', color: 'text-blue-600' },
 };
 </script>

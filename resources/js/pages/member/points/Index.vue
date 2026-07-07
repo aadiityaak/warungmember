@@ -20,7 +20,7 @@ const { transactions, totalPoints } = defineProps<{
 
 const typeMap: Record<string, { label: string; color: string }> = {
     earn: { label: 'Bertambah', color: 'text-green-600' },
-    redeem: { label: 'Ditukar', color: 'text-orange-600' },
+    redeem: { label: 'Ditukar', color: 'text-[#E22625]' },
     expire: { label: 'Kadaluarsa', color: 'text-red-600' },
 };
 </script>
@@ -29,9 +29,9 @@ const typeMap: Record<string, { label: string; color: string }> = {
     <Head title="Riwayat Poin" />
 
     <div class="space-y-4">
-        <div class="rounded-lg bg-orange-50 p-4 text-center">
+        <div class="rounded-lg bg-[#E22625]/10 p-4 text-center">
             <p class="text-sm text-muted-foreground">Total Poin</p>
-            <p class="text-3xl font-bold text-orange-600">{{ totalPoints }}</p>
+            <p class="text-3xl font-bold text-[#E22625]">{{ totalPoints }}</p>
         </div>
 
         <h2 class="font-semibold">Riwayat Poin</h2>

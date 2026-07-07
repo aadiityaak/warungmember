@@ -43,7 +43,10 @@ function removeAvatar() {
 }
 
 function submit() {
-    form.put(route('member.profile.update'));
+    form.transform((data) => ({
+        ...data,
+        _method: 'PUT',
+    })).post(route('member.profile.update'));
 }
 </script>
 
@@ -109,7 +112,7 @@ function submit() {
 
         <!-- Form -->
         <div class="rounded-2xl border border-[#dadad3] bg-white p-5">
-            <form @submit.prevent="submit" class="space-y-4" enctype="multipart/form-data">
+            <form @submit.prevent="submit" class="space-y-4">
                 <div>
                     <label for="name" class="mb-1 block text-sm font-semibold leading-[1.4] text-[#000000]">Nama</label>
                     <input

@@ -66,7 +66,7 @@ function destroy(id: number) {
                 <div class="text-sm">
                     <span class="font-semibold">Rp {{ product.price.toLocaleString('id-ID') }}</span>
                     <span class="text-muted-foreground"> &mdash; </span>
-                    <span class="font-semibold text-orange-600">{{ product.points_earned }}</span> poin
+                    <span class="font-semibold text-[#E22625]">{{ product.points_earned }}</span> poin
                 </div>
                 <div v-if="product.image" class="text-sm text-muted-foreground truncate">{{ product.image }}</div>
                 <div class="flex gap-2 pt-2">
