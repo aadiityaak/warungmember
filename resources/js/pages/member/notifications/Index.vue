@@ -28,11 +28,11 @@ const typeIcons: Record<string, string> = {
 };
 
 const typeColors: Record<string, string> = {
-    promo: 'border-l-orange-500 bg-orange-50 dark:bg-orange-950',
-    voucher: 'border-l-green-500 bg-green-50 dark:bg-green-950',
-    poin: 'border-l-yellow-500 bg-yellow-50 dark:bg-yellow-950',
-    deposit: 'border-l-blue-500 bg-blue-50 dark:bg-blue-950',
-    umum: 'border-l-gray-500 bg-gray-50 dark:bg-gray-900',
+    promo: 'border-l-orange-500 bg-orange-50',
+    voucher: 'border-l-green-500 bg-green-50',
+    poin: 'border-l-yellow-500 bg-yellow-50',
+    deposit: 'border-l-blue-500 bg-blue-50',
+    umum: 'border-l-gray-500 bg-gray-50',
 };
 
 const typeLabels: Record<string, string> = {

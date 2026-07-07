@@ -33,7 +33,7 @@ const typeMap: Record<string, { label: string; color: string }> = {
     <Head title="Deposit" />
 
     <div class="space-y-4">
-        <div class="rounded-lg bg-blue-50 p-4 text-center dark:bg-blue-950">
+        <div class="rounded-lg bg-blue-50 p-4 text-center">
             <p class="text-sm text-muted-foreground">Saldo Deposit</p>
             <p class="text-3xl font-bold text-blue-600">{{ formatRupiah(balance) }}</p>
         </div>

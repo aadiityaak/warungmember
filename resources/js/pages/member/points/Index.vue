@@ -29,7 +29,7 @@ const typeMap: Record<string, { label: string; color: string }> = {
     <Head title="Riwayat Poin" />
 
     <div class="space-y-4">
-        <div class="rounded-lg bg-orange-50 p-4 text-center dark:bg-orange-950">
+        <div class="rounded-lg bg-orange-50 p-4 text-center">
             <p class="text-sm text-muted-foreground">Total Poin</p>
             <p class="text-3xl font-bold text-orange-600">{{ totalPoints }}</p>
         </div>

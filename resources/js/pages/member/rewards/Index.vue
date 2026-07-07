@@ -30,7 +30,7 @@ function redeem(rewardId: number) {
     <Head title="Reward" />
 
     <div class="space-y-4">
-        <div class="rounded-lg bg-orange-50 p-4 text-center dark:bg-orange-950">
+        <div class="rounded-lg bg-orange-50 p-4 text-center">
             <p class="text-sm text-muted-foreground">Poin Kamu</p>
             <p class="text-3xl font-bold text-orange-600">{{ memberPoints }}</p>
         </div>
@@ -44,7 +44,7 @@ function redeem(rewardId: number) {
         <div v-else class="space-y-3">
             <Card v-for="reward in rewards" :key="reward.id">
                 <CardContent class="flex items-center gap-3 p-4">
-                    <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-2xl dark:bg-gray-800">
+                    <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-2xl">
                         🎁
                     </div>
                     <div class="flex-1 min-w-0">

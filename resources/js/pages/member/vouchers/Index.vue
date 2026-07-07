@@ -31,9 +31,9 @@ const typeLabels: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-    active: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
-    used: 'bg-gray-100 text-gray-500 dark:bg-gray-800',
-    expired: 'bg-red-100 text-red-500 dark:bg-red-900',
+    active: 'bg-green-100 text-green-700',
+    used: 'bg-gray-100 text-gray-500',
+    expired: 'bg-red-100 text-red-500',
 };
 
 const statusLabels: Record<string, string> = { active: 'Aktif', used: 'Terpakai', expired: 'Kadaluarsa' };

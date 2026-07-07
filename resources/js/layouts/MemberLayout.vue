@@ -7,9 +7,9 @@ defineProps<{ title?: string }>();
 
 <template>
     <Head :title="title ?? 'WarungMember'" />
-    <div class="mx-auto flex min-h-screen max-w-md flex-col bg-[#fbfbf9] shadow-lg dark:bg-gray-950">
+    <div class="mx-auto flex min-h-screen max-w-md flex-col bg-[#fbfbf9] shadow-lg">
         <!-- Header -->
-        <header class="sticky top-0 z-10 flex items-center justify-between border-b border-[#dadad3] bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900">
+        <header class="sticky top-0 z-10 flex items-center justify-between border-b border-[#dadad3] bg-white px-4 py-3">
             <h1 class="text-lg font-bold text-orange-600">WarungMember</h1>
             <slot name="header-actions" />
         </header>
@@ -20,7 +20,7 @@ defineProps<{ title?: string }>();
         </main>
 
         <!-- Bottom Nav -->
-        <nav class="sticky bottom-0 z-10 border-t border-[#dadad3] bg-white dark:border-gray-800 dark:bg-gray-900">
+        <nav class="sticky bottom-0 z-10 border-t border-[#dadad3] bg-white">
             <div class="flex justify-around py-2">
                 <Link :href="route('member.dashboard')" class="flex flex-col items-center gap-0.5 text-xs font-semibold text-[#000000] hover:text-orange-600">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>

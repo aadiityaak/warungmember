@@ -84,7 +84,7 @@ function submit() {
                         v-for="page in members.last_page"
                         :key="page"
                         :href="route('admin.members.index', { page, search: filters.search })"
-                        :class="['rounded px-2.5 py-1 text-sm', page === members.current_page ? 'bg-orange-600 text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-800']"
+                        :class="['rounded px-2.5 py-1 text-sm', page === members.current_page ? 'bg-orange-600 text-white' : 'hover:bg-gray-100']"
                     >
                         {{ page }}
                     </Link>
