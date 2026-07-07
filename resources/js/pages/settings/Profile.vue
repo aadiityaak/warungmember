@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Form, Head, usePage } from '@inertiajs/vue3';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
@@ -25,6 +25,17 @@ defineOptions({
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
+
+const form = useForm({
+    name: user.value.name,
+    email: user.value.email,
+});
+
+function submit() {
+    form.patch(ProfileController.update.url(), {
+        preserveScroll: true,
+    });
+}
 </script>
 
 <template>
@@ -39,38 +50,32 @@ const user = computed(() => page.props.auth.user);
             description="Update your name and email address"
         />
 
-        <Form
-            v-bind="ProfileController.update.form()"
-            class="space-y-6"
-            v-slot="{ errors, processing }"
-        >
+        <form @submit.prevent="submit" class="space-y-6">
             <div class="grid gap-2">
                 <Label for="name">Name</Label>
                 <Input
                     id="name"
+                    v-model="form.name"
                     class="mt-1 block w-full"
-                    name="name"
-                    :default-value="user.name"
                     required
                     autocomplete="name"
                     placeholder="Full name"
                 />
-                <InputError class="mt-2" :message="errors.name" />
+                <InputError class="mt-2" :message="form.errors.name" />
             </div>
 
             <div class="grid gap-2">
                 <Label for="email">Email address</Label>
                 <Input
                     id="email"
+                    v-model="form.email"
                     type="email"
                     class="mt-1 block w-full"
-                    name="email"
-                    :default-value="user.email"
                     required
                     autocomplete="username"
                     placeholder="Email address"
                 />
-                <InputError class="mt-2" :message="errors.email" />
+                <InputError class="mt-2" :message="form.errors.email" />
             </div>
 
             <div v-if="page.props.mustVerifyEmail && !user.email_verified_at">
@@ -94,11 +99,11 @@ const user = computed(() => page.props.auth.user);
             </div>
 
             <div class="flex items-center gap-4">
-                <Button :disabled="processing" data-test="update-profile-button"
+                <Button :disabled="form.processing" data-test="update-profile-button"
                     >Save</Button
                 >
             </div>
-        </Form>
+        </form>
     </div>
 
     <DeleteUser />

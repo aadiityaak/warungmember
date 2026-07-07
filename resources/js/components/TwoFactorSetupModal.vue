@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Form } from '@inertiajs/vue3';
+import { useForm } from '@inertiajs/vue3';
 import { Check, Copy, ScanLine } from '@lucide/vue';
 import { useClipboard } from '@vueuse/core';
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
@@ -42,6 +42,10 @@ const showVerificationStep = ref(false);
 const code = ref<string>('');
 
 const pinInputContainerRef = useTemplateRef('pinInputContainerRef');
+
+const form = useForm({
+    code: '',
+});
 
 const modalConfig = computed<TwoFactorConfigContent>(() => {
     if (props.twoFactorEnabled) {
@@ -91,7 +95,18 @@ const resetModalState = () => {
 
     showVerificationStep.value = false;
     code.value = '';
+    form.clearErrors();
+    form.reset();
 };
+
+function submitConfirm() {
+    form.code = code.value;
+    form.post(confirm().url, {
+        errorBag: 'confirmTwoFactorAuthentication',
+        onSuccess: () => { isOpen.value = false; },
+        onError: () => { code.value = ''; },
+    });
+}
 
 watch(
     () => isOpen.value,
@@ -237,15 +252,7 @@ watch(
                 </template>
 
                 <template v-else>
-                    <Form
-                        v-bind="confirm.form()"
-                        error-bag="confirmTwoFactorAuthentication"
-                        reset-on-error
-                        @finish="code = ''"
-                        @success="isOpen = false"
-                        v-slot="{ errors, processing }"
-                    >
-                        <input type="hidden" name="code" :value="code" />
+                    <form @submit.prevent="submitConfirm">
                         <div
                             ref="pinInputContainerRef"
                             class="relative w-full space-y-3"
@@ -257,7 +264,7 @@ watch(
                                     id="otp"
                                     v-model="code"
                                     :maxlength="6"
-                                    :disabled="processing"
+                                    :disabled="form.processing"
                                     autofocus
                                 >
                                     <InputOTPGroup>
@@ -268,7 +275,7 @@ watch(
                                         />
                                     </InputOTPGroup>
                                 </InputOTP>
-                                <InputError :message="errors?.code" />
+                                <InputError :message="form.errors.confirmTwoFactorAuthentication?.code || form.errors.code" />
                             </div>
 
                             <div class="flex w-full items-center space-x-5">
@@ -277,20 +284,20 @@ watch(
                                     variant="outline"
                                     class="w-auto flex-1"
                                     @click="showVerificationStep = false"
-                                    :disabled="processing"
+                                    :disabled="form.processing"
                                 >
                                     Back
                                 </Button>
                                 <Button
                                     type="submit"
                                     class="w-auto flex-1"
-                                    :disabled="processing || code.length < 6"
+                                    :disabled="form.processing || code.length < 6"
                                 >
                                     Confirm
                                 </Button>
                             </div>
                         </div>
-                    </Form>
+                    </form>
                 </template>
             </div>
         </DialogContent>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Form, Head } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
@@ -17,6 +17,12 @@ defineOptions({
 defineProps<{
     status?: string;
 }>();
+
+const form = useForm({});
+
+function submit() {
+    form.post(send().url);
+}
 </script>
 
 <template>
@@ -30,18 +36,14 @@ defineProps<{
         during registration.
     </div>
 
-    <Form
-        v-bind="send.form()"
-        class="space-y-6 text-center"
-        v-slot="{ processing }"
-    >
-        <Button :disabled="processing" variant="secondary">
-            <Spinner v-if="processing" />
+    <form @submit.prevent="submit" class="space-y-6 text-center">
+        <Button :disabled="form.processing" variant="secondary">
+            <Spinner v-if="form.processing" />
             Resend verification email
         </Button>
 
         <TextLink :href="logout()" as="button" class="mx-auto block text-sm">
             Log out
         </TextLink>
-    </Form>
+    </form>
 </template>
