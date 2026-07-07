@@ -113,15 +113,15 @@ deposit_transactions
 
 ### 4.2 Jenis Notifikasi
 
-| Trigger | Pesan |
-|---|---|
-| Poin bertambah | "Anda mendapatkan X poin dari transaksi #INV-XXX" |
-| Poin ditukar | "Anda menukar X poin untuk [nama reward]" |
+| Trigger             | Pesan                                                  |
+| ------------------- | ------------------------------------------------------ |
+| Poin bertambah      | "Anda mendapatkan X poin dari transaksi #INV-XXX"      |
+| Poin ditukar        | "Anda menukar X poin untuk [nama reward]"              |
 | Voucher ulang tahun | "Selamat ulang tahun! Voucher diskon 20% menanti Anda" |
-| Voucher golden hour | "Golden Hour! Diskon 15% berlaku sekarang" |
-| Deposit diterima | "Deposit Rp X berhasil ditambahkan ke saldo Anda" |
-| Promo baru | "Promo baru: [nama promo]" |
-| Voucher kadaluarsa | "Voucher [kode] akan kadaluarsa besok" |
+| Voucher golden hour | "Golden Hour! Diskon 15% berlaku sekarang"             |
+| Deposit diterima    | "Deposit Rp X berhasil ditambahkan ke saldo Anda"      |
+| Promo baru          | "Promo baru: [nama promo]"                             |
+| Voucher kadaluarsa  | "Voucher [kode] akan kadaluarsa besok"                 |
 
 ### 4.3 Broadcast WhatsApp (Admin)
 
@@ -143,6 +143,7 @@ notifications
 ### 5.1 Analisis Data Pelanggan
 
 **Metrik Utama (Dashboard Overview):**
+
 - Total member terdaftar
 - Member aktif bulan ini (melakukan transaksi)
 - Total poin beredar
@@ -150,11 +151,13 @@ notifications
 - Voucher yang telah diredeem
 
 **Pelanggan Paling Setia:**
+
 - Top 10 member berdasarkan total transaksi (nominal & frekuensi)
 - Top 10 member berdasarkan poin terbanyak
 - Filter periode: minggu ini, bulan ini, tahun ini, kustom
 
 **Produk Terlaris:**
+
 - Top 10 menu paling sering dibeli member (perlu relasi ke tabel `orders` / `transactions`)
 - Filter periode yang sama dengan di atas
 
@@ -181,17 +184,18 @@ notifications
 
 ### Role & Guard
 
-| Role | Deskripsi | Auth Guard |
-|---|---|---|
-| `admin` | Pemilik / pengelola warung | Fortify session (web) |
-| `member` | Pelanggan member | Fortify session (web) |
-| `kasir` | Petugas kasir cabang | Fortify session (web) |
+| Role     | Deskripsi                  | Auth Guard            |
+| -------- | -------------------------- | --------------------- |
+| `admin`  | Pemilik / pengelola warung | Fortify session (web) |
+| `member` | Pelanggan member           | Fortify session (web) |
+| `kasir`  | Petugas kasir cabang       | Fortify session (web) |
 
 Gunakan single `users` table dengan kolom `role` (enum: `admin`, `member`, `kasir`).
 
 ### Struktur Halaman
 
 **Member:**
+
 - `/dashboard` — overview poin, saldo, reward terbaru
 - `/points` — riwayat poin
 - `/rewards` — katalog reward & penukaran
@@ -201,6 +205,7 @@ Gunakan single `users` table dengan kolom `role` (enum: `admin`, `member`, `kasi
 - `/profile` — profil & pengaturan
 
 **Admin:**
+
 - `/admin/dashboard` — metrik overview
 - `/admin/members` — manajemen member
 - `/admin/members/{id}` — detail member
@@ -226,20 +231,21 @@ POST   /api/v1/member/notifications/{id}/read
 
 ## Prioritas Pengembangan (Fase)
 
-| Fase | Fitur | Estimasi Sprints |
-|---|---|---|
-| **Fase 1** | Auth (admin & member), manajemen member dasar, dashboard admin metrik dasar | 2 |
-| **Fase 2** | Poin & reward (earn, redeem, katalog reward, riwayat) | 2 |
-| **Fase 3** | Deposit member (topup, bayar pakai saldo, riwayat) | 1 |
-| **Fase 4** | Promo & voucher (birthday, golden hour, manual voucher) | 2 |
-| **Fase 5** | Notifikasi & broadcast WhatsApp | 1 |
-| **Fase 6** | Dashboard admin lanjutan (analisis pelanggan setia, produk terlaris) | 1 |
+| Fase       | Fitur                                                                       | Estimasi Sprints |
+| ---------- | --------------------------------------------------------------------------- | ---------------- |
+| **Fase 1** | Auth (admin & member), manajemen member dasar, dashboard admin metrik dasar | 2                |
+| **Fase 2** | Poin & reward (earn, redeem, katalog reward, riwayat)                       | 2                |
+| **Fase 3** | Deposit member (topup, bayar pakai saldo, riwayat)                          | 1                |
+| **Fase 4** | Promo & voucher (birthday, golden hour, manual voucher)                     | 2                |
+| **Fase 5** | Notifikasi & broadcast WhatsApp                                             | 1                |
+| **Fase 6** | Dashboard admin lanjutan (analisis pelanggan setia, produk terlaris)        | 1                |
 
 ---
 
 ## Non-Fungsional
 
 - **Responsif:** Mobile-first, dapat diakses via HP kasir & pemilik.
+- **Tampilan per Role:** Tampilan **mobile-only** untuk role `member`. Tampilan **desktop** untuk role `admin` dan `kasir`.
 - **Keamanan:** Semua endpoint admin dilindungi middleware `can:admin`. Member hanya akses data sendiri.
 - **Offline-tolerant:** Transaksi poin/deposit tetap bisa dicatat kasir (tidak bergantung koneksi internet member). Notifikasi dikirim async via queue.
 - **Audit trail:** Semua mutasi poin, deposit, dan penukaran tercatat lengkap dengan timestamp.

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, FolderGit2, LayoutGrid } from '@lucide/vue';
+import { CreditCard, Gift, LayoutGrid, Settings, Ticket, Users } from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -20,21 +20,36 @@ import type { NavItem } from '@/types';
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
-        href: dashboard(),
+        href: route('admin.dashboard'),
         icon: LayoutGrid,
+    },
+    {
+        title: 'Member',
+        href: route('admin.members.index'),
+        icon: Users,
+    },
+    {
+        title: 'Reward',
+        href: route('admin.rewards.index'),
+        icon: Gift,
+    },
+    {
+        title: 'Deposit',
+        href: route('admin.deposits.index'),
+        icon: CreditCard,
+    },
+    {
+        title: 'Voucher',
+        href: route('admin.vouchers.index'),
+        icon: Ticket,
     },
 ];
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
+        title: 'Pengaturan',
+        href: route('profile.edit'),
+        icon: Settings,
     },
 ];
 </script>

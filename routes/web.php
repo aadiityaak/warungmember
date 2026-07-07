@@ -1,11 +1,51 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\DepositController;
+use App\Http\Controllers\Admin\MemberController;
+use App\Http\Controllers\Admin\RewardController;
+use App\Http\Controllers\Admin\VoucherController;
+use App\Http\Controllers\Member\DashboardController as MemberDashboardController;
+use App\Http\Controllers\Member\DepositController as MemberDepositController;
+use App\Http\Controllers\Member\NotificationController;
+use App\Http\Controllers\Member\PointController;
+use App\Http\Controllers\Member\RewardController as MemberRewardController;
+use App\Http\Controllers\Member\VoucherController as MemberVoucherController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'Welcome')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'Dashboard')->name('dashboard');
+    // Redirect /dashboard to appropriate dashboard based on role
+    Route::get('dashboard', function () {
+        return redirect()->route(auth()->user()->isAdmin() || auth()->user()->isKasir()
+            ? 'admin.dashboard'
+            : 'member.dashboard'
+        );
+    })->name('dashboard');
+
+    // Member routes (mobile-only)
+    Route::middleware('role:member')->prefix('member')->name('member.')->group(function () {
+        Route::get('dashboard', MemberDashboardController::class)->name('dashboard');
+        Route::get('points', PointController::class)->name('points');
+        Route::get('rewards', [MemberRewardController::class, 'index'])->name('rewards');
+        Route::post('rewards/{reward}/redeem', [MemberRewardController::class, 'redeem'])->name('rewards.redeem');
+        Route::get('deposits', MemberDepositController::class)->name('deposits');
+        Route::get('vouchers', MemberVoucherController::class)->name('vouchers');
+        Route::get('notifications', [NotificationController::class, 'index'])->name('notifications');
+        Route::post('notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+    });
+
+    // Admin routes (desktop - for admin & kasir)
+    Route::middleware('role:admin,kasir')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('dashboard', AdminDashboardController::class)->name('dashboard');
+        Route::resource('members', MemberController::class)->except(['edit', 'update', 'destroy']);
+        Route::resource('rewards', RewardController::class);
+        Route::get('deposits', [DepositController::class, 'index'])->name('deposits.index');
+        Route::post('deposits', [DepositController::class, 'store'])->name('deposits.store');
+        Route::get('deposits/{member}', [DepositController::class, 'history'])->name('deposits.history');
+        Route::resource('vouchers', VoucherController::class)->only(['index', 'create', 'store', 'destroy']);
+    });
 });
 
 require __DIR__.'/settings.php';

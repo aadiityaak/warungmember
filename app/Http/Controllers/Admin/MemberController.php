@@ -1,0 +1,66 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Member;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Inertia\Response;
+
+class MemberController extends Controller
+{
+    public function index(Request $request): Response
+    {
+        $members = User::where('role', 'member')
+            ->when($request->search, fn ($q, $search) => $q->where(fn ($q) => $q->where('name', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%")
+            )
+            )
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+
+        return inertia('admin/members/Index', [
+            'members' => $members,
+            'filters' => $request->only('search'),
+        ]);
+    }
+
+    public function show(User $member): Response
+    {
+        if ($member->role !== 'member') {
+            abort(404);
+        }
+
+        return inertia('admin/members/Show', [
+            'member' => $member,
+        ]);
+    }
+
+    public function create(): Response
+    {
+        return inertia('admin/members/Create');
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8',
+        ]);
+
+        $validated['role'] = 'member';
+        $validated['password'] = bcrypt($validated['password']);
+
+        DB::transaction(function () use ($validated) {
+            $user = User::create($validated);
+            Member::create(['user_id' => $user->id]);
+        });
+
+        return redirect()->route('admin.members.index')
+            ->with('toast', ['type' => 'success', 'message' => 'Member berhasil ditambahkan.']);
+    }
+}
