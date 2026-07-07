@@ -52,6 +52,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('orders/history', [MemberOrderController::class, 'history'])->name('orders.history');
         Route::resource('orders', MemberOrderController::class)->only(['index', 'store']);
         Route::get('outlets', [MemberOutletController::class, 'index'])->name('outlets.index');
+        Route::post('outlets/select', [MemberOutletController::class, 'select'])->name('outlets.select');
         Route::get('cart', [CartController::class, 'index'])->name('cart.index');
         Route::post('cart/sync', [CartController::class, 'sync'])->name('cart.sync');
     });

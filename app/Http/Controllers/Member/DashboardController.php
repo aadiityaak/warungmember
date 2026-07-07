@@ -16,7 +16,6 @@ class DashboardController extends Controller
             'stats' => [
                 'total_points' => $member?->total_points ?? 0,
                 'deposit_balance' => $member?->deposit_balance ?? 0,
-                'active_vouchers' => $member?->memberVouchers()->where('status', 'active')->count() ?? 0,
             ],
             'products' => Product::with('categories')
                 ->where('is_active', true)

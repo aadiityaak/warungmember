@@ -12,7 +12,6 @@ const { stats, products } = defineProps<{
     stats: {
         total_points: number;
         deposit_balance: number;
-        active_vouchers: number;
     };
     products: Array<Record<string, any>>;
 }>();
@@ -142,21 +141,6 @@ function formatRupiah(n: number): string {
                 <div class="flex h-10 w-10 items-center justify-center rounded-full bg-white">
                     <svg class="h-5 w-5 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                    </svg>
-                </div>
-            </div>
-
-            <!-- Voucher -->
-            <div class="flex items-center justify-between rounded-2xl bg-[#f6f6f3] px-4 py-4">
-                <div>
-                    <p class="text-sm leading-[1.4] text-[#62625b]">Voucher Aktif</p>
-                    <p class="mt-0.5 text-[22px] font-semibold leading-[1.25] text-[#000000]">
-                        {{ stats.active_vouchers }}
-                    </p>
-                </div>
-                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-white">
-                    <svg class="h-5 w-5 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
                     </svg>
                 </div>
             </div>

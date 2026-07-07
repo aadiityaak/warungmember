@@ -73,7 +73,7 @@ function submit() {
 
             <!-- Outlet Selector -->
             <div class="mb-3">
-                <label class="text-xs font-semibold text-[#000000] mb-1.5 block">Pilih Outlet</label>
+                <label class="text-xs font-semibold text-[#000000] mb-1.5 block">Lokasi Pengambilan</label>
                 <select
                     v-model="selectedOutlet"
                     class="w-full rounded-xl border border-[#dadad3] bg-[#f6f6f3] px-3 py-2.5 text-sm leading-[1.4] text-[#000000] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E22625]"

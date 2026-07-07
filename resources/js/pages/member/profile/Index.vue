@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
+import { onMounted, ref } from 'vue';
+import JsBarcode from 'jsbarcode';
 import MemberLayout from '@/layouts/MemberLayout.vue';
 
 defineOptions({
@@ -85,6 +87,22 @@ function logout() {
 function formatRupiah(n: number): string {
     return 'Rp ' + n.toLocaleString('id-ID');
 }
+
+const barcodeRef = ref<HTMLOrSVGImageElement | null>(null);
+
+onMounted(() => {
+    if (profile.member_code && barcodeRef.value) {
+        JsBarcode(barcodeRef.value, profile.member_code, {
+            format: 'CODE128',
+            width: 1.5,
+            height: 50,
+            displayValue: false,
+            margin: 0,
+            background: '#ffffff',
+            lineColor: '#000000',
+        });
+    }
+});
 </script>
 
 <template>
@@ -121,6 +139,22 @@ function formatRupiah(n: number): string {
                 <p class="text-lg font-semibold leading-[1.3] text-[#000000] truncate">{{ profile.name }}</p>
                 <p class="text-sm leading-[1.4] text-[#62625b] truncate">{{ profile.email }}</p>
                 <p v-if="profile.member_code" class="mt-0.5 text-xs font-semibold leading-[1.4] text-[#91918c]">{{ profile.member_code }}</p>
+            </div>
+        </div>
+
+        <!-- Member Card dengan Barcode -->
+        <div v-if="profile.member_code" class="rounded-2xl border border-[#dadad3] bg-white overflow-hidden">
+            <div class="flex items-center justify-between px-4 pt-4 pb-2">
+                <div>
+                    <p class="text-xs leading-[1.4] text-[#91918c]">Kartu Member</p>
+                    <p class="mt-0.5 text-lg font-bold leading-[1.3] text-[#000000] font-mono tracking-wider">{{ profile.member_code }}</p>
+                </div>
+                <div class="flex h-9 w-9 items-center justify-center rounded-full bg-[#f6f6f3]">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scan-barcode-icon lucide-scan-barcode"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M8 7v10"/><path d="M12 7v10"/><path d="M17 7v10"/></svg>
+                </div>
+            </div>
+            <div class="bg-white px-4 pb-4 flex justify-center">
+                <img ref="barcodeRef" alt="Barcode Member" />
             </div>
         </div>
 

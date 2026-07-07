@@ -95,6 +95,7 @@ function destroy(id: number) {
                         <th class="px-5 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000]">
                             <Link :href="sortUrl('email')" class="hover:text-[#E22625] transition-colors">Email{{ sortIndicator('email') }}</Link>
                         </th>
+                        <th class="px-5 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000]">ID Member</th>
                         <th class="px-5 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000]">
                             <Link :href="sortUrl('total_points')" class="hover:text-[#E22625] transition-colors">Poin{{ sortIndicator('total_points') }}</Link>
                         </th>
@@ -108,6 +109,7 @@ function destroy(id: number) {
                     <tr v-for="member in members.data" :key="member.id" class="border-b border-[#e5e5e0] last:border-0 hover:bg-[#fbfbf9] transition-colors">
                         <td class="px-5 py-3 text-sm leading-[1.4] font-semibold text-[#000000]">{{ member.name }}</td>
                         <td class="px-5 py-3 text-sm leading-[1.4] text-[#62625b]">{{ member.email }}</td>
+                        <td class="px-5 py-3 text-sm leading-[1.4] font-mono font-semibold text-[#000000]">{{ member.member?.member_code ?? '-' }}</td>
                         <td class="px-5 py-3 text-sm leading-[1.4] font-semibold text-[#E22625]">{{ member.member?.total_points?.toLocaleString('id-ID') ?? '0' }}</td>
                         <td class="px-5 py-3 text-sm leading-[1.4] text-[#62625b]">{{ new Date(member.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) }}</td>
                         <td class="px-5 py-3">
