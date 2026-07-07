@@ -162,12 +162,16 @@ function formatRupiah(n: number): string {
             </div>
         </div>
 
-        <!-- Reward Terbaru -->
-        <div>
-            <h3 class="text-lg font-semibold leading-[1.3] text-[#000000]">Reward Terbaru</h3>
-            <div class="mt-3 rounded-2xl bg-[#f6f6f3] px-4 py-6 text-center">
-                <p class="text-sm leading-[1.4] text-[#91918c]">Belum ada reward tersedia.</p>
+        <!-- Menu Selengkapnya -->
+        <Link
+            :href="route('member.products.index')"
+            class="flex items-center justify-between rounded-2xl bg-[#E22625] px-5 py-5 text-white transition-opacity hover:opacity-90"
+        >
+            <div>
+                <p class="text-lg font-bold leading-[1.3]">Pesan Menu</p>
+                <p class="mt-1 text-sm leading-[1.4] text-white/80">Lihat semua menu favorit kamu</p>
             </div>
-        </div>
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+        </Link>
     </div>
 </template>

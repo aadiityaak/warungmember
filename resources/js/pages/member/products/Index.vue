@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { Head, useForm, usePage } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { useCart } from '@/composables/useCart';
+import MemberLayout from '@/layouts/MemberLayout.vue';
 
-defineOptions({ layout: null }); // use default MemberLayout
+defineOptions({ layout: MemberLayout });
 
 const { products, categories } = defineProps<{
     products: Array<Record<string, any>>;

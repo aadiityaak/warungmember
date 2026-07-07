@@ -15,6 +15,8 @@ class Product extends Model
         'discount_end_at', 'points_earned', 'is_active',
     ];
 
+    protected $appends = ['current_price', 'is_on_discount'];
+
     protected function casts(): array
     {
         return [

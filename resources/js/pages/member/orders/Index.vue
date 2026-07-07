@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
 import { useCart } from '@/composables/useCart';
+import MemberLayout from '@/layouts/MemberLayout.vue';
 
-defineOptions({ layout: null });
+defineOptions({ layout: MemberLayout });
 
 const cart = useCart();
 const form = useForm({
