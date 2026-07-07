@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\OutletController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\RewardController;
 use App\Http\Controllers\Admin\VoucherController;
+use App\Http\Controllers\Member\CartController;
 use App\Http\Controllers\Member\DashboardController as MemberDashboardController;
 use App\Http\Controllers\Member\DepositController as MemberDepositController;
 use App\Http\Controllers\Member\NotificationController;
@@ -48,6 +49,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('products', [MemberProductController::class, 'index'])->name('products.index');
         Route::resource('orders', MemberOrderController::class)->only(['index', 'store']);
         Route::get('outlets', [MemberOutletController::class, 'index'])->name('outlets.index');
+        Route::get('cart', [CartController::class, 'index'])->name('cart.index');
+        Route::post('cart/sync', [CartController::class, 'sync'])->name('cart.sync');
     });
 
     // Admin routes (desktop - for admin & kasir)

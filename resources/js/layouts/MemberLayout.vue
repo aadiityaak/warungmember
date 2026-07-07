@@ -2,10 +2,15 @@
 import { Toaster } from '@/components/ui/sonner';
 import { Head, Link } from '@inertiajs/vue3';
 import { useCart } from '@/composables/useCart';
+import { onMounted } from 'vue';
 
 defineProps<{ title?: string }>();
 
 const cart = useCart();
+
+onMounted(() => {
+    cart.loadFromServer();
+});
 </script>
 
 <template>

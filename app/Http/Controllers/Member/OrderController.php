@@ -22,10 +22,12 @@ class OrderController extends Controller
             ->get();
 
         $outlets = Outlet::where('is_active', true)->get();
+        $lastOutletId = auth()->user()->member?->last_outlet_id;
 
         return inertia('member/orders/Index', [
             'orders' => $orders,
             'outlets' => $outlets,
+            'lastOutletId' => $lastOutletId,
         ]);
     }
 
@@ -73,9 +75,12 @@ class OrderController extends Controller
             return $order;
         });
 
-        // Send notification
+        // Persist outlet selection
         $member = auth()->user()->member;
         if ($member) {
+            $member->update(['last_outlet_id' => $validated['outlet_id']]);
+
+            // Send notification
             Notification::create([
                 'member_id' => $member->id,
                 'type' => 'order',

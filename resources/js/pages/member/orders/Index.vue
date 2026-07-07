@@ -6,13 +6,14 @@ import MemberLayout from '@/layouts/MemberLayout.vue';
 
 defineOptions({ layout: MemberLayout });
 
-const { orders, outlets } = defineProps<{
+const { orders, outlets, lastOutletId } = defineProps<{
     orders: Array<Record<string, any>>;
     outlets: Array<{ id: number; name: string; address: string | null }>;
+    lastOutletId: number | null;
 }>();
 
 const cart = useCart();
-const selectedOutlet = ref<number | null>(outlets?.[0]?.id ?? null);
+const selectedOutlet = ref<number | null>(lastOutletId ?? outlets?.[0]?.id ?? null);
 const paymentMethod = ref<string>('');
 const notes = ref('');
 const errors = ref<Record<string, string>>({});
@@ -22,7 +23,7 @@ const canCheckout = computed(() => selectedOutlet.value && paymentMethod.value);
 
 const paymentMethods = [
     { value: 'cash', label: 'Tunai', icon: 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z' },
-    { value: 'qris', label: 'QRIS', icon: 'M12 4v1m6 11h2m-6 0h-2m4 0v-2a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4-4h2a2 2 0 002-2V5a2 2 0 00-2-2h-2v2M4 17h.01M4 12h.01M4 7h.01' },
+    { value: 'qris', label: 'QRIS', icon: 'M5 3h4v4H5zM16 3h4v4h-4zM5 16h4v4H5zM21 16h-3a2 2 0 0 0-2 2v3M21 21v.01M12 7v3a2 2 0 0 1-2 2H7M3 12h.01M12 3h.01M12 16v.01M16 12h1M21 12v.01M12 21v-1' },
     { value: 'transfer', label: 'Transfer', icon: 'M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4' },
 ];
 
@@ -189,6 +190,18 @@ const paymentLabels: Record<string, string> = {
         <div v-if="cart.items.length === 0 && orders.length === 0" class="py-16 text-center">
             <svg class="mx-auto h-16 w-16 text-[#dadad3]" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 10a4 4 0 0 1-8 0"/><path d="M3.103 6.034h17.794"/><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z"/></svg>
             <p class="mt-4 text-sm text-[#91918c]">Belum ada produk di keranjang belanja</p>
+            <a
+                :href="route('member.products.index')"
+                class="mt-3 inline-flex h-9 items-center rounded-full bg-[#E22625] px-5 text-sm font-bold text-white"
+            >
+                Lihat Menu
+            </a>
+        </div>
+
+        <!-- Keranjang Kosong (tapi ada riwayat) -->
+        <div v-if="cart.items.length === 0 && orders.length > 0" class="rounded-2xl border border-[#dadad3] bg-[#f6f6f3] py-6 text-center">
+            <svg class="mx-auto h-10 w-10 text-[#91918c]" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 10a4 4 0 0 1-8 0"/><path d="M3.103 6.034h17.794"/><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z"/></svg>
+            <p class="mt-2 text-sm text-[#91918c]">Keranjang belanja kosong</p>
             <a
                 :href="route('member.products.index')"
                 class="mt-3 inline-flex h-9 items-center rounded-full bg-[#E22625] px-5 text-sm font-bold text-white"
