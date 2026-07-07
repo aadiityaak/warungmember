@@ -13,18 +13,34 @@ class MemberController extends Controller
 {
     public function index(Request $request): Response
     {
+        $sort = $request->get('sort', 'created_at');
+        $direction = $request->get('direction', 'desc');
+
+        $allowed = ['name', 'email', 'created_at', 'total_points'];
+        if (! in_array($sort, $allowed)) {
+            $sort = 'created_at';
+        }
+        if (! in_array($direction, ['asc', 'desc'])) {
+            $direction = 'desc';
+        }
+
         $members = User::where('role', 'member')
             ->when($request->search, fn ($q, $search) => $q->where(fn ($q) => $q->where('name', 'like', "%{$search}%")
                 ->orWhere('email', 'like', "%{$search}%")
             )
             )
-            ->latest()
+            ->with('member')
+            ->when($sort === 'total_points', fn ($q) => $q->leftJoin('members', 'users.id', '=', 'members.user_id')
+                ->orderBy('members.total_points', $direction)
+                ->select('users.*')
+            )
+            ->when($sort !== 'total_points', fn ($q) => $q->orderBy($sort, $direction))
             ->paginate(20)
             ->withQueryString();
 
         return inertia('admin/members/Index', [
             'members' => $members,
-            'filters' => $request->only('search'),
+            'filters' => $request->only('search', 'sort', 'direction'),
         ]);
     }
 

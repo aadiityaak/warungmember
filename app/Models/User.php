@@ -65,4 +65,9 @@ class User extends Authenticatable implements PasskeyUser
     {
         return $this->hasOne(Member::class);
     }
+
+    public function outlet(): HasOne
+    {
+        return $this->hasOne(Outlet::class, 'user_id');
+    }
 }

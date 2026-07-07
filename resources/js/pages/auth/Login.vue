@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
-import PasskeyVerify from '@/components/PasskeyVerify.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
@@ -45,8 +44,6 @@ function submit() {
     >
         {{ status }}
     </div>
-
-    <PasskeyVerify />
 
     <form @submit.prevent="submit" class="flex flex-col gap-6">
         <div class="grid gap-6">

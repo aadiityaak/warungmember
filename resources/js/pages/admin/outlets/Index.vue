@@ -23,6 +23,7 @@ const { outlets } = defineProps<{
         address: string | null;
         phone: string | null;
         is_active: boolean;
+        kasir: { name: string } | null;
     }>;
 }>();
 
@@ -60,6 +61,10 @@ function destroy(id: number) {
                 </div>
             </CardHeader>
             <CardContent class="space-y-2">
+                <div class="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <span class="font-medium text-[#000000]">Kasir:</span>
+                    {{ outlet.kasir?.name ?? '-' }}
+                </div>
                 <p class="text-sm text-muted-foreground">{{ outlet.address ?? 'Alamat belum diisi' }}</p>
                 <p class="text-sm text-muted-foreground">{{ outlet.phone ?? 'Telepon belum diisi' }}</p>
                 <div class="flex gap-2 pt-2">

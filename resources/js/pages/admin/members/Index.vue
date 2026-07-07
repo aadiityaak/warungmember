@@ -16,7 +16,7 @@ defineOptions({
 
 const { members, filters } = defineProps<{
     members: { data: User[]; current_page: number; last_page: number; from: number; to: number; total: number };
-    filters: { search?: string };
+    filters: { search?: string; sort?: string; direction?: string };
 }>();
 
 const form = useForm({
@@ -24,6 +24,22 @@ const form = useForm({
 });
 
 const deleteForm = useForm({});
+
+const currentSort = filters.sort ?? 'created_at';
+const currentDirection = filters.direction ?? 'desc';
+
+function sortUrl(column: string): string {
+    const params: Record<string, string | number> = {};
+    if (form.search) params.search = form.search;
+    params.sort = column;
+    params.direction = currentSort === column && currentDirection === 'asc' ? 'desc' : 'asc';
+    return route('admin.members.index', params);
+}
+
+function sortIndicator(column: string): string {
+    if (currentSort !== column) return '';
+    return currentDirection === 'asc' ? ' \u2191' : ' \u2193';
+}
 
 function submit() {
     form.get(route('admin.members.index'), { preserveState: true, replace: true });
@@ -73,9 +89,18 @@ function destroy(id: number) {
             <table class="w-full">
                 <thead>
                     <tr class="border-b border-[#dadad3]">
-                        <th class="px-5 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000]">Nama</th>
-                        <th class="px-5 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000]">Email</th>
-                        <th class="px-5 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000]">Tanggal Daftar</th>
+                        <th class="px-5 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000]">
+                            <Link :href="sortUrl('name')" class="hover:text-[#E22625] transition-colors">Nama{{ sortIndicator('name') }}</Link>
+                        </th>
+                        <th class="px-5 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000]">
+                            <Link :href="sortUrl('email')" class="hover:text-[#E22625] transition-colors">Email{{ sortIndicator('email') }}</Link>
+                        </th>
+                        <th class="px-5 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000]">
+                            <Link :href="sortUrl('total_points')" class="hover:text-[#E22625] transition-colors">Poin{{ sortIndicator('total_points') }}</Link>
+                        </th>
+                        <th class="px-5 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000]">
+                            <Link :href="sortUrl('created_at')" class="hover:text-[#E22625] transition-colors">Tanggal Daftar{{ sortIndicator('created_at') }}</Link>
+                        </th>
                         <th class="px-5 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000]">Aksi</th>
                     </tr>
                 </thead>
@@ -83,6 +108,7 @@ function destroy(id: number) {
                     <tr v-for="member in members.data" :key="member.id" class="border-b border-[#e5e5e0] last:border-0 hover:bg-[#fbfbf9] transition-colors">
                         <td class="px-5 py-3 text-sm leading-[1.4] font-semibold text-[#000000]">{{ member.name }}</td>
                         <td class="px-5 py-3 text-sm leading-[1.4] text-[#62625b]">{{ member.email }}</td>
+                        <td class="px-5 py-3 text-sm leading-[1.4] font-semibold text-[#E22625]">{{ member.member?.total_points?.toLocaleString('id-ID') ?? '0' }}</td>
                         <td class="px-5 py-3 text-sm leading-[1.4] text-[#62625b]">{{ new Date(member.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) }}</td>
                         <td class="px-5 py-3">
                             <div class="flex gap-1.5">
@@ -120,7 +146,7 @@ function destroy(id: number) {
                     <Link
                         v-for="page in members.last_page"
                         :key="page"
-                        :href="route('admin.members.index', { page, search: filters.search })"
+                        :href="route('admin.members.index', { page, search: filters.search, sort: currentSort, direction: currentDirection })"
                         :class="[
                             'inline-flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold leading-[1] transition-colors',
                             page === members.current_page
