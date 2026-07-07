@@ -20,11 +20,13 @@ const { notifications } = defineProps<{
 }>();
 
 const typeIcons: Record<string, string> = {
-    promo: '📢',
-    voucher: '🎫',
-    poin: '⭐',
-    deposit: '💰',
-    umum: '📌',
+    promo: '\u{1F4E2}',
+    voucher: '\u{1F3AB}',
+    poin: '\u{2B50}',
+    deposit: '\u{1F4B0}',
+    order: '\u{1F4E6}',
+    order_status: '\u{1F504}',
+    umum: '\u{1F4CC}',
 };
 
 const typeColors: Record<string, string> = {
@@ -32,6 +34,8 @@ const typeColors: Record<string, string> = {
     voucher: 'border-l-green-500 bg-green-50',
     poin: 'border-l-yellow-500 bg-yellow-50',
     deposit: 'border-l-blue-500 bg-blue-50',
+    order: 'border-l-orange-500 bg-orange-50',
+    order_status: 'border-l-purple-500 bg-purple-50',
     umum: 'border-l-gray-500 bg-gray-50',
 };
 
@@ -40,6 +44,8 @@ const typeLabels: Record<string, string> = {
     voucher: 'Voucher',
     poin: 'Poin',
     deposit: 'Deposit',
+    order: 'Pesanan',
+    order_status: 'Status',
     umum: 'Umum',
 };
 </script>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Notification;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Inertia\Response;
@@ -27,6 +28,29 @@ class OrderController extends Controller
         ]);
 
         $order->update($validated);
+
+        // Kirim notifikasi ke member
+        $member = $order->user?->member;
+        if ($member) {
+            $statusLabels = [
+                'pending' => 'Menunggu',
+                'processing' => 'Sedang Diproses',
+                'completed' => 'Selesai',
+                'cancelled' => 'Dibatalkan',
+            ];
+            $statusLabel = $statusLabels[$validated['status']] ?? $validated['status'];
+
+            Notification::create([
+                'member_id' => $member->id,
+                'type' => 'order_status',
+                'title' => 'Status Pesanan Diperbarui',
+                'body' => 'Pesanan #'.$order->id.' berstatus: '.$statusLabel,
+                'data' => [
+                    'order_id' => $order->id,
+                    'status' => $validated['status'],
+                ],
+            ]);
+        }
 
         return back()->with('success', 'Status pesanan diperbarui.');
     }

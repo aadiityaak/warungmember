@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
 
@@ -30,8 +30,6 @@ const { orders } = defineProps<{
     }>;
 }>();
 
-const statusForm = useForm({});
-
 const statusLabels: Record<string, string> = {
     pending: 'Menunggu',
     processing: 'Diproses',
@@ -39,18 +37,40 @@ const statusLabels: Record<string, string> = {
     cancelled: 'Dibatalkan',
 };
 
-const statusColors: Record<string, string> = {
-    pending: 'bg-yellow-100 text-yellow-700',
-    processing: 'bg-blue-100 text-blue-700',
-    completed: 'bg-green-100 text-green-700',
-    cancelled: 'bg-[#e5e5e0] text-[#91918c]',
-};
+const allStatuses = ['pending', 'processing', 'completed', 'cancelled'];
+
+function statusClasses(status: string, currentStatus: string): string {
+    const isActive = status === currentStatus;
+    const base = 'inline-flex cursor-pointer items-center border px-2 py-0.5 text-xs font-semibold transition-colors';
+
+    if (isActive) {
+        const activeColors: Record<string, string> = {
+            pending: 'bg-yellow-50 text-yellow-700 border-yellow-300 z-10',
+            processing: 'bg-blue-50 text-blue-700 border-blue-300 z-10',
+            completed: 'bg-green-50 text-green-700 border-green-300 z-10',
+            cancelled: 'bg-red-50 text-red-500 border-red-200 z-10',
+        };
+        return `${base} ${activeColors[status] ?? 'bg-[#e5e5e0] text-[#91918c] border-[#dadad3] z-10'}`;
+    }
+
+    return `${base} bg-white text-[#91918c] border-[#dadad3] hover:text-[#000000]`;
+}
+
+function statusSegmentClass(index: number, total: number): string {
+    if (index === 0) return 'rounded-l-full -mr-px';
+    if (index === total - 1) return 'rounded-r-full -ml-px';
+    return '-mx-px';
+}
 
 function updateStatus(orderId: number, status: string) {
-    statusForm.put(route('admin.orders.update', orderId), {
-        data: { status },
+    router.put(route('admin.orders.update', orderId), { status }, {
         preserveScroll: true,
+        preserveState: true,
     });
+}
+
+function productNames(items: Array<{ product: { name: string }; quantity: number }>): string {
+    return items.map((i) => `${i.product.name} x${i.quantity}`).join(', ');
 }
 </script>
 
@@ -58,6 +78,7 @@ function updateStatus(orderId: number, status: string) {
     <Head title="Manajemen Pesanan" />
 
     <div class="mx-6 pt-6">
+        <!-- Header -->
         <header class="mb-6 space-y-0.5">
             <h2 class="text-[28px] font-bold leading-[1.2] tracking-[-1.2px] text-[#000000]">
                 Manajemen Pesanan
@@ -67,69 +88,71 @@ function updateStatus(orderId: number, status: string) {
             </p>
         </header>
 
+        <!-- Empty -->
         <div v-if="orders.length === 0" class="rounded-2xl bg-[#f6f6f3] py-16 text-center">
             <p class="text-sm leading-[1.4] text-[#62625b]">Belum ada pesanan.</p>
         </div>
 
-        <div v-else class="space-y-4">
-            <div
-                v-for="order in orders"
-                :key="order.id"
-                class="overflow-hidden rounded-2xl border border-[#dadad3] bg-white"
-            >
-                <!-- Order Header -->
-                <div class="flex items-center justify-between border-b border-[#dadad3] bg-[#fbfbf9] px-4 py-3">
-                    <div>
-                        <p class="text-sm font-semibold leading-[1.4] text-[#000000]">{{ order.user.name }}</p>
-                        <p class="text-xs leading-[1.4] text-[#91918c]">
-                            {{ new Date(order.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}
-                        </p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-sm font-bold leading-[1.4] text-[#E22625]">Rp{{ order.total_amount.toLocaleString('id-ID') }}</span>
-                        <select
-                            :value="order.status"
-                            @change="updateStatus(order.id, ($event.target as HTMLSelectElement).value)"
-                            :disabled="statusForm.processing"
-                            class="rounded-full border border-[#dadad3] px-2.5 py-1 text-xs font-semibold leading-[1.4] text-[#000000] focus:outline-none focus:ring-2 focus:ring-[#E22625]"
-                        >
-                            <option value="pending">Menunggu</option>
-                            <option value="processing">Diproses</option>
-                            <option value="completed">Selesai</option>
-                            <option value="cancelled">Dibatalkan</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Order Items -->
-                <div class="p-4">
-                    <table class="w-full">
-                        <thead>
-                            <tr class="border-b border-[#e5e5e0]">
-                                <th class="pb-2 text-left text-xs font-bold leading-[1.4] text-[#91918c]">Produk</th>
-                                <th class="pb-2 text-center text-xs font-bold leading-[1.4] text-[#91918c] w-16">Qty</th>
-                                <th class="pb-2 text-right text-xs font-bold leading-[1.4] text-[#91918c] w-24">Subtotal</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr
-                                v-for="item in order.items"
-                                :key="item.id"
-                                class="border-b border-[#f6f6f3] last:border-0"
-                            >
-                                <td class="py-2 text-sm leading-[1.4] text-[#000000]">{{ item.product.name }}</td>
-                                <td class="py-2 text-center text-sm leading-[1.4] text-[#62625b]">{{ item.quantity }}</td>
-                                <td class="py-2 text-right text-sm leading-[1.4] font-semibold text-[#000000]">Rp{{ item.subtotal.toLocaleString('id-ID') }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <!-- Notes -->
-                    <div v-if="order.notes" class="mt-3 rounded-xl bg-[#f6f6f3] px-3 py-2">
-                        <p class="text-xs text-[#91918c]">Catatan: {{ order.notes }}</p>
-                    </div>
-                </div>
-            </div>
+        <!-- Table -->
+        <div v-else class="overflow-hidden rounded-2xl border border-[#dadad3] bg-white">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-[#dadad3]">
+                        <th class="px-4 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000] w-12">#</th>
+                        <th class="px-4 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000]">Member</th>
+                        <th class="px-4 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000] hidden md:table-cell">Produk</th>
+                        <th class="px-4 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000] hidden sm:table-cell">Tanggal</th>
+                        <th class="px-4 py-3 text-right text-sm font-bold leading-[1.4] text-[#000000]">Total</th>
+                        <th class="px-4 py-3 text-center text-sm font-bold leading-[1.4] text-[#000000] w-32">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr
+                        v-for="order in orders"
+                        :key="order.id"
+                        class="border-b border-[#e5e5e0] last:border-0 transition-colors hover:bg-[#fbfbf9]"
+                    >
+                        <!-- # -->
+                        <td class="px-4 py-3">
+                            <span class="text-sm leading-[1.4] text-[#91918c]">{{ order.id }}</span>
+                        </td>
+                        <!-- Member -->
+                        <td class="px-4 py-3">
+                            <p class="text-sm leading-[1.4] font-semibold text-[#000000]">{{ order.user.name }}</p>
+                            <!-- Mobile: show products inline -->
+                            <p class="text-xs leading-[1.4] text-[#91918c] md:hidden mt-0.5 truncate max-w-[180px]">{{ productNames(order.items) }}</p>
+                        </td>
+                        <!-- Produk -->
+                        <td class="px-4 py-3 hidden md:table-cell">
+                            <p class="text-sm leading-[1.4] text-[#62625b] max-w-xs truncate">{{ productNames(order.items) }}</p>
+                            <p v-if="order.notes" class="text-xs leading-[1.4] text-[#91918c] mt-0.5">Catatan: {{ order.notes }}</p>
+                        </td>
+                        <!-- Tanggal -->
+                        <td class="px-4 py-3 hidden sm:table-cell">
+                            <span class="text-sm leading-[1.4] text-[#62625b]">
+                                {{ new Date(order.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) }}
+                            </span>
+                        </td>
+                        <!-- Total -->
+                        <td class="px-4 py-3 text-right">
+                            <span class="text-sm leading-[1.4] font-semibold text-[#E22625]">Rp{{ order.total_amount.toLocaleString('id-ID') }}</span>
+                        </td>
+                        <!-- Status -->
+                        <td class="px-2 py-3">
+                            <div class="inline-flex items-center">
+                                <button
+                                    v-for="(st, i) in allStatuses"
+                                    :key="st"
+                                    @click="updateStatus(order.id, st)"
+                                    :class="[statusClasses(st, order.status), statusSegmentClass(i, allStatuses.length)]"
+                                >
+                                    {{ statusLabels[st] }}
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </template>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
+use App\Models\Notification;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -33,7 +34,7 @@ class OrderController extends Controller
             'notes' => 'nullable|string|max:500',
         ]);
 
-        DB::transaction(function () use ($validated) {
+        $order = DB::transaction(function () use ($validated) {
             $order = Order::create([
                 'user_id' => auth()->id(),
                 'status' => 'pending',
@@ -42,6 +43,7 @@ class OrderController extends Controller
             ]);
 
             $total = 0;
+            $productNames = [];
 
             foreach ($validated['items'] as $item) {
                 $product = Product::findOrFail($item['product_id']);
@@ -56,11 +58,29 @@ class OrderController extends Controller
                     'subtotal' => $subtotal,
                 ]);
 
+                $productNames[] = $product->name.' x'.$item['quantity'];
                 $total += $subtotal;
             }
 
             $order->update(['total_amount' => $total]);
+
+            return $order;
         });
+
+        // Send notification
+        $member = auth()->user()->member;
+        if ($member) {
+            Notification::create([
+                'member_id' => $member->id,
+                'type' => 'order',
+                'title' => 'Pesanan Baru Diterima',
+                'body' => 'Pesanan #'.$order->id.' sebesar Rp'.number_format($order->total_amount, 0, ',', '.').' sedang diproses.',
+                'data' => [
+                    'order_id' => $order->id,
+                    'total_amount' => $order->total_amount,
+                ],
+            ]);
+        }
 
         return redirect()->route('member.orders.index')
             ->with('success', 'Pesanan berhasil dibuat!');
