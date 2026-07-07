@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DepositController;
 use App\Http\Controllers\Admin\MemberController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\OutletController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\RewardController;
@@ -10,7 +11,9 @@ use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\Member\DashboardController as MemberDashboardController;
 use App\Http\Controllers\Member\DepositController as MemberDepositController;
 use App\Http\Controllers\Member\NotificationController;
+use App\Http\Controllers\Member\OrderController as MemberOrderController;
 use App\Http\Controllers\Member\PointController;
+use App\Http\Controllers\Member\ProductController as MemberProductController;
 use App\Http\Controllers\Member\ProfileController;
 use App\Http\Controllers\Member\RewardController as MemberRewardController;
 use App\Http\Controllers\Member\VoucherController as MemberVoucherController;
@@ -40,6 +43,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('profile', [ProfileController::class, 'index'])->name('profile');
         Route::get('profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::put('profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::get('products', [MemberProductController::class, 'index'])->name('products.index');
+        Route::resource('orders', MemberOrderController::class)->only(['index', 'store']);
     });
 
     // Admin routes (desktop - for admin & kasir)
@@ -53,6 +58,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('vouchers', VoucherController::class)->only(['index', 'create', 'store', 'destroy']);
         Route::resource('products', ProductController::class);
         Route::resource('outlets', OutletController::class);
+        Route::resource('orders', AdminOrderController::class)->only(['index', 'update']);
     });
 });
 
