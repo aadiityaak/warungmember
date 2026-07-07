@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import MemberLayout from '@/layouts/MemberLayout.vue';
-import { Card, CardContent } from '@/components/ui/card';
 import { Head } from '@inertiajs/vue3';
+import MemberLayout from '@/layouts/MemberLayout.vue';
 
 defineOptions({ layout: MemberLayout });
 
@@ -11,47 +10,82 @@ const { transactions, totalPoints } = defineProps<{
             id: number;
             type: string;
             amount: number;
-            note: string | null;
+            note: string;
             created_at: string;
         }>;
-    } | null;
+    };
     totalPoints: number;
 }>();
 
-const typeMap: Record<string, { label: string; color: string }> = {
-    earn: { label: 'Bertambah', color: 'text-green-600' },
-    redeem: { label: 'Ditukar', color: 'text-[#E22625]' },
-    expire: { label: 'Kadaluarsa', color: 'text-red-600' },
+const typeLabels: Record<string, string> = {
+    earn: 'Poin Masuk',
+    redeem: 'Tukar Reward',
+    expire: 'Kadaluarsa',
+};
+
+const typeIcons: Record<string, string> = {
+    earn: '+',
+    redeem: '-',
+    expire: '-',
+};
+
+const typeColors: Record<string, string> = {
+    earn: 'text-green-600',
+    redeem: 'text-[#E22625]',
+    expire: 'text-[#91918c]',
 };
 </script>
 
 <template>
     <Head title="Riwayat Poin" />
 
-    <div class="space-y-4">
-        <div class="rounded-lg bg-[#E22625]/10 p-4 text-center">
-            <p class="text-sm text-muted-foreground">Total Poin</p>
-            <p class="text-3xl font-bold text-[#E22625]">{{ totalPoints }}</p>
+    <div class="flex flex-col gap-4">
+        <div>
+            <h1 class="text-xl font-bold leading-[1.2] text-[#000000]">Riwayat Poin</h1>
+            <p class="mt-0.5 text-sm leading-[1.4] text-[#62625b]">Total poin kamu saat ini</p>
         </div>
 
-        <h2 class="font-semibold">Riwayat Poin</h2>
-
-        <div v-if="!transactions || transactions.data.length === 0" class="py-8 text-center text-muted-foreground">
-            Belum ada riwayat poin.
+        <!-- Total Points Card -->
+        <div class="rounded-2xl border border-[#dadad3] bg-white p-5 text-center">
+            <p class="text-sm leading-[1.4] text-[#91918c]">Total Poin</p>
+            <p class="mt-1 text-[32px] font-bold leading-[1.1] text-[#E22625]">{{ totalPoints.toLocaleString('id-ID') }}</p>
         </div>
 
-        <div v-else class="space-y-2">
-            <Card v-for="tx in transactions.data" :key="tx.id">
-                <CardContent class="flex items-center justify-between p-3">
-                    <div>
-                        <p class="text-sm">{{ tx.note ?? typeMap[tx.type]?.label }}</p>
-                        <p class="text-xs text-muted-foreground">{{ new Date(tx.created_at).toLocaleDateString('id-ID') }}</p>
-                    </div>
-                    <span :class="['font-semibold', tx.type === 'earn' ? 'text-green-600' : 'text-red-600']">
-                        {{ tx.type === 'earn' ? '+' : '-' }}{{ tx.amount }}
-                    </span>
-                </CardContent>
-            </Card>
+        <!-- Empty -->
+        <div v-if="!transactions?.data?.length" class="py-8 text-center">
+            <p class="text-sm text-[#91918c]">Belum ada riwayat poin.</p>
+        </div>
+
+        <!-- Transaction List -->
+        <div v-else class="flex flex-col gap-2">
+            <h2 class="text-sm font-semibold leading-[1.4] text-[#000000]">Riwayat Transaksi</h2>
+            <div
+                v-for="t in transactions.data"
+                :key="t.id"
+                class="flex items-center gap-3 rounded-xl border border-[#dadad3] bg-white p-3"
+            >
+                <div
+                    :class="[
+                        'flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold',
+                        t.type === 'earn' ? 'bg-green-50 text-green-600' : 'bg-[#f6f6f3] text-[#91918c]',
+                    ]"
+                >
+                    {{ typeIcons[t.type] ?? '?' }}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold leading-[1.3] text-[#000000]">{{ typeLabels[t.type] ?? t.type }}</p>
+                    <p class="text-xs leading-[1.4] text-[#91918c]">{{ t.note }}</p>
+                    <p class="mt-0.5 text-[10px] text-[#91918c]">{{ new Date(t.created_at).toLocaleString('id-ID') }}</p>
+                </div>
+                <span
+                    :class="[
+                        'text-sm font-bold',
+                        typeColors[t.type] ?? 'text-[#000000]',
+                    ]"
+                >
+                    {{ typeIcons[t.type] === '+' ? '+' : '-' }}{{ t.amount }}
+                </span>
+            </div>
         </div>
     </div>
 </template>
