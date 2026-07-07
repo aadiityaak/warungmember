@@ -12,6 +12,7 @@ use App\Http\Controllers\Member\DashboardController as MemberDashboardController
 use App\Http\Controllers\Member\DepositController as MemberDepositController;
 use App\Http\Controllers\Member\NotificationController;
 use App\Http\Controllers\Member\OrderController as MemberOrderController;
+use App\Http\Controllers\Member\OutletController as MemberOutletController;
 use App\Http\Controllers\Member\PointController;
 use App\Http\Controllers\Member\ProductController as MemberProductController;
 use App\Http\Controllers\Member\ProfileController;
@@ -24,9 +25,10 @@ Route::inertia('/', 'Welcome')->name('home');
 Route::middleware(['auth', 'verified'])->group(function () {
     // Redirect /dashboard to appropriate dashboard based on role
     Route::get('dashboard', function () {
-        return redirect()->route(auth()->user()->isAdmin() || auth()->user()->isKasir()
-            ? 'admin.dashboard'
-            : 'member.dashboard'
+        return redirect()->route(
+            auth()->user()->isAdmin() || auth()->user()->isKasir()
+                ? 'admin.dashboard'
+                : 'member.dashboard'
         );
     })->name('dashboard');
 
@@ -45,6 +47,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::get('products', [MemberProductController::class, 'index'])->name('products.index');
         Route::resource('orders', MemberOrderController::class)->only(['index', 'store']);
+        Route::get('outlets', [MemberOutletController::class, 'index'])->name('outlets.index');
     });
 
     // Admin routes (desktop - for admin & kasir)

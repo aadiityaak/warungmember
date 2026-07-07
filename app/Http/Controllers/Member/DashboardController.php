@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
+use App\Models\Product;
 use Inertia\Response;
 
 class DashboardController extends Controller
@@ -17,6 +18,10 @@ class DashboardController extends Controller
                 'deposit_balance' => $member?->deposit_balance ?? 0,
                 'active_vouchers' => $member?->memberVouchers()->where('status', 'active')->count() ?? 0,
             ],
+            'products' => Product::with('categories')
+                ->where('is_active', true)
+                ->latest()
+                ->get(),
         ]);
     }
 }
