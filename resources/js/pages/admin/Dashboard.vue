@@ -1,11 +1,6 @@
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import Heading from '@/components/Heading.vue';
-import PlaceholderPattern from '@/components/PlaceholderPattern.vue';
-import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
+import { dashboard } from '@/routes';
 
 defineOptions({
     layout: {
@@ -26,71 +21,85 @@ const { stats } = defineProps<{
 </script>
 
 <template>
-    <Heading title="Dashboard Admin" description="Ringkasan data WarungMember" />
+    <div class="flex flex-col gap-8 mx-6 pt-6">
+        <!-- Heading -->
+        <header class="space-y-0.5">
+            <h2 class="text-[28px] font-bold leading-[1.2] tracking-[-1.2px] text-[#000000]">
+                Dashboard Admin
+            </h2>
+            <p class="text-sm leading-[1.4] text-[#62625b]">
+                Ringkasan data WarungMember
+            </p>
+        </header>
 
-    <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Card>
-            <CardHeader class="flex flex-row items-center justify-between pb-2">
-                <CardTitle class="text-sm font-medium text-muted-foreground">Total Member</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div class="text-2xl font-bold">{{ stats.total_members }}</div>
-            </CardContent>
-        </Card>
+        <!-- Stat Cards -->
+        <div class="grid grid-cols-2 gap-6 lg:grid-cols-4">
+            <div class="flex flex-col gap-1 rounded-2xl bg-[#f6f6f3] px-5 py-5">
+                <span class="text-sm leading-[1.4] text-[#62625b]">Total Member</span>
+                <span class="text-[28px] font-bold leading-[1.2] tracking-[-1.2px] text-[#000000]">
+                    {{ stats.total_members }}
+                </span>
+            </div>
 
-        <Card>
-            <CardHeader class="flex flex-row items-center justify-between pb-2">
-                <CardTitle class="text-sm font-medium text-muted-foreground">Poin Beredar</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div class="text-2xl font-bold">{{ stats.total_points }}</div>
-            </CardContent>
-        </Card>
+            <div class="flex flex-col gap-1 rounded-2xl bg-[#f6f6f3] px-5 py-4">
+                <span class="text-sm leading-[1.4] text-[#62625b]">Poin Beredar</span>
+                <span class="text-[28px] font-bold leading-[1.2] tracking-[-1.2px] text-[#000000]">
+                    {{ stats.total_points.toLocaleString('id-ID') }}
+                </span>
+            </div>
 
-        <Card>
-            <CardHeader class="flex flex-row items-center justify-between pb-2">
-                <CardTitle class="text-sm font-medium text-muted-foreground">Total Deposit</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div class="text-2xl font-bold">Rp {{ stats.total_deposit.toLocaleString('id-ID') }}</div>
-            </CardContent>
-        </Card>
+            <div class="flex flex-col gap-1 rounded-2xl bg-[#f6f6f3] px-5 py-5">
+                <span class="text-sm leading-[1.4] text-[#62625b]">Total Deposit</span>
+                <span class="text-[28px] font-bold leading-[1.2] tracking-[-1.2px] text-[#000000]">
+                    Rp {{ stats.total_deposit.toLocaleString('id-ID') }}
+                </span>
+            </div>
 
-        <Card>
-            <CardHeader class="flex flex-row items-center justify-between pb-2">
-                <CardTitle class="text-sm font-medium text-muted-foreground">Voucher Redeem</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div class="text-2xl font-bold">{{ stats.vouchers_redeemed }}</div>
-            </CardContent>
-        </Card>
-    </div>
+            <div class="flex flex-col gap-1 rounded-2xl bg-[#f6f6f3] px-5 py-5">
+                <span class="text-sm leading-[1.4] text-[#62625b]">Voucher Redeem</span>
+                <span class="text-[28px] font-bold leading-[1.2] tracking-[-1.2px] text-[#000000]">
+                    {{ stats.vouchers_redeemed }}
+                </span>
+            </div>
+        </div>
 
-    <div class="mt-6 grid gap-6 lg:grid-cols-2">
-        <Card>
-            <CardHeader>
-                <CardTitle>Aksi Cepat</CardTitle>
-            </CardHeader>
-            <CardContent class="flex flex-wrap gap-3">
-                <Button as="child">
-                    <Link :href="route('admin.members.index')">Manajemen Member</Link>
-                </Button>
-                <Button variant="outline" as="child">
-                    <Link :href="route('admin.members.index')">Kelola Reward</Link>
-                </Button>
-                <Button variant="outline" as="child">
-                    <Link :href="route('admin.members.index')">Kelola Voucher</Link>
-                </Button>
-            </CardContent>
-        </Card>
+        <!-- Bottom Section -->
+        <div class="grid gap-8 lg:grid-cols-2">
+            <!-- Quick Actions -->
+            <div class="rounded-2xl bg-[#f6f6f3] p-8">
+                <h3 class="text-lg font-semibold leading-[1.3] text-[#000000]">Aksi Cepat</h3>
+                <div class="mt-4 flex flex-wrap gap-2">
+                    <a
+                        :href="route('admin.members.index')"
+                        class="inline-flex items-center justify-center rounded-2xl bg-[#e60023] px-4 py-2.5 text-sm font-bold leading-[1] text-white transition-colors hover:bg-[#cc001f]"
+                    >
+                        Manajemen Member
+                    </a>
+                    <a
+                        :href="route('admin.rewards.index')"
+                        class="inline-flex items-center justify-center rounded-2xl bg-[#e5e5e0] px-4 py-2.5 text-sm font-bold leading-[1] text-[#000000] transition-colors hover:bg-[#c8c8c1]"
+                    >
+                        Kelola Reward
+                    </a>
+                    <a
+                        :href="route('admin.vouchers.index')"
+                        class="inline-flex items-center justify-center rounded-2xl bg-[#e5e5e0] px-4 py-2.5 text-sm font-bold leading-[1] text-[#000000] transition-colors hover:bg-[#c8c8c1]"
+                    >
+                        Kelola Voucher
+                    </a>
+                    <a
+                        :href="route('admin.deposits.index')"
+                        class="inline-flex items-center justify-center rounded-2xl bg-[#e5e5e0] px-4 py-2.5 text-sm font-bold leading-[1] text-[#000000] transition-colors hover:bg-[#c8c8c1]"
+                    >
+                        Kelola Deposit
+                    </a>
+                </div>
+            </div>
 
-        <Card>
-            <CardHeader>
-                <CardTitle>Grafik Overview</CardTitle>
-            </CardHeader>
-            <CardContent class="flex items-center justify-center p-6">
-                <PlaceholderPattern />
-            </CardContent>
-        </Card>
+            <!-- Placeholder -->
+            <div class="flex items-center justify-center rounded-2xl bg-[#f6f6f3] p-8">
+                <p class="text-sm leading-[1.4] text-[#91918c]">Grafik Overview</p>
+            </div>
+        </div>
     </div>
 </template>
