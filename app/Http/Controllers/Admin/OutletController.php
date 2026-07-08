@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Outlet;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Response;
 
@@ -28,6 +29,7 @@ class OutletController extends Controller
             'address' => 'nullable|string',
             'phone' => 'nullable|string|max:20',
             'is_active' => 'boolean',
+            'user_id' => 'nullable|exists:users,id',
         ]);
 
         Outlet::create($validated);
@@ -39,7 +41,8 @@ class OutletController extends Controller
     public function edit(Outlet $outlet): Response
     {
         return inertia('admin/outlets/Edit', [
-            'outlet' => $outlet,
+            'outlet' => $outlet->load('kasir'),
+            'kasirs' => User::where('role', 'kasir')->get(['id', 'name', 'email']),
         ]);
     }
 
@@ -50,6 +53,7 @@ class OutletController extends Controller
             'address' => 'nullable|string',
             'phone' => 'nullable|string|max:20',
             'is_active' => 'boolean',
+            'user_id' => 'nullable|exists:users,id',
         ]);
 
         $outlet->update($validated);

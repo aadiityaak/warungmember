@@ -61,15 +61,15 @@ function submit() {
             <button
                 v-if="cart.items.length"
                 @click="cart.clear()"
-                class="text-sm font-semibold text-[#E22625]"
+                class="text-[#E22625] hover:opacity-80 cursor-pointer"
             >
-                Kosongkan Keranjang
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2-icon lucide-trash-2"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
             </button>
         </div>
 
         <!-- Cart Section -->
         <div v-if="cart.items.length" class="rounded-2xl border border-[#dadad3] bg-white p-4">
-            <h2 class="text-sm font-bold leading-[1.4] text-[#000000] mb-3">Keranjang ({{ cart.totalItems() }} item)</h2>
+            <h2 class="text-sm font-bold leading-[1.4] text-[#000000] mb-3">Keranjang</h2>
 
             <!-- Outlet Selector -->
             <div class="mb-3">

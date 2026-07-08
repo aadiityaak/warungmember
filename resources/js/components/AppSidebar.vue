@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { CreditCard, Gift, LayoutGrid, Package, Settings, ShoppingBag, Store, Ticket, Users } from '@lucide/vue';
+import { LayoutGrid, Package, Settings, ShoppingBag, Store, Ticket, Users } from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -22,6 +22,7 @@ import { index as vouchersIndex } from '@/routes/admin/vouchers';
 import { index as productsIndex } from '@/routes/admin/products';
 import { index as outletsIndex } from '@/routes/admin/outlets';
 import { index as ordersIndex } from '@/routes/admin/orders';
+import { index as kasirIndex } from '@/routes/admin/kasir';
 import { edit as editProfile } from '@/routes/profile';
 import type { NavItem } from '@/types';
 
@@ -35,26 +36,40 @@ const mainNavItems: NavItem[] = [
         title: 'Member',
         href: membersIndex(),
         icon: Users,
+        children: [
+            {
+                title: 'Daftar Member',
+                href: membersIndex(),
+            },
+            {
+                title: 'Reward',
+                href: rewardsIndex(),
+            },
+            {
+                title: 'Deposit',
+                href: depositsIndex(),
+            },
+        ],
     },
     {
         title: 'Outlet',
         href: outletsIndex(),
         icon: Store,
+        children: [
+            {
+                title: 'Daftar Outlet',
+                href: outletsIndex(),
+            },
+            {
+                title: 'Kasir',
+                href: kasirIndex(),
+            },
+        ],
     },
     {
         title: 'Produk',
         href: productsIndex(),
         icon: Package,
-    },
-    {
-        title: 'Reward',
-        href: rewardsIndex(),
-        icon: Gift,
-    },
-    {
-        title: 'Deposit',
-        href: depositsIndex(),
-        icon: CreditCard,
     },
     {
         title: 'Voucher',

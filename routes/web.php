@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DepositController;
+use App\Http\Controllers\Admin\KasirController;
 use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\OutletController;
@@ -69,6 +70,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('vouchers', VoucherController::class)->only(['index', 'create', 'store', 'destroy']);
         Route::resource('products', ProductController::class);
         Route::resource('outlets', OutletController::class);
+        Route::resource('kasir', KasirController::class);
         Route::resource('orders', AdminOrderController::class)->only(['index', 'update', 'destroy']);
     });
 });

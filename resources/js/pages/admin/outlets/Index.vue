@@ -48,9 +48,12 @@ function destroy(id: number) {
         </header>
 
         <!-- Toolbar -->
-        <div class="mb-6">
+        <div class="mb-6 flex gap-2">
             <Button as="child">
                 <Link :href="route('admin.outlets.create')">+ Tambah Outlet</Link>
+            </Button>
+            <Button as="child" variant="outline">
+                <Link :href="route('admin.kasir.index')">Kelola Kasir</Link>
             </Button>
         </div>
 
