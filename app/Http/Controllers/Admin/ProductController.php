@@ -58,6 +58,10 @@ class ProductController extends Controller
 
     public function edit(Product $product): Response
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403);
+        }
+
         $product->load('categories');
 
         return inertia('admin/products/Edit', [
@@ -68,6 +72,10 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -103,6 +111,10 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403);
+        }
+
         if ($product->image) {
             $oldPath = str_replace('/storage/', '', $product->image);
             if (Storage::disk('public')->exists($oldPath)) {

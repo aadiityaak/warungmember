@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
@@ -32,6 +32,9 @@ const { products } = defineProps<{
 
 const deleteForm = useForm({});
 
+const page = usePage();
+const isAdmin = (page.props.auth?.user as Record<string, unknown>)?.role === 'admin';
+
 function destroy(id: number) {
     if (confirm('Hapus produk ini?')) {
         deleteForm.delete(route('admin.products.destroy', id));
@@ -55,7 +58,7 @@ function destroy(id: number) {
 
         <!-- Toolbar -->
         <div class="mb-6">
-            <Button as="child">
+            <Button v-if="isAdmin" as="child">
                 <Link :href="route('admin.products.create')">+ Tambah Produk</Link>
             </Button>
         </div>
@@ -76,7 +79,7 @@ function destroy(id: number) {
                         <th class="px-4 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000]">Harga</th>
                         <th class="px-4 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000] hidden md:table-cell">Poin</th>
                         <th class="px-4 py-3 text-center text-sm font-bold leading-[1.4] text-[#000000] w-20">Status</th>
-                        <th class="px-4 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000] w-28">Aksi</th>
+                        <th v-if="isAdmin" class="px-4 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000] w-28">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -156,7 +159,7 @@ function destroy(id: number) {
                             </span>
                         </td>
                         <!-- Aksi -->
-                        <td class="px-2 py-3">
+                        <td v-if="isAdmin" class="px-2 py-3">
                             <div class="flex gap-1">
                                 <Link
                                     :href="route('admin.products.edit', product.id)"

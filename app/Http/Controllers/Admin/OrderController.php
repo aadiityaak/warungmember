@@ -16,6 +16,12 @@ class OrderController extends Controller
     public function index(): Response
     {
         $orders = Order::with(['user', 'items.product'])
+            ->when(auth()->user()?->role !== 'admin', function ($query) {
+                $outlet = auth()->user()?->outlet;
+                if ($outlet) {
+                    $query->where('outlet_id', $outlet->id);
+                }
+            })
             ->latest()
             ->get();
 
@@ -31,6 +37,13 @@ class OrderController extends Controller
 
     public function update(Request $request, Order $order)
     {
+        if (auth()->user()?->role !== 'admin') {
+            $outlet = auth()->user()?->outlet;
+            if (! $outlet || $order->outlet_id !== $outlet->id) {
+                abort(403);
+            }
+        }
+
         $validated = $request->validate([
             'status' => 'required|in:pending,processing,completed,cancelled',
             'notes' => 'nullable|string|max:500',
@@ -135,6 +148,13 @@ class OrderController extends Controller
 
     public function destroy(Order $order)
     {
+        if (auth()->user()?->role !== 'admin') {
+            $outlet = auth()->user()?->outlet;
+            if (! $outlet || $order->outlet_id !== $outlet->id) {
+                abort(403);
+            }
+        }
+
         $order->delete();
 
         return back()->with('success', 'Pesanan berhasil dihapus.');

@@ -15,6 +15,9 @@ class DatabaseSeeder extends Seeder
         $this->call(ProductSeeder::class);
         $this->call(MemberSeeder::class);
         $this->call(OutletSeeder::class);
+        $this->call(RewardSeeder::class);
+        $this->call(VoucherSeeder::class);
+        $this->call(OrderSeeder::class);
 
         User::factory()->create([
             'name' => 'Admin',
