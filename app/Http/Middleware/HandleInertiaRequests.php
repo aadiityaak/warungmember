@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -48,6 +49,25 @@ class HandleInertiaRequests extends Middleware
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'unreadNotifications' => $unreadCount,
+            'branding' => $this->branding(),
         ];
+    }
+
+    private function branding(): array
+    {
+        $defaults = [
+            'app_name' => config('app.name'),
+            'logo_url' => null,
+            'favicon_url' => null,
+            'primary_color' => '#E22625',
+        ];
+
+        $data = Storage::exists('branding.json')
+            ? json_decode(Storage::get('branding.json'), true)
+            : [];
+
+        $data = array_filter($data ?? [], fn($v) => $v !== null && $v !== '');
+
+        return array_merge($defaults, $data);
     }
 }

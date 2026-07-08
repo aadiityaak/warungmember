@@ -102,17 +102,10 @@ function removeFile(target: 'logo' | 'favicon') {
 }
 
 function submit() {
-    form.transform((data) => {
-        const payload: Record<string, unknown> = {
-            app_name: data.app_name,
-            logo_url: data.logo_url,
-            favicon_url: data.favicon_url,
-            primary_color: data.primary_color,
-        };
-        if (data.logo_file instanceof File) payload.logo_file = data.logo_file;
-        if (data.favicon_file instanceof File) payload.favicon_file = data.favicon_file;
-        return payload;
-    }).put(route('branding.update'), {
+    form.transform((data) => ({
+        ...data,
+        _method: 'PUT',
+    })).post(route('branding.update'), {
         preserveScroll: true,
     });
 }

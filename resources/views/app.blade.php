@@ -10,7 +10,17 @@
             }
         </style>
 
-        <link rel="icon" href="/logo/logo-mas-mbull-favicon.png" type="image/png">
+        @php
+            $branding = $page['props']['branding'] ?? [];
+            $appName = $branding['app_name'] ?? config('app.name', 'Laravel');
+            $favicon = $branding['favicon_url'] ?? null;
+        @endphp
+
+        @if($favicon)
+            <link rel="icon" href="{{ $favicon }}" type="image/png">
+        @else
+            <link rel="icon" href="/logo/logo-mas-mbull-favicon.png" type="image/png">
+        @endif
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
         @fonts
@@ -18,7 +28,7 @@
 
         @vite(['resources/css/app.css', 'resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
         <x-inertia::head>
-            <title>{{ config('app.name', 'Laravel') }}</title>
+            <title>{{ $appName }}</title>
         </x-inertia::head>
     </head>
     <body class="font-sans antialiased">
