@@ -71,7 +71,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('products', ProductController::class);
         Route::resource('outlets', OutletController::class);
         Route::resource('kasir', KasirController::class);
-        Route::resource('orders', AdminOrderController::class)->only(['index', 'update', 'destroy']);
+        Route::resource('orders', AdminOrderController::class)->only(['index', 'store', 'update', 'destroy']);
     });
 });
 

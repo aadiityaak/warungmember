@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Outlet;
 use App\Models\PointTransaction;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Response;
@@ -15,24 +18,112 @@ class OrderController extends Controller
 {
     public function index(): Response
     {
+        $outlet = auth()->user()?->outlet;
+
         $orders = Order::with(['user', 'items.product'])
-            ->when(auth()->user()?->role !== 'admin', function ($query) {
-                $outlet = auth()->user()?->outlet;
+            ->when(auth()->user()?->role !== 'admin', function ($query) use ($outlet) {
                 if ($outlet) {
                     $query->where('outlet_id', $outlet->id);
                 }
             })
             ->latest()
-            ->get();
+            ->paginate(15);
 
         $products = Product::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'price', 'discount_price', 'discount_end_at']);
+
+        $members = User::where('role', 'member')
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        $outlets = Outlet::when(auth()->user()?->role !== 'admin', function ($query) use ($outlet) {
+            if ($outlet) {
+                $query->where('id', $outlet->id);
+            }
+        })
+            ->where('is_active', true)
             ->orderBy('name')
             ->get(['id', 'name']);
 
         return inertia('admin/orders/Index', [
             'orders' => $orders,
             'products' => $products,
+            'members' => $members,
+            'outlets' => $outlets,
         ]);
+    }
+
+    public function store(Request $request)
+    {
+        $outlet = auth()->user()?->outlet;
+
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'outlet_id' => 'required|exists:outlets,id',
+            'payment_method' => 'required|in:cash,qris,transfer',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.quantity' => 'required|integer|min:1',
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        // Kasir hanya bisa bikin order di outlet sendiri
+        if (auth()->user()?->role !== 'admin' && $outlet) {
+            if ((int) $validated['outlet_id'] !== $outlet->id) {
+                abort(403);
+            }
+        }
+
+        $order = DB::transaction(function () use ($validated) {
+            $order = Order::create([
+                'user_id' => $validated['user_id'],
+                'outlet_id' => $validated['outlet_id'],
+                'payment_method' => $validated['payment_method'],
+                'status' => 'pending',
+                'total_amount' => 0,
+                'notes' => $validated['notes'] ?? null,
+            ]);
+
+            $total = 0;
+
+            foreach ($validated['items'] as $item) {
+                $product = Product::findOrFail($item['product_id']);
+                $price = $product->current_price;
+                $subtotal = $price * $item['quantity'];
+
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_id' => $product->id,
+                    'quantity' => $item['quantity'],
+                    'price' => $price,
+                    'subtotal' => $subtotal,
+                ]);
+
+                $total += $subtotal;
+            }
+
+            $order->update(['total_amount' => $total]);
+
+            // Kirim notifikasi ke member
+            $member = $order->user?->member;
+            if ($member) {
+                Notification::create([
+                    'member_id' => $member->id,
+                    'type' => 'order',
+                    'title' => 'Pesanan Baru Diterima',
+                    'body' => 'Pesanan #'.$order->id.' sebesar Rp'.number_format($order->total_amount, 0, ',', '.').' sedang diproses.',
+                    'data' => [
+                        'order_id' => $order->id,
+                        'total_amount' => $order->total_amount,
+                    ],
+                ]);
+            }
+
+            return $order;
+        });
+
+        return back()->with('success', 'Pesanan #'.$order->id.' berhasil dibuat.');
     }
 
     public function update(Request $request, Order $order)
