@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, usePage } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue';
 import JsBarcode from 'jsbarcode';
 import MemberLayout from '@/layouts/MemberLayout.vue';
@@ -8,6 +8,7 @@ defineOptions({
     layout: MemberLayout,
 });
 
+const page = usePage();
 const { profile } = defineProps<{
     profile: {
         id: number;
@@ -47,7 +48,7 @@ const menuItems: MenuItem[] = [
         title: 'Chat WhatsApp CS',
         subtitle: 'Hubungi customer service',
         icon: 'chat',
-        href: 'https://wa.me/6281234567890?text=Halo%20CS%20WarungMember',
+        href: 'https://wa.me/' + (page.props.branding?.whatsapp_number ?? '6281335405231').replace(/^0/, '62') + '?text=Halo%20CS%20WarungMember',
         external: true,
     },
     {

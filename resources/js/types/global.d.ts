@@ -24,6 +24,7 @@ declare module '@inertiajs/core' {
                 logo_url: string | null;
                 favicon_url: string | null;
                 primary_color: string;
+                whatsapp_number: string;
             };
             [key: string]: unknown;
         };

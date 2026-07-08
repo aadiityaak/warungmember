@@ -22,6 +22,7 @@ const { branding } = defineProps<{
         logo_url: string | null;
         favicon_url: string | null;
         primary_color: string;
+        whatsapp_number: string;
     };
 }>();
 
@@ -30,6 +31,7 @@ const form = useForm({
     logo_url: branding.logo_url ?? '',
     favicon_url: branding.favicon_url ?? '',
     primary_color: branding.primary_color,
+    whatsapp_number: branding.whatsapp_number,
     logo_file: null as File | null,
     favicon_file: null as File | null,
 });
@@ -271,6 +273,20 @@ function submit() {
                     :style="{ color: form.primary_color }"
                 >Sample Link</span>
             </div>
+        </div>
+
+
+        <div>
+            <Label for="whatsapp_number">WhatsApp Customer Service</Label>
+            <Input
+                id="whatsapp_number"
+                v-model="form.whatsapp_number"
+                placeholder="081335405231"
+            />
+            <InputError :message="form.errors.whatsapp_number" />
+            <p class="text-xs leading-[1.4] text-[#91918c] mt-1">
+                Nomor WhatsApp untuk customer service.
+            </p>
         </div>
 
         <div class="flex items-center gap-3">

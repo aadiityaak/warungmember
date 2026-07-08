@@ -60,13 +60,14 @@ class HandleInertiaRequests extends Middleware
             'logo_url' => null,
             'favicon_url' => null,
             'primary_color' => '#E22625',
+            'whatsapp_number' => '081335405231',
         ];
 
         $data = Storage::exists('branding.json')
             ? json_decode(Storage::get('branding.json'), true)
             : [];
 
-        $data = array_filter($data ?? [], fn($v) => $v !== null && $v !== '');
+        $data = array_filter($data ?? [], fn ($v) => $v !== null && $v !== '');
 
         return array_merge($defaults, $data);
     }

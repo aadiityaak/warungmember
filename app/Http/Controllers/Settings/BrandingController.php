@@ -18,6 +18,7 @@ class BrandingController extends Controller
             'logo_url' => null,
             'favicon_url' => null,
             'primary_color' => '#E22625',
+            'whatsapp_number' => '081335405231',
         ];
 
         $data = Storage::exists('branding.json')
@@ -44,6 +45,7 @@ class BrandingController extends Controller
             'logo_url' => 'nullable|string|max:500',
             'favicon_url' => 'nullable|string|max:500',
             'primary_color' => 'required|string|max:7',
+            'whatsapp_number' => 'nullable|string|max:20',
             'logo_file' => 'nullable|image|mimes:png,jpg,jpeg,svg,webp|max:2048',
             'favicon_file' => 'nullable|image|mimes:png,jpg,jpeg,ico,svg|max:512',
         ]);
