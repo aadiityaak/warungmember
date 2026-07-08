@@ -223,23 +223,25 @@ const paginationPages = computed(() => {
     const last = orders.last_page;
     const pages: (number | '...')[] = [];
 
-    if (last <= 7) {
+    if (last <= 9) {
         for (let i = 1; i <= last; i++) pages.push(i);
         return pages;
     }
 
-    pages.push(1);
+    // First 3 pages
+    for (let i = 1; i <= 3; i++) pages.push(i);
 
-    if (current > 3) pages.push('...');
+    if (current > 4) pages.push('...');
 
-    const start = Math.max(2, current - 1);
-    const end = Math.min(last - 1, current + 1);
+    const start = Math.max(4, current - 1);
+    const end = Math.min(last - 3, current + 1);
 
     for (let i = start; i <= end; i++) pages.push(i);
 
-    if (current < last - 2) pages.push('...');
+    if (current < last - 3) pages.push('...');
 
-    pages.push(last);
+    // Last 3 pages
+    for (let i = last - 2; i <= last; i++) pages.push(i);
 
     return pages;
 });

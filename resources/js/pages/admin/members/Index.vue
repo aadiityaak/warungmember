@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { dashboard } from '@/routes';
@@ -53,13 +54,38 @@ function destroy(id: number) {
         deleteForm.delete(route('admin.members.destroy', id));
     }
 }
+
+const paginationPages = computed(() => {
+    const current = members.current_page;
+    const last = members.last_page;
+    const pages: (number | '...')[] = [];
+
+    if (last <= 9) {
+        for (let i = 1; i <= last; i++) pages.push(i);
+        return pages;
+    }
+
+    for (let i = 1; i <= 3; i++) pages.push(i);
+
+    if (current > 4) pages.push('...');
+
+    const start = Math.max(4, current - 1);
+    const end = Math.min(last - 3, current + 1);
+
+    for (let i = start; i <= end; i++) pages.push(i);
+
+    if (current < last - 3) pages.push('...');
+
+    for (let i = last - 2; i <= last; i++) pages.push(i);
+
+    return pages;
+});
 </script>
 
 <template>
     <Head title="Manajemen Member" />
 
     <div class="mx-6 pt-6">
-        <!-- Header -->
         <header class="mb-6 space-y-0.5">
             <h2 class="text-[28px] font-bold leading-[1.2] tracking-[-1.2px] text-[#000000]">
                 Manajemen Member
@@ -69,7 +95,6 @@ function destroy(id: number) {
             </p>
         </header>
 
-        <!-- Toolbar -->
         <div class="mb-6 flex items-center gap-3">
             <form @submit.prevent="submit" class="flex-1">
                 <input
@@ -83,7 +108,6 @@ function destroy(id: number) {
             </Button>
         </div>
 
-        <!-- Member List -->
         <div v-if="members.data.length === 0" class="rounded-2xl bg-[#f6f6f3] py-16 text-center">
             <p class="text-sm leading-[1.4] text-[#62625b]">Belum ada member terdaftar.</p>
         </div>
@@ -143,25 +167,31 @@ function destroy(id: number) {
                 </tbody>
             </table>
 
-            <!-- Pagination -->
             <div v-if="members.last_page > 1" class="flex items-center justify-between border-t border-[#dadad3] px-5 py-3">
                 <span class="text-sm leading-[1.4] text-[#62625b]">
                     {{ members.from }}-{{ members.to }} dari {{ members.total }}
                 </span>
                 <div class="flex gap-1">
-                    <Link
-                        v-for="page in members.last_page"
-                        :key="page"
-                        :href="route('admin.members.index', { page, search: filters.search, sort: currentSort, direction: currentDirection })"
-                        :class="[
-                            'inline-flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold leading-[1] transition-colors',
-                            page === members.current_page
-                                ? 'bg-[#000000] text-white'
-                                : 'text-[#000000] hover:bg-[#f6f6f3]',
-                        ]"
-                    >
-                        {{ page }}
-                    </Link>
+                    <template v-for="(page, idx) in paginationPages" :key="idx">
+                        <span
+                            v-if="page === '...'"
+                            class="inline-flex h-9 w-9 items-center justify-center text-sm font-bold leading-[1] text-[#62625b]"
+                        >
+                            ...
+                        </span>
+                        <Link
+                            v-else
+                            :href="route('admin.members.index', { page, search: filters.search, sort: currentSort, direction: currentDirection })"
+                            :class="[
+                                'inline-flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold leading-[1] transition-colors',
+                                page === members.current_page
+                                    ? 'bg-[#000000] text-white'
+                                    : 'text-[#000000] hover:bg-[#f6f6f3]',
+                            ]"
+                        >
+                            {{ page }}
+                        </Link>
+                    </template>
                 </div>
             </div>
         </div>
