@@ -13,7 +13,7 @@ class OutletController extends Controller
     public function index(): Response
     {
         return inertia('admin/outlets/Index', [
-            'outlets' => Outlet::with('kasir')->latest()->get(),
+            'outlets' => Outlet::with('kasir')->latest()->paginate(10),
         ]);
     }
 
