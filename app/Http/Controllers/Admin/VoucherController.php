@@ -12,7 +12,7 @@ class VoucherController extends Controller
     public function index(): Response
     {
         return inertia('admin/vouchers/Index', [
-            'vouchers' => Voucher::latest()->get(),
+            'vouchers' => Voucher::latest()->paginate(10),
         ]);
     }
 

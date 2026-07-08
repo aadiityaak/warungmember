@@ -45,7 +45,7 @@ const isAdmin = (page.props.auth?.user as Record<string, unknown>)?.role === "ad
 
 function destroy(id: number) {
     if (confirm("Hapus produk ini?")) {
-        deleteForm.delete(route('admin.products.destroy", id));
+        deleteForm.delete(route('admin.products.destroy', id));
     }
 }
 
@@ -91,7 +91,7 @@ const paginationPages = computed(() => {
 
         <div class="mb-6">
             <Button v-if="isAdmin" as="child">
-                <Link :href="route('admin.products.create")">+ Tambah Produk</Link>
+                <Link :href="route('admin.products.create')">+ Tambah Produk</Link>
             </Button>
         </div>
 
@@ -185,7 +185,7 @@ const paginationPages = computed(() => {
                         <td v-if="isAdmin" class="px-2 py-3">
                             <div class="flex gap-1">
                                 <Link
-                                    :href="route('admin.products.edit", product.id)"
+                                    :href="route('admin.products.edit', product.id)"
                                     class="inline-flex h-8 items-center rounded-full bg-[#f6f6f3] px-3 text-xs font-bold leading-[1] text-[#000000] transition-colors hover:bg-[#e5e5e0]"
                                 >
                                     Edit
