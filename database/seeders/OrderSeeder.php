@@ -22,70 +22,76 @@ class OrderSeeder extends Seeder
             return;
         }
 
-        $statuses = ['pending', 'processing', 'completed', 'cancelled'];
-        // weighted: more completed orders
         $statusWeights = ['completed', 'completed', 'completed', 'completed', 'processing', 'processing', 'pending', 'cancelled'];
 
-        $orders = [];
+        // Trend multipliers per outlet to simulate growth/decline over 30 days
+        // Outlet 0: stable high, 1: growing, 2: seasonal spike mid-month, 3: declining
+        $trends = [
+            fn (int $day) => 1.0 + ($day / 30) * 0.5,         // growing
+            fn (int $day) => 1.2 - ($day / 30) * 0.4,         // declining
+            fn (int $day) => $day > 10 && $day < 20 ? 1.6 : 0.8, // spike mid-month
+            fn (int $day) => 1.0,                               // stable
+        ];
 
-        // Generate ~30 orders spread across members and outlets
-        foreach ($members as $member) {
-            $orderCount = random_int(1, 3);
+        DB::transaction(function () use ($members, $outlets, $products, $statusWeights, $trends) {
+            $outletIndex = 0;
 
-            for ($i = 0; $i < $orderCount; $i++) {
-                $outlet = $outlets->random();
-                $status = $statusWeights[array_rand($statusWeights)];
-                $createdAt = now()->subDays(random_int(0, 30))->addHours(random_int(0, 23));
+            foreach ($outlets as $outlet) {
+                $trend = $trends[$outletIndex % count($trends)];
+                $outletIndex++;
 
-                $orders[] = [
-                    'user_id' => $member->id,
-                    'outlet_id' => $outlet->id,
-                    'status' => $status,
-                    'total_amount' => 0, // will be calculated
-                    'notes' => $status === 'cancelled' ? 'Stok habis' : null,
-                    'created_at' => $createdAt,
-                    'updated_at' => $createdAt,
-                ];
-            }
-        }
+                // Generate orders for each of the 30 days
+                for ($day = 0; $day < 30; $day++) {
+                    $multiplier = $trend($day);
+                    $baseCount = (int) round(3 * $multiplier);
+                    // Add randomness: ±1
+                    $orderCount = max(1, $baseCount + random_int(-1, 1));
 
-        // Shuffle untuk variasi
-        shuffle($orders);
+                    for ($i = 0; $i < $orderCount; $i++) {
+                        $member = $members->random();
+                        $status = $statusWeights[array_rand($statusWeights)];
+                        $createdAt = now()->subDays(30 - $day)->setTime(random_int(8, 22), random_int(0, 59));
 
-        // Limit to ~30 orders
-        $orders = array_slice($orders, 0, 30);
+                        $itemCount = random_int(1, 3);
+                        $selectedProducts = $products->random(min($itemCount, $products->count()));
 
-        DB::transaction(function () use ($orders, $products) {
-            foreach ($orders as $orderData) {
-                $order = Order::create($orderData);
+                        if ($selectedProducts instanceof Product) {
+                            $selectedProducts = collect([$selectedProducts]);
+                        }
 
-                // Add 1-3 random items
-                $itemCount = random_int(1, 3);
-                $selectedProducts = $products->random(min($itemCount, $products->count()));
+                        $totalAmount = 0;
+                        $items = [];
 
-                if ($selectedProducts instanceof Product) {
-                    $selectedProducts = collect([$selectedProducts]);
+                        foreach ($selectedProducts as $product) {
+                            $quantity = random_int(1, 3);
+                            $price = $product->current_price;
+                            $subtotal = $price * $quantity;
+                            $totalAmount += $subtotal;
+
+                            $items[] = [
+                                'product_id' => $product->id,
+                                'quantity' => $quantity,
+                                'price' => $price,
+                                'subtotal' => $subtotal,
+                            ];
+                        }
+
+                        $order = Order::create([
+                            'user_id' => $member->id,
+                            'outlet_id' => $outlet->id,
+                            'status' => $status,
+                            'total_amount' => $totalAmount,
+                            'notes' => $status === 'cancelled' ? 'Stok habis' : null,
+                            'created_at' => $createdAt,
+                            'updated_at' => $createdAt,
+                        ]);
+
+                        foreach ($items as $item) {
+                            $item['order_id'] = $order->id;
+                            OrderItem::create($item);
+                        }
+                    }
                 }
-
-                $totalAmount = 0;
-
-                foreach ($selectedProducts as $product) {
-                    $quantity = random_int(1, 3);
-                    $price = $product->current_price;
-                    $subtotal = $price * $quantity;
-
-                    OrderItem::create([
-                        'order_id' => $order->id,
-                        'product_id' => $product->id,
-                        'quantity' => $quantity,
-                        'price' => $price,
-                        'subtotal' => $subtotal,
-                    ]);
-
-                    $totalAmount += $subtotal;
-                }
-
-                $order->update(['total_amount' => $totalAmount]);
             }
         });
     }
