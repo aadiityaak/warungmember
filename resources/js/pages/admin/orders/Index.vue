@@ -196,30 +196,18 @@ function confirmDelete(orderId: number) {
     }
 }
 
-function statusClasses(status: string, currentStatus: string): string {
-    const isActive = status === currentStatus;
-    const base = 'inline-flex cursor-pointer items-center border px-2 py-0.5 text-xs font-semibold transition-colors';
-
-    if (isActive) {
-        const activeColors: Record<string, string> = {
-            pending: 'bg-yellow-50 text-yellow-700 border-yellow-300 z-10',
-            processing: 'bg-blue-50 text-blue-700 border-blue-300 z-10',
-            completed: 'bg-green-50 text-green-700 border-green-300 z-10',
-            cancelled: 'bg-red-50 text-red-500 border-red-200 z-10',
-        };
-        return `${base} ${activeColors[status] ?? 'bg-[#e5e5e0] text-[#91918c] border-[#dadad3] z-10'}`;
-    }
-
-    return `${base} bg-white text-[#91918c] border-[#dadad3] hover:text-[#000000]`;
+function statusColor(status: string): string {
+    const colors: Record<string, string> = {
+        pending: 'bg-yellow-50 text-yellow-700 border-yellow-300',
+        processing: 'bg-blue-50 text-blue-700 border-blue-300',
+        completed: 'bg-green-50 text-green-700 border-green-300',
+        cancelled: 'bg-red-50 text-red-500 border-red-200',
+    };
+    return colors[status] ?? 'bg-[#e5e5e0] text-[#91918c] border-[#dadad3]';
 }
 
-function statusSegmentClass(index: number, total: number): string {
-    if (index === 0) return 'rounded-l-full -mr-px';
-    if (index === total - 1) return 'rounded-r-full -ml-px';
-    return '-mx-px';
-}
-
-function updateStatus(orderId: number, status: string) {
+function updateStatus(orderId: number, e: Event) {
+    const status = (e.target as HTMLSelectElement).value;
     router.put(route('admin.orders.update', orderId), { status }, {
         preserveScroll: true,
         preserveState: true,
@@ -229,6 +217,32 @@ function updateStatus(orderId: number, status: string) {
 function productNames(items: Array<{ product: { name: string }; quantity: number }>): string {
     return items.map((i) => `${i.product.name} x${i.quantity}`).join(', ');
 }
+
+const paginationPages = computed(() => {
+    const current = orders.current_page;
+    const last = orders.last_page;
+    const pages: (number | '...')[] = [];
+
+    if (last <= 7) {
+        for (let i = 1; i <= last; i++) pages.push(i);
+        return pages;
+    }
+
+    pages.push(1);
+
+    if (current > 3) pages.push('...');
+
+    const start = Math.max(2, current - 1);
+    const end = Math.min(last - 1, current + 1);
+
+    for (let i = start; i <= end; i++) pages.push(i);
+
+    if (current < last - 2) pages.push('...');
+
+    pages.push(last);
+
+    return pages;
+});
 </script>
 
 <template>
@@ -262,7 +276,8 @@ function productNames(items: Array<{ product: { name: string }; quantity: number
         </div>
 
         <!-- Table -->
-        <div v-else class="overflow-hidden overflow-x-auto rounded-2xl border border-[#dadad3] bg-white">
+        <div v-else class="overflow-hidden rounded-2xl border border-[#dadad3] bg-white">
+            <div class="overflow-x-auto">
             <table class="w-full">
                 <thead>
                     <tr class="border-b border-[#dadad3]">
@@ -306,17 +321,19 @@ function productNames(items: Array<{ product: { name: string }; quantity: number
                             <span class="text-sm leading-[1.4] font-semibold text-[#E22625]">Rp{{ order.total_amount.toLocaleString('id-ID') }}</span>
                         </td>
                         <!-- Status -->
-                        <td class="px-2 py-3">
-                            <div class="inline-flex items-center">
-                                <button
-                                    v-for="(st, i) in allStatuses"
-                                    :key="st"
-                                    @click="updateStatus(order.id, st)"
-                                    :class="[statusClasses(st, order.status), statusSegmentClass(i, allStatuses.length)]"
-                                >
+                        <td class="px-3 py-3">
+                            <select
+                                :value="order.status"
+                                @change="updateStatus(order.id, $event)"
+                                :class="[
+                                    'rounded-lg border px-2 py-1.5 text-xs font-semibold cursor-pointer pr-7',
+                                    statusColor(order.status),
+                                ]"
+                            >
+                                <option v-for="st in allStatuses" :key="st" :value="st">
                                     {{ statusLabels[st] }}
-                                </button>
-                            </div>
+                                </option>
+                            </select>
                         </td>
                         <!-- Aksi -->
                         <td class="px-2 py-3">
@@ -344,25 +361,48 @@ function productNames(items: Array<{ product: { name: string }; quantity: number
                     </tr>
                 </tbody>
             </table>
+            </div>
 
             <!-- Pagination -->
             <div v-if="orders.last_page > 1" class="flex items-center justify-between border-t border-[#dadad3] px-5 py-3">
                 <span class="text-sm leading-[1.4] text-[#62625b]">
                     {{ orders.from }}-{{ orders.to }} dari {{ orders.total }}
                 </span>
-                <div class="flex gap-1">
+                <div class="flex items-center gap-1">
                     <Link
-                        v-for="page in orders.last_page"
-                        :key="page"
-                        :href="route('admin.orders.index', { page })"
-                        :class="[
-                            'inline-flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold leading-[1] transition-colors',
-                            page === orders.current_page
-                                ? 'bg-[#000000] text-white'
-                                : 'text-[#000000] hover:bg-[#f6f6f3]',
-                        ]"
+                        v-if="orders.current_page > 1"
+                        :href="route('admin.orders.index', { page: orders.current_page - 1 })"
+                        class="inline-flex h-9 w-9 items-center justify-center rounded-full text-sm text-[#62625b] hover:bg-[#f6f6f3] transition-colors"
+                        title="Sebelumnya"
                     >
-                        {{ page }}
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </Link>
+                    <template v-for="page in paginationPages" :key="page">
+                        <span v-if="page === '...'" class="inline-flex h-9 w-9 items-center justify-center text-xs text-[#91918c]">...</span>
+                        <Link
+                            v-else
+                            :href="route('admin.orders.index', { page })"
+                            :class="[
+                                'inline-flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold leading-[1] transition-colors',
+                                page === orders.current_page
+                                    ? 'bg-[#000000] text-white'
+                                    : 'text-[#000000] hover:bg-[#f6f6f3]',
+                            ]"
+                        >
+                            {{ page }}
+                        </Link>
+                    </template>
+                    <Link
+                        v-if="orders.current_page < orders.last_page"
+                        :href="route('admin.orders.index', { page: orders.current_page + 1 })"
+                        class="inline-flex h-9 w-9 items-center justify-center rounded-full text-sm text-[#62625b] hover:bg-[#f6f6f3] transition-colors"
+                        title="Berikutnya"
+                    >
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
                     </Link>
                 </div>
             </div>
