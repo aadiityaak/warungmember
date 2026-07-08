@@ -55,7 +55,7 @@ function destroy(id: number) {
             <Button as="child">
                 <Link :href="route('admin.outlets.create')">+ Tambah Outlet</Link>
             </Button>
-            <Button as="child" variant="outline">
+            <Button as="child" v-if="isAdmin" variant="outline">
                 <Link :href="route('admin.kasir.index')">Kelola Kasir</Link>
             </Button>
         </div>
@@ -75,7 +75,7 @@ function destroy(id: number) {
                         <th class="px-4 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000] hidden sm:table-cell">Alamat</th>
                         <th class="px-4 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000] hidden md:table-cell">Telepon</th>
                         <th class="px-4 py-3 text-center text-sm font-bold leading-[1.4] text-[#000000] w-20">Status</th>
-                        <th class="px-4 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000] w-28">Aksi</th>
+                        <th v-if="isAdmin" class="px-4 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000] w-28">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -114,7 +114,7 @@ function destroy(id: number) {
                             </span>
                         </td>
                         <!-- Aksi -->
-                        <td class="px-2 py-3">
+                        <td v-if="isAdmin" class="px-2 py-3">
                             <div class="flex gap-1">
                                 <Link
                                     :href="route('admin.outlets.edit', outlet.id)"

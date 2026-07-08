@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
@@ -25,6 +25,9 @@ const { kasirs } = defineProps<{
 
 const deleteForm = useForm({});
 
+const page = usePage();
+const isAdmin = (page.props.auth?.user as Record<string, unknown>)?.role === 'admin';
+
 function destroy(id: number) {
     if (confirm('Hapus kasir ini?')) {
         deleteForm.delete(route('admin.kasir.destroy', id));
@@ -46,7 +49,7 @@ function destroy(id: number) {
         </header>
 
         <div class="mb-6 flex gap-2">
-            <Button as="child">
+            <Button v-if="isAdmin" as="child">
                 <Link :href="route('admin.kasir.create')">+ Tambah Kasir</Link>
             </Button>
             <Button as="child" variant="outline">
@@ -66,7 +69,7 @@ function destroy(id: number) {
                         <th class="px-4 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000]">Outlet</th>
                         <th class="px-4 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000]">Email</th>
                         <th class="px-4 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000] hidden sm:table-cell">Dibuat</th>
-                        <th class="px-4 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000] w-28">Aksi</th>
+                        <th v-if="isAdmin" class="px-4 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000] w-28">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -87,7 +90,7 @@ function destroy(id: number) {
                         <td class="px-4 py-3 hidden sm:table-cell">
                             <span class="text-sm leading-[1.4] text-[#91918c]">{{ new Date(kasir.created_at).toLocaleDateString('id-ID') }}</span>
                         </td>
-                        <td class="px-2 py-3">
+                        <td v-if="isAdmin" class="px-2 py-3">
                             <div class="flex gap-1">
                                 <Link
                                     :href="route('admin.kasir.edit', kasir.id)"

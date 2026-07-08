@@ -18,11 +18,19 @@ class KasirController extends Controller
 
     public function create(): Response
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403);
+        }
+
         return inertia('admin/kasir/Create');
     }
 
     public function store(Request $request)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
@@ -41,6 +49,10 @@ class KasirController extends Controller
 
     public function edit(User $kasir): Response
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403);
+        }
+
         return inertia('admin/kasir/Edit', [
             'kasir' => $kasir->only(['id', 'name', 'email']),
         ]);
@@ -48,9 +60,13 @@ class KasirController extends Controller
 
     public function update(Request $request, User $kasir)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,'.$kasir->id,
+            'email' => 'required|email|unique:users,email,' . $kasir->id,
             'password' => 'nullable|string|min:6',
         ]);
 
@@ -67,6 +83,10 @@ class KasirController extends Controller
 
     public function destroy(User $kasir)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403);
+        }
+
         $kasir->delete();
 
         return redirect()->route('admin.kasir.index')

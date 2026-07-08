@@ -48,6 +48,10 @@ class OutletController extends Controller
 
     public function update(Request $request, Outlet $outlet)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'address' => 'nullable|string',
@@ -64,6 +68,10 @@ class OutletController extends Controller
 
     public function destroy(Outlet $outlet)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403);
+        }
+
         $outlet->delete();
 
         return redirect()->route('admin.outlets.index')
