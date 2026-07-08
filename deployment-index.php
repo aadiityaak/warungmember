@@ -31,7 +31,21 @@ foreach ($skipMarkerPaths as $path) {
 
 if (is_dir(__DIR__.'/install') && ! $skipInstaller && ! $hasSkipMarker) {
     $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
-    if (strpos($requestUri, '/install') !== 0) {
+    if (strpos($requestUri, '/install') === 0) {
+        // Serve installer directly — don't boot Laravel
+        $requestPath = parse_url($requestUri, PHP_URL_PATH);
+        $relativePath = substr($requestPath, 8); // skip '/install'
+        if ($relativePath === '' || $relativePath === '/') {
+            $installFile = __DIR__.'/install/index.php';
+        } else {
+            $installFile = __DIR__.'/install/'.ltrim($relativePath, '/');
+        }
+        if (file_exists($installFile) && is_file($installFile)) {
+            require $installFile;
+            exit;
+        }
+        // If installer file not found, fall through to Laravel 404
+    } else {
         header('Location: /install/', true, 302);
         exit;
     }
