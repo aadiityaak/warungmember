@@ -1,0 +1,33 @@
+# Laravel .htaccess - Standard Configuration
+# Generated on: {{DATE}}
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Redirect Trailing Slashes If Not A Folder...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Send Requests To Front Controller...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# Basic Security (best-effort, compatible with Apache 2.2 and 2.4)
+<IfModule mod_authz_core.c>
+    <FilesMatch "^(\.env|\.env\..*|\.git.*|composer\.(json|lock)|artisan)$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+<IfModule !mod_authz_core.c>
+    <FilesMatch "^(\.env|\.env\..*|\.git.*|composer\.(json|lock)|artisan)$">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+</IfModule>

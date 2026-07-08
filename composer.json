@@ -1,8 +1,9 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/vue-starter-kit",
+    "name": "warungmember/warungmember",
+    "version": "1.0.0",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "WarungMember - Aplikasi Manajemen Member",
     "keywords": [
         "laravel",
         "framework"
@@ -97,7 +98,7 @@
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
         ],
         "build:production": [
-            "@php artisan build:package --force --no-interaction"
+            "@php artisan build:package --output=dist/warungmember.{version}.zip --force --no-interaction"
         ]
     },
     "extra": {
