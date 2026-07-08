@@ -12,7 +12,7 @@ class KasirController extends Controller
     public function index(): Response
     {
         return inertia('admin/kasir/Index', [
-            'kasirs' => User::where('role', 'kasir')->with('outlet')->latest()->get(['id', 'name', 'email', 'created_at']),
+            'kasirs' => User::where('role', 'kasir')->with('outlet')->latest()->paginate(10, ['id', 'name', 'email', 'created_at']),
         ]);
     }
 
@@ -66,7 +66,7 @@ class KasirController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $kasir->id,
+            'email' => 'required|email|unique:users,email,'.$kasir->id,
             'password' => 'nullable|string|min:6',
         ]);
 

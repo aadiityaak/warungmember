@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { dashboard } from '@/routes';
@@ -14,13 +15,20 @@ defineOptions({
 });
 
 const { kasirs } = defineProps<{
-    kasirs: Array<{
-        id: number;
-        name: string;
-        email: string;
-        created_at: string;
-        outlet: { name: string } | null;
-    }>;
+    kasirs: {
+        data: Array<{
+            id: number;
+            name: string;
+            email: string;
+            created_at: string;
+            outlet: { name: string } | null;
+        }>;
+        current_page: number;
+        last_page: number;
+        from: number;
+        to: number;
+        total: number;
+    };
 }>();
 
 const deleteForm = useForm({});
@@ -33,6 +41,32 @@ function destroy(id: number) {
         deleteForm.delete(route('admin.kasir.destroy', id));
     }
 }
+
+const paginationPages = computed(() => {
+    const current = kasirs.current_page;
+    const last = kasirs.last_page;
+    const pages: (number | '...')[] = [];
+
+    if (last <= 9) {
+        for (let i = 1; i <= last; i++) pages.push(i);
+        return pages;
+    }
+
+    for (let i = 1; i <= 3; i++) pages.push(i);
+
+    if (current > 4) pages.push('...');
+
+    const start = Math.max(4, current - 1);
+    const end = Math.min(last - 3, current + 1);
+
+    for (let i = start; i <= end; i++) pages.push(i);
+
+    if (current < last - 3) pages.push('...');
+
+    for (let i = last - 2; i <= last; i++) pages.push(i);
+
+    return pages;
+});
 </script>
 
 <template>
@@ -57,7 +91,7 @@ function destroy(id: number) {
             </Button>
         </div>
 
-        <div v-if="kasirs.length === 0" class="rounded-2xl bg-[#f6f6f3] py-16 text-center">
+        <div v-if="kasirs.data.length === 0" class="rounded-2xl bg-[#f6f6f3] py-16 text-center">
             <p class="text-sm leading-[1.4] text-[#62625b]">Belum ada kasir ditambahkan.</p>
         </div>
 
@@ -74,7 +108,7 @@ function destroy(id: number) {
                 </thead>
                 <tbody>
                     <tr
-                        v-for="kasir in kasirs"
+                        v-for="kasir in kasirs.data"
                         :key="kasir.id"
                         class="border-b border-[#e5e5e0] last:border-0 transition-colors hover:bg-[#fbfbf9]"
                     >
@@ -110,6 +144,35 @@ function destroy(id: number) {
                     </tr>
                 </tbody>
             </table>
+
+            <!-- Pagination -->
+            <div v-if="kasirs.last_page > 1" class="flex items-center justify-between border-t border-[#dadad3] px-5 py-3">
+                <span class="text-sm leading-[1.4] text-[#62625b]">
+                    {{ kasirs.from }}-{{ kasirs.to }} dari {{ kasirs.total }}
+                </span>
+                <div class="flex gap-1">
+                    <template v-for="(p, idx) in paginationPages" :key="idx">
+                        <span
+                            v-if="p === '...'"
+                            class="inline-flex h-9 w-9 items-center justify-center text-sm font-bold leading-[1] text-[#62625b]"
+                        >
+                            ...
+                        </span>
+                        <Link
+                            v-else
+                            :href="route('admin.kasir.index', { page: p })"
+                            :class="[
+                                'inline-flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold leading-[1] transition-colors',
+                                p === kasirs.current_page
+                                    ? 'bg-[#000000] text-white'
+                                    : 'text-[#000000] hover:bg-[#f6f6f3]',
+                            ]"
+                        >
+                            {{ p }}
+                        </Link>
+                    </template>
+                </div>
+            </div>
         </div>
     </div>
 </template>
