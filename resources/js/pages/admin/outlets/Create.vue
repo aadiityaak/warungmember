@@ -24,11 +24,20 @@ const form = useForm({
     name: '',
     address: '',
     phone: '',
+    gallery: [] as string[],
     is_active: true,
 });
 
 function submit() {
     form.post(route('admin.outlets.store'));
+}
+
+function addPhoto() {
+    (form.gallery as string[]).push('');
+}
+
+function removePhoto(index: number) {
+    (form.gallery as string[]).splice(index, 1);
 }
 </script>
 
@@ -56,6 +65,24 @@ function submit() {
                     <Input id="phone" v-model="form.phone" placeholder="08xxx" />
                     <InputError :message="form.errors.phone" />
                 </div>
+
+                <!-- Gallery -->
+                <div class="space-y-2">
+                    <Label>Galeri Foto</Label>
+                    <template v-for="(url, idx) in form.gallery" :key="idx">
+                        <div class="flex gap-2">
+                            <Input v-model="form.gallery[idx]" :placeholder="`URL foto ${idx + 1}`" />
+                            <Button type="button" variant="outline" size="sm" @click="removePhoto(idx)">
+                                ✕
+                            </Button>
+                        </div>
+                    </template>
+                    <InputError :message="form.errors.gallery" />
+                    <Button type="button" variant="outline" size="sm" @click="addPhoto">
+                        + Tambah Foto
+                    </Button>
+                </div>
+
                 <div class="flex items-center gap-2">
                     <Checkbox id="active" v-model:checked="form.is_active" />
                     <Label for="active">Aktif</Label>

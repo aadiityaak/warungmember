@@ -28,9 +28,15 @@ class OutletController extends Controller
             'name' => 'required|string|max:255',
             'address' => 'nullable|string',
             'phone' => 'nullable|string|max:20',
+            'gallery' => 'nullable|array',
+            'gallery.*' => 'nullable|string',
             'is_active' => 'boolean',
             'user_id' => 'nullable|exists:users,id',
         ]);
+
+        if ($request->has('gallery')) {
+            $validated['gallery'] = array_values(array_filter($request->input('gallery', [])));
+        }
 
         Outlet::create($validated);
 
@@ -56,9 +62,15 @@ class OutletController extends Controller
             'name' => 'required|string|max:255',
             'address' => 'nullable|string',
             'phone' => 'nullable|string|max:20',
+            'gallery' => 'nullable|array',
+            'gallery.*' => 'nullable|string',
             'is_active' => 'boolean',
             'user_id' => 'nullable|exists:users,id',
         ]);
+
+        if ($request->has('gallery')) {
+            $validated['gallery'] = array_values(array_filter($request->input('gallery', [])));
+        }
 
         $outlet->update($validated);
 

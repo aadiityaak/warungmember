@@ -34,6 +34,7 @@ const { outlet, kasirs } = defineProps<{
         name: string;
         address: string | null;
         phone: string | null;
+        gallery: string[] | null;
         is_active: boolean;
         user_id: number | null;
         kasir: { id: number; name: string; email: string } | null;
@@ -45,6 +46,7 @@ const form = useForm({
     name: outlet.name,
     address: outlet.address ?? '',
     phone: outlet.phone ?? '',
+    gallery: outlet.gallery || ([] as string[]),
     is_active: outlet.is_active,
     user_id: outlet.user_id ?? null,
 });
@@ -54,6 +56,14 @@ const selectedKasir = ref<string>(outlet.user_id?.toString() ?? '0');
 function submit() {
     form.user_id = selectedKasir.value !== '0' ? Number(selectedKasir.value) : null;
     form.put(route('admin.outlets.update', outlet.id));
+}
+
+function addPhoto() {
+    (form.gallery as string[]).push('');
+}
+
+function removePhoto(index: number) {
+    (form.gallery as string[]).splice(index, 1);
 }
 </script>
 
@@ -81,6 +91,25 @@ function submit() {
                     <Input id="phone" v-model="form.phone" />
                     <InputError :message="form.errors.phone" />
                 </div>
+
+                <!-- Gallery -->
+                <div class="space-y-2">
+                    <Label>Galeri Foto</Label>
+                    <template v-for="(url, idx) in form.gallery" :key="idx">
+                        <div class="flex gap-2">
+                            <Input v-model="form.gallery[idx]" :placeholder="`URL foto ${idx + 1}`" />
+                            <Button type="button" variant="outline" size="sm" @click="removePhoto(idx)">
+                                ✕
+                            </Button>
+                        </div>
+                    </template>
+                    <InputError :message="form.errors.gallery" />
+                    <InputError v-for="(err, i) in form.errors['gallery.' + i]" :key="'e'+i" :message="err" />
+                    <Button type="button" variant="outline" size="sm" @click="addPhoto">
+                        + Tambah Foto
+                    </Button>
+                </div>
+
                 <div>
                     <Label for="kasir">Kasir</Label>
                     <Select v-model="selectedKasir">
