@@ -19,6 +19,7 @@ const { kasirs } = defineProps<{
         name: string;
         email: string;
         created_at: string;
+        outlet: { name: string } | null;
     }>;
 }>();
 
@@ -62,6 +63,7 @@ function destroy(id: number) {
                 <thead>
                     <tr class="border-b border-[#dadad3]">
                         <th class="px-4 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000]">Nama</th>
+                        <th class="px-4 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000]">Outlet</th>
                         <th class="px-4 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000]">Email</th>
                         <th class="px-4 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000] hidden sm:table-cell">Dibuat</th>
                         <th class="px-4 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000] w-28">Aksi</th>
@@ -75,6 +77,9 @@ function destroy(id: number) {
                     >
                         <td class="px-4 py-3">
                             <p class="text-sm leading-[1.4] font-semibold text-[#000000]">{{ kasir.name }}</p>
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="text-sm leading-[1.4] text-[#62625b]">{{ kasir.outlet?.name ?? '-' }}</span>
                         </td>
                         <td class="px-4 py-3">
                             <span class="text-sm leading-[1.4] text-[#62625b]">{{ kasir.email }}</span>

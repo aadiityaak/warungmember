@@ -12,7 +12,7 @@ class KasirController extends Controller
     public function index(): Response
     {
         return inertia('admin/kasir/Index', [
-            'kasirs' => User::where('role', 'kasir')->latest()->get(['id', 'name', 'email', 'created_at']),
+            'kasirs' => User::where('role', 'kasir')->with('outlet')->latest()->get(['id', 'name', 'email', 'created_at']),
         ]);
     }
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
@@ -24,6 +24,9 @@ const form = useForm({
 });
 
 const deleteForm = useForm({});
+
+const page = usePage();
+const isAdmin = (page.props.auth?.user as Record<string, unknown>)?.role === 'admin';
 
 const currentSort = filters.sort ?? 'created_at';
 const currentDirection = filters.direction ?? 'desc';
@@ -127,6 +130,7 @@ function destroy(id: number) {
                                     Edit
                                 </Link>
                                 <button
+                                    v-if="isAdmin"
                                     @click="destroy(member.id)"
                                     :disabled="deleteForm.processing"
                                     class="inline-flex h-9 items-center rounded-full bg-[#f6f6f3] px-4 text-sm font-bold leading-[1] text-[#000000] transition-colors hover:bg-[#e60023] hover:text-white"

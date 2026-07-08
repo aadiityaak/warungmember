@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
@@ -25,6 +25,9 @@ const { outlets } = defineProps<{
 }>();
 
 const deleteForm = useForm({});
+
+const page = usePage();
+const isAdmin = (page.props.auth?.user as Record<string, unknown>)?.role === 'admin';
 
 function destroy(id: number) {
     if (confirm('Hapus outlet ini?')) {

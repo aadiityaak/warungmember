@@ -126,6 +126,10 @@ class MemberController extends Controller
             abort(404);
         }
 
+        if (auth()->user()?->role !== 'admin') {
+            abort(403);
+        }
+
         $member->delete(); // soft delete
 
         return redirect()->route('admin.members.index')
