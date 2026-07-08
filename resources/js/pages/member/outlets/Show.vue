@@ -12,6 +12,8 @@ const { outlet } = defineProps<{
         address: string | null;
         phone: string | null;
         gallery: string[] | null;
+        latitude: number | null;
+        longitude: number | null;
         is_active: boolean;
         kasir: { name: string } | null;
     };
@@ -33,8 +35,10 @@ function goToSlide(idx: number) {
 }
 
 const mapsUrl = computed(() => {
-    const query = encodeURIComponent(outlet.address ?? outlet.name);
-    return `https://www.google.com/maps/dir/?api=1&destination=${query}`;
+    if (outlet.latitude && outlet.longitude) {
+        return `https://www.google.com/maps/dir/?api=1&destination=${outlet.latitude},${outlet.longitude}`;
+    }
+    return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(outlet.address ?? outlet.name)}`;
 });
 </script>
 

@@ -10,13 +10,15 @@ class Outlet extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'address', 'phone', 'gallery', 'is_active', 'user_id'];
+    protected $fillable = ['name', 'address', 'phone', 'gallery', 'latitude', 'longitude', 'is_active', 'user_id'];
 
     protected function casts(): array
     {
         return [
             'is_active' => 'boolean',
             'gallery' => 'array',
+            'latitude' => 'decimal:7',
+            'longitude' => 'decimal:7',
         ];
     }
 

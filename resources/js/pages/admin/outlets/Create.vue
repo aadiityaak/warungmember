@@ -26,6 +26,8 @@ const form = useForm({
     address: '',
     phone: '',
     gallery: [] as string[],
+    latitude: '' as string | number,
+    longitude: '' as string | number,
     is_active: true,
 });
 
@@ -104,6 +106,20 @@ function onFileInput(e: Event) {
                     <Label for="phone">Telepon</Label>
                     <Input id="phone" v-model="form.phone" placeholder="08xxx" />
                     <InputError :message="form.errors.phone" />
+                </div>
+
+                <!-- Coordinates -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <Label for="latitude">Latitude</Label>
+                        <Input id="latitude" v-model="form.latitude" type="number" step="any" placeholder="contoh: -7.6896" />
+                        <InputError :message="form.errors.latitude" />
+                    </div>
+                    <div>
+                        <Label for="longitude">Longitude</Label>
+                        <Input id="longitude" v-model="form.longitude" type="number" step="any" placeholder="contoh: 110.6047" />
+                        <InputError :message="form.errors.longitude" />
+                    </div>
                 </div>
 
                 <!-- Gallery Drag & Drop -->

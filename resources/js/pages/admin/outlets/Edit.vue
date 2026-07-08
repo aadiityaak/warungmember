@@ -35,6 +35,8 @@ const { outlet, kasirs } = defineProps<{
         address: string | null;
         phone: string | null;
         gallery: string[] | null;
+        latitude: number | null;
+        longitude: number | null;
         is_active: boolean;
         user_id: number | null;
         kasir: { id: number; name: string; email: string } | null;
@@ -47,6 +49,8 @@ const form = useForm({
     address: outlet.address ?? '',
     phone: outlet.phone ?? '',
     gallery: outlet.gallery || ([] as string[]),
+    latitude: outlet.latitude ?? null,
+    longitude: outlet.longitude ?? null,
     is_active: outlet.is_active,
     user_id: outlet.user_id ?? null,
 });
@@ -128,6 +132,20 @@ function onFileInput(e: Event) {
                     <Label for="phone">Telepon</Label>
                     <Input id="phone" v-model="form.phone" />
                     <InputError :message="form.errors.phone" />
+                </div>
+
+                <!-- Coordinates -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <Label for="latitude">Latitude</Label>
+                        <Input id="latitude" v-model="form.latitude" type="number" step="any" placeholder="contoh: -7.6896" />
+                        <InputError :message="form.errors.latitude" />
+                    </div>
+                    <div>
+                        <Label for="longitude">Longitude</Label>
+                        <Input id="longitude" v-model="form.longitude" type="number" step="any" placeholder="contoh: 110.6047" />
+                        <InputError :message="form.errors.longitude" />
+                    </div>
                 </div>
 
                 <!-- Gallery Drag & Drop -->

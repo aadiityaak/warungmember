@@ -30,6 +30,8 @@ class OutletController extends Controller
             'phone' => 'nullable|string|max:20',
             'gallery' => 'nullable|array',
             'gallery.*' => 'nullable|string',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
             'is_active' => 'boolean',
             'user_id' => 'nullable|exists:users,id',
         ]);
@@ -64,6 +66,8 @@ class OutletController extends Controller
             'phone' => 'nullable|string|max:20',
             'gallery' => 'nullable|array',
             'gallery.*' => 'nullable|string',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
             'is_active' => 'boolean',
             'user_id' => 'nullable|exists:users,id',
         ]);
