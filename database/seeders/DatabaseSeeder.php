@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace Database\Seeders;
 
@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
         $this->call(RewardSeeder::class);
         $this->call(VoucherSeeder::class);
         $this->call(OrderSeeder::class);
-
+        $this->call(NotificationSeeder::class);
         User::factory()->create([
             'name' => 'Admin',
             'email' => 'admin@warungmember.test',
