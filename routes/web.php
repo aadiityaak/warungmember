@@ -54,6 +54,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('orders/history', [MemberOrderController::class, 'history'])->name('orders.history');
         Route::resource('orders', MemberOrderController::class)->only(['index', 'store']);
         Route::get('outlets', [MemberOutletController::class, 'index'])->name('outlets.index');
+        Route::get('outlets/{outlet}', [MemberOutletController::class, 'show'])->name('outlets.show');
         Route::post('outlets/select', [MemberOutletController::class, 'select'])->name('outlets.select');
         Route::get('cart', [CartController::class, 'index'])->name('cart.index');
         Route::post('cart/sync', [CartController::class, 'sync'])->name('cart.sync');
@@ -70,6 +71,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('vouchers', VoucherController::class)->only(['index', 'create', 'store', 'destroy']);
         Route::resource('products', ProductController::class);
         Route::resource('outlets', OutletController::class);
+        Route::post('outlets/upload', [OutletController::class, 'upload'])->name('outlets.upload');
         Route::resource('kasir', KasirController::class);
         Route::resource('orders', AdminOrderController::class)->only(['index', 'store', 'update', 'destroy']);
     });

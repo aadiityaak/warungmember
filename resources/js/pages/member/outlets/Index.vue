@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, Link } from '@inertiajs/vue3';
 import MemberLayout from '@/layouts/MemberLayout.vue';
 
 defineOptions({ layout: MemberLayout });
@@ -33,11 +33,11 @@ function selectOutlet(outletId: number) {
         </div>
 
         <div v-else class="flex flex-col gap-3">
-            <button
+            <div
                 v-for="outlet in outlets"
                 :key="outlet.id"
                 @click="selectOutlet(outlet.id)"
-                class="flex w-full items-start gap-3 rounded-2xl border p-4 text-left transition-colors"
+                class="flex w-full cursor-pointer items-start gap-3 rounded-2xl border p-4 text-left transition-colors"
                 :class="lastOutletId === outlet.id
                     ? 'border-[#000000] bg-[#fbfbf9] ring-1 ring-[#000000]'
                     : 'border-[#dadad3] bg-white hover:bg-[#fbfbf9]'
@@ -61,7 +61,17 @@ function selectOutlet(outletId: number) {
                     <p class="mt-1 text-sm leading-[1.4] text-[#62625b]">{{ outlet.address ?? '-' }}</p>
                     <p class="mt-0.5 text-sm leading-[1.4] text-[#91918c]">{{ outlet.phone ?? '-' }}</p>
                 </div>
-            </button>
+                <Link
+                    :href="route('member.outlets.show', outlet.id)"
+                    @click.stop
+                    class="flex shrink-0 items-center gap-1 rounded-full bg-[#f6f6f3] px-3 py-1.5 text-xs font-bold leading-[1] text-[#000000] transition-colors hover:bg-[#e5e5e0]"
+                >
+                    Detail
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </Link>
+            </div>
         </div>
     </div>
 </template>

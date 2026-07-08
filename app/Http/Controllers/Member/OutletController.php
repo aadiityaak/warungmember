@@ -19,6 +19,13 @@ class OutletController extends Controller
         ]);
     }
 
+    public function show(Outlet $outlet): Response
+    {
+        return inertia('member/outlets/Show', [
+            'outlet' => $outlet->load('kasir'),
+        ]);
+    }
+
     public function select(Request $request)
     {
         $validated = $request->validate([

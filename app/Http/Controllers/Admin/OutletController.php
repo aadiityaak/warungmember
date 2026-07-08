@@ -78,6 +78,17 @@ class OutletController extends Controller
             ->with('toast', ['type' => 'success', 'message' => 'Outlet berhasil diperbarui.']);
     }
 
+    public function upload(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
+        ]);
+
+        $path = $request->file('file')->store('outlets/gallery', 'public');
+
+        return response()->json(['url' => asset('storage/'.$path)]);
+    }
+
     public function destroy(Outlet $outlet)
     {
         if (auth()->user()?->role !== 'admin') {
