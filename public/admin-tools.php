@@ -43,6 +43,26 @@ if (! isset($_SESSION['admin_authenticated'])) {
 
 function getLaravelRoot()
 {
+    // Check common locations for warungmember folder (same logic as installer)
+    $documentRoot = rtrim(str_replace('\\', '/', (string) ($_SERVER['DOCUMENT_ROOT'] ?? '')), '/');
+    $publicHtmlParent = dirname($documentRoot);
+    $currentDir = rtrim(str_replace('\\', '/', __DIR__), '/');
+
+    $candidates = [
+        $publicHtmlParent . '/warungmember',
+        $documentRoot . '/warungmember',
+        $documentRoot . '/public/warungmember',
+        $currentDir . '/../warungmember',
+        dirname(__DIR__),
+    ];
+
+    foreach ($candidates as $candidate) {
+        $candidate = str_replace('\\', '/', $candidate);
+        if (is_dir($candidate) && file_exists($candidate . '/artisan')) {
+            return $candidate;
+        }
+    }
+
     return dirname(__DIR__);
 }
 

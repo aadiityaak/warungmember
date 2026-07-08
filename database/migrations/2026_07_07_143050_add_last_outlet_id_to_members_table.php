@@ -9,15 +9,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('members', function (Blueprint $table) {
-            $table->foreignId('last_outlet_id')->nullable()->after('birth_date')->constrained('outlets')->nullOnDelete();
+            if (! Schema::hasColumn('members', 'last_outlet_id')) {
+                $table->foreignId('last_outlet_id')->nullable()->constrained('outlets')->nullOnDelete();
+            }
         });
     }
 
     public function down(): void
     {
         Schema::table('members', function (Blueprint $table) {
-            $table->dropForeign(['last_outlet_id']);
-            $table->dropColumn('last_outlet_id');
+            if (Schema::hasColumn('members', 'last_outlet_id')) {
+                $table->dropForeign(['last_outlet_id']);
+                $table->dropColumn('last_outlet_id');
+            }
         });
     }
 };

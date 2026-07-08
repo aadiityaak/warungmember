@@ -9,14 +9,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('outlets', function (Blueprint $table) {
-            $table->json('gallery')->nullable()->after('phone');
+            if (! Schema::hasColumn('outlets', 'gallery')) {
+                $table->json('gallery')->nullable();
+            }
         });
     }
 
     public function down(): void
     {
         Schema::table('outlets', function (Blueprint $table) {
-            $table->dropColumn('gallery');
+            if (Schema::hasColumn('outlets', 'gallery')) {
+                $table->dropColumn('gallery');
+            }
         });
     }
 };

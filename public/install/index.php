@@ -187,40 +187,40 @@ function detectwarungmemberFolder()
     // Store debug info in session/global for troubleshooting
     $GLOBALS['warungmember_debug'] = $debugInfo;
 
-
-    function detectIncomingwarungmemberFolder($targetwarungmemberPath)
-    {
-        $targetwarungmemberPath = rtrim(str_replace('\\', '/', (string) $targetwarungmemberPath), '/');
-        $targetReal = ($targetwarungmemberPath !== '' && is_dir($targetwarungmemberPath)) ? realpath($targetwarungmemberPath) : null;
-
-        $currentDir = rtrim(str_replace('\\', '/', __DIR__), '/');
-        $publicDir = dirname($currentDir);
-        $publicDir = rtrim(str_replace('\\', '/', (string) $publicDir), '/');
-        $documentRoot = rtrim(str_replace('\\', '/', (string) ($_SERVER['DOCUMENT_ROOT'] ?? '')), '/');
-
-        $candidates = array_unique(array_filter([
-            ($documentRoot !== '' ? $documentRoot . '/warungmember' : null),
-            ($documentRoot !== '' ? $documentRoot . '/public/warungmember' : null),
-            ($publicDir !== '' ? $publicDir . '/warungmember' : null),
-        ]));
-
-        foreach ($candidates as $candidate) {
-            if (! is_dir($candidate)) {
-                continue;
-            }
-            $candidateReal = realpath($candidate);
-            if ($targetReal && $candidateReal && $candidateReal === $targetReal) {
-                continue;
-            }
-            if ($candidate === $targetwarungmemberPath) {
-                continue;
-            }
-            return rtrim(str_replace('\\', '/', (string) $candidate), '/');
-        }
-
-        return '';
-    }
     return false;
+}
+
+function detectIncomingwarungmemberFolder($targetwarungmemberPath)
+{
+    $targetwarungmemberPath = rtrim(str_replace('\\', '/', (string) $targetwarungmemberPath), '/');
+    $targetReal = ($targetwarungmemberPath !== '' && is_dir($targetwarungmemberPath)) ? realpath($targetwarungmemberPath) : null;
+
+    $currentDir = rtrim(str_replace('\\', '/', __DIR__), '/');
+    $publicDir = dirname($currentDir);
+    $publicDir = rtrim(str_replace('\\', '/', (string) $publicDir), '/');
+    $documentRoot = rtrim(str_replace('\\', '/', (string) ($_SERVER['DOCUMENT_ROOT'] ?? '')), '/');
+
+    $candidates = array_unique(array_filter([
+        ($documentRoot !== '' ? $documentRoot . '/warungmember' : null),
+        ($documentRoot !== '' ? $documentRoot . '/public/warungmember' : null),
+        ($publicDir !== '' ? $publicDir . '/warungmember' : null),
+    ]));
+
+    foreach ($candidates as $candidate) {
+        if (! is_dir($candidate)) {
+            continue;
+        }
+        $candidateReal = realpath($candidate);
+        if ($targetReal && $candidateReal && $candidateReal === $targetReal) {
+            continue;
+        }
+        if ($candidate === $targetwarungmemberPath) {
+            continue;
+        }
+        return rtrim(str_replace('\\', '/', (string) $candidate), '/');
+    }
+
+    return '';
 }
 
 function movewarungmemberFolder($warungmemberPath, $targetPath)

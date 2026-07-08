@@ -8,19 +8,21 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Product categories
-        Schema::create('product_categories', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->timestamps();
-        });
+        if (! Schema::hasTable('product_categories')) {
+            Schema::create('product_categories', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->timestamps();
+            });
+        }
 
-        // Pivot table
-        Schema::create('product_category', function (Blueprint $table) {
-            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('product_category_id')->constrained()->cascadeOnDelete();
-            $table->primary(['product_id', 'product_category_id']);
-        });
+        if (! Schema::hasTable('product_category')) {
+            Schema::create('product_category', function (Blueprint $table) {
+                $table->foreignId('product_id')->constrained()->cascadeOnDelete();
+                $table->foreignId('product_category_id')->constrained()->cascadeOnDelete();
+                $table->primary(['product_id', 'product_category_id']);
+            });
+        }
 
         // New product fields
         Schema::table('products', function (Blueprint $table) {
