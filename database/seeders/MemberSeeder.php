@@ -48,5 +48,23 @@ class MemberSeeder extends Seeder
                 ]);
             });
         }
+
+        // Generate 15 more members using faker
+        for ($i = 0; $i < 15; $i++) {
+            DB::transaction(function () {
+                $user = User::factory()->create([
+                    'role' => 'member',
+                    'password' => bcrypt('password'),
+                ]);
+
+                Member::create([
+                    'user_id' => $user->id,
+                    'member_code' => 'WM'.strtoupper(substr(bin2hex(random_bytes(4)), 0, 8)),
+                    'total_points' => fake()->numberBetween(0, 5000),
+                    'deposit_balance' => fake()->numberBetween(0, 300000),
+                    'birth_date' => fake()->dateTimeBetween('-40 years', '-18 years')->format('Y-m-d'),
+                ]);
+            });
+        }
     }
 }

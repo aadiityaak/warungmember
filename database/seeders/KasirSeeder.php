@@ -28,5 +28,10 @@ class KasirSeeder extends Seeder
                 ]
             );
         }
+
+        // Generate 25 more kasir using factory
+        User::factory()->count(25)->kasir()->create([
+            'password' => bcrypt('password'),
+        ]);
     }
 }

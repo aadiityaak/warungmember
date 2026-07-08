@@ -12,7 +12,7 @@ class RewardController extends Controller
     public function index(): Response
     {
         return inertia('admin/rewards/Index', [
-            'rewards' => Reward::latest()->get(),
+            'rewards' => Reward::latest()->paginate(10),
         ]);
     }
 
