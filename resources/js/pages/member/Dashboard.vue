@@ -17,9 +17,9 @@ const { stats, products } = defineProps<{
 }>();
 
 const banners = [
-    '/storage/banner/1.jpg',
-    '/storage/banner/2.jpg',
-    '/storage/banner/3.jpg',
+    '/banner/1.jpg',
+    '/banner/2.jpg',
+    '/banner/3.jpg',
 ];
 
 const current = ref(0);
@@ -72,14 +72,13 @@ function formatRupiah(n: number): string {
         <!-- Welcome -->
         <div class="flex items-center justify-between">
             <h2 class="text-[22px] font-semibold leading-[1.25] text-[#000000]">
-                Halo, Selamat Datang!
+                Halo<span class="wave-hand">👋</span>
             </h2>
             <Link
                 :href="route('member.outlets.index')"
                 class="inline-flex items-center gap-1 rounded-full bg-[#f6f6f3] px-3 py-1.5 text-xs font-semibold text-[#000000] transition-colors hover:bg-[#000000] hover:text-white"
             >
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                Lokasi Outlet
             </Link>
         </div>
 
@@ -226,3 +225,18 @@ function formatRupiah(n: number): string {
         </div>
     </div>
 </template>
+
+<style scoped>
+.wave-hand {
+    display: inline-block;
+    animation: wave 1s ease-in-out infinite;
+    transform-origin: 70% 70%;
+}
+
+@keyframes wave {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(20deg); }
+    50% { transform: rotate(0deg); }
+    75% { transform: rotate(15deg); }
+}
+</style>

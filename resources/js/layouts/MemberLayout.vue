@@ -24,7 +24,7 @@ onMounted(() => {
             <div class="mx-auto flex max-w-md items-center justify-between px-4 py-3">
                 <div class="flex items-center gap-2">
                     <img src="/logo/logo-mas-mbull.jpg" alt="Logo" class="h-8 w-auto object-contain" />
-                    <span class="text-lg font-bold text-[#E22625]">Warung Mas Mbull</span>
+                    <span class="text-lg font-bold text-[#000000]">Warung Mas Mbull</span>
                 </div>
                 <Link
                     :href="route('member.orders.index')"
