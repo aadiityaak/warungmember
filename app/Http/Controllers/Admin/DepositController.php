@@ -48,6 +48,7 @@ class DepositController extends Controller
     public function history(Member $member): Response
     {
         $transactions = $member->depositTransactions()
+            ->with('reference')
             ->latest('created_at')
             ->paginate(20);
 

@@ -140,6 +140,7 @@ const paginationPages = computed(() => {
                         <th class="px-5 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000] hidden sm:table-cell">Email</th>
                         <th class="px-5 py-3 text-left text-sm font-bold leading-[1.4] text-[#000000] hidden md:table-cell">ID Member</th>
                         <th class="px-5 py-3 text-right text-sm font-bold leading-[1.4] text-[#000000]">Saldo</th>
+                        <th class="px-5 py-3 text-right text-sm font-bold leading-[1.4] text-[#000000]"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -153,6 +154,11 @@ const paginationPages = computed(() => {
                         <td class="px-5 py-3 text-sm leading-[1.4] font-mono font-semibold text-[#000000] hidden md:table-cell">{{ m.member_code }}</td>
                         <td class="px-5 py-3 text-sm leading-[1.4] font-semibold text-right" :class="m.deposit_balance > 0 ? 'text-[#E22625]' : 'text-[#91918c]'">
                             Rp {{ m.deposit_balance.toLocaleString('id-ID') }}
+                        </td>
+                        <td class="px-5 py-3 text-right">
+                            <Link :href="route('admin.deposits.history', m.id)" class="inline-flex items-center gap-1 text-sm font-semibold text-[#62625b] hover:text-[#000000] transition-colors">
+                                Riwayat
+                            </Link>
                         </td>
                     </tr>
                 </tbody>
