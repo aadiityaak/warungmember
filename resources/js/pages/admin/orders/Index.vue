@@ -37,7 +37,7 @@ const { orders, products, members, outlets } = defineProps<{
         total: number;
     };
     products: Array<{ id: number; name: string; image: string | null; price: number; discount_price: number | null; discount_end_at: string | null }>;
-    members: Array<{ id: number; name: string }>;
+    members: Array<{ id: number; name: string; avatar: string | null; member: { member_code: string } | null }>;
     outlets: Array<{ id: number; name: string }>;
 }>();
 
@@ -112,6 +112,105 @@ const createForm = useForm({
     items: [] as Array<{ product_id: number; quantity: number }>,
 });
 
+// --- Member Search ---
+const memberSearch = ref('');
+const memberDropdownOpen = ref(false);
+const memberHighlightIndex = ref(0);
+const memberInputRef = ref<HTMLInputElement | null>(null);
+
+const filteredMembers = computed(() => {
+    const q = memberSearch.value.toLowerCase();
+    if (!q) return members;
+    return members.filter((m) => {
+        const nameMatch = m.name.toLowerCase().includes(q);
+        const codeMatch = m.member?.member_code?.toLowerCase().includes(q);
+        const idMatch = String(m.id) === q;
+        return nameMatch || codeMatch || idMatch;
+    });
+});
+
+function selectMember(m: { id: number; name: string }) {
+    createForm.user_id = String(m.id);
+    memberSearch.value = m.name;
+    memberDropdownOpen.value = false;
+}
+
+function onMemberInputFocus() {
+    memberDropdownOpen.value = true;
+    memberHighlightIndex.value = 0;
+}
+
+function onMemberInputBlur() {
+    setTimeout(() => { memberDropdownOpen.value = false; }, 200);
+}
+
+function onMemberKeydown(e: KeyboardEvent) {
+    if (!memberDropdownOpen.value) return;
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        memberHighlightIndex.value = Math.min(memberHighlightIndex.value + 1, filteredMembers.value.length - 1);
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        memberHighlightIndex.value = Math.max(memberHighlightIndex.value - 1, 0);
+    } else if (e.key === 'Enter' && filteredMembers.value[memberHighlightIndex.value]) {
+        e.preventDefault();
+        selectMember(filteredMembers.value[memberHighlightIndex.value]);
+    } else if (e.key === 'Escape') {
+        memberDropdownOpen.value = false;
+    }
+}
+
+function openCreate() {
+    createForm.clearErrors();
+    createForm.user_id = '';
+    createForm.outlet_id = '';
+    createForm.payment_method = 'cash';
+    createForm.notes = '';
+    createSelectedProduct.value = '';
+    createItems.splice(0, createItems.length);
+    memberSearch.value = '';
+    memberDropdownOpen.value = false;
+    showCreateModal.value = true;
+}
+
+function addToCreateItems() {
+    if (!createSelectedProduct.value) return;
+    const product = products.find((p) => p.id === Number(createSelectedProduct.value));
+    if (!product) return;
+    createItems.push({
+        product_id: product.id,
+        name: product.name,
+        quantity: 1,
+    });
+    createSelectedProduct.value = '';
+}
+
+function addToCreateItemsCard(product: { id: number; name: string }) {
+    if (createItems.some(i => i.product_id === product.id)) return;
+    createItems.push({
+        product_id: product.id,
+        name: product.name,
+        quantity: 1,
+    });
+}
+
+function removeCreateItem(productId: number) {
+    const idx = createItems.findIndex((i) => i.product_id === productId);
+    if (idx !== -1) createItems.splice(idx, 1);
+}
+
+function submitCreate() {
+    createForm.items = createItems.map((i) => ({
+        product_id: i.product_id,
+        quantity: i.quantity,
+    }));
+    createForm.post(route('admin.orders.store'), {
+        onSuccess: () => {
+            showCreateModal.value = false;
+        },
+    });
+}
+
 function openEdit(order: (typeof orders.data)[number]) {
     editingOrder.value = order;
     editForm.clearErrors();
@@ -169,56 +268,6 @@ function submitEdit() {
     });
 }
 
-// --- Create Order Functions ---
-function openCreate() {
-    createForm.clearErrors();
-    createForm.user_id = '';
-    createForm.outlet_id = '';
-    createForm.payment_method = 'cash';
-    createForm.notes = '';
-    createSelectedProduct.value = '';
-    createItems.splice(0, createItems.length);
-    showCreateModal.value = true;
-}
-
-function addToCreateItems() {
-    if (!createSelectedProduct.value) return;
-    const product = products.find((p) => p.id === Number(createSelectedProduct.value));
-    if (!product) return;
-    createItems.push({
-        product_id: product.id,
-        name: product.name,
-        quantity: 1,
-    });
-    createSelectedProduct.value = '';
-}
-
-function addToCreateItemsCard(product: { id: number; name: string }) {
-    if (createItems.some(i => i.product_id === product.id)) return;
-    createItems.push({
-        product_id: product.id,
-        name: product.name,
-        quantity: 1,
-    });
-}
-
-function removeCreateItem(productId: number) {
-    const idx = createItems.findIndex((i) => i.product_id === productId);
-    if (idx !== -1) createItems.splice(idx, 1);
-}
-
-function submitCreate() {
-    createForm.items = createItems.map((i) => ({
-        product_id: i.product_id,
-        quantity: i.quantity,
-    }));
-    createForm.post(route('admin.orders.store'), {
-        onSuccess: () => {
-            showCreateModal.value = false;
-        },
-    });
-}
-
 function confirmDelete(orderId: number) {
     if (confirm('Hapus pesanan ini?')) {
         router.delete(route('admin.orders.destroy', orderId), {
@@ -260,7 +309,6 @@ const paginationPages = computed(() => {
         return pages;
     }
 
-    // First 3 pages
     for (let i = 1; i <= 3; i++) pages.push(i);
 
     if (current > 4) pages.push('...');
@@ -272,7 +320,6 @@ const paginationPages = computed(() => {
 
     if (current < last - 3) pages.push('...');
 
-    // Last 3 pages
     for (let i = last - 2; i <= last; i++) pages.push(i);
 
     return pages;
@@ -456,18 +503,66 @@ const paginationPages = computed(() => {
                     <h3 class="text-lg font-bold text-[#000000] mb-4">Buat Pesanan Baru</h3>
 
                     <div class="space-y-4">
-                        <!-- Member -->
-                        <div>
+                        <!-- Member Search -->
+                        <div class="relative">
                             <label class="block text-sm font-semibold text-[#000000] mb-1.5">Member</label>
-                            <select
-                                v-model="createForm.user_id"
-                                class="w-full rounded-xl border border-[#dadad3] bg-[#f6f6f3] px-3 py-2.5 text-sm leading-[1.4] text-[#000000] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E22625]"
+                            <div class="relative">
+                                <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#91918c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                <input
+                                    ref="memberInputRef"
+                                    v-model="memberSearch"
+                                    type="text"
+                                    placeholder="Cari nama atau kode member..."
+                                    @focus="onMemberInputFocus"
+                                    @blur="onMemberInputBlur"
+                                    @keydown="onMemberKeydown"
+                                    autocomplete="off"
+                                    class="w-full rounded-xl border border-[#dadad3] bg-[#f6f6f3] pl-9 pr-3 py-2.5 text-sm leading-[1.4] text-[#000000] placeholder:text-[#91918c] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E22625]"
+                                />
+                            </div>
+
+                            <!-- Dropdown -->
+                            <div
+                                v-if="memberDropdownOpen && filteredMembers.length"
+                                class="absolute z-10 mt-1 w-full rounded-xl border border-[#dadad3] bg-white shadow-lg max-h-60 overflow-y-auto"
                             >
-                                <option value="" disabled>Pilih member...</option>
-                                <option v-for="m in members" :key="m.id" :value="m.id">
-                                    {{ m.name }}
-                                </option>
-                            </select>
+                                <button
+                                    v-for="(m, i) in filteredMembers"
+                                    :key="m.id"
+                                    type="button"
+                                    @mousedown.prevent="selectMember(m)"
+                                    :class="[
+                                        'flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors',
+                                        i === memberHighlightIndex ? 'bg-[#f6f6f3]' : 'hover:bg-[#f6f6f3]',
+                                    ]"
+                                >
+                                    <div class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#e5e5e0]">
+                                        <img
+                                            v-if="m.avatar"
+                                            :src="m.avatar"
+                                            :alt="m.name"
+                                            class="h-full w-full object-cover"
+                                        />
+                                        <svg v-else class="h-4 w-4 text-[#91918c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-semibold leading-[1.3] text-[#000000] truncate">{{ m.name }}</p>
+                                        <p class="text-xs leading-[1.4] text-[#91918c]">
+                                            {{ m.member?.member_code ? '# '+m.member.member_code : 'ID: '+m.id }}
+                                        </p>
+                                    </div>
+                                </button>
+                            </div>
+                            <div
+                                v-if="memberDropdownOpen && !filteredMembers.length && memberSearch"
+                                class="absolute z-10 mt-1 w-full rounded-xl border border-[#dadad3] bg-white p-3 text-center text-sm text-[#91918c]"
+                            >
+                                Member tidak ditemukan
+                            </div>
                             <p v-if="createForm.errors.user_id" class="text-xs text-red-500 mt-1">{{ createForm.errors.user_id }}</p>
                         </div>
 

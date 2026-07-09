@@ -34,8 +34,9 @@ class OrderController extends Controller
             ->get(['id', 'name', 'image', 'price', 'discount_price', 'discount_end_at']);
 
         $members = User::where('role', 'member')
+            ->with('member:id,user_id,member_code')
             ->orderBy('name')
-            ->get(['id', 'name']);
+            ->get(['id', 'name', 'avatar']);
 
         $outlets = Outlet::when(auth()->user()?->role !== 'admin', function ($query) use ($outlet) {
             if ($outlet) {
