@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Member;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Response;
@@ -34,6 +35,8 @@ class DepositController extends Controller
             $member->depositTransactions()->create([
                 'type' => 'topup',
                 'amount' => $validated['amount'],
+                'reference_type' => User::class,
+                'reference_id' => request()->user()->id,
                 'note' => 'Deposit via kasir',
             ]);
         });

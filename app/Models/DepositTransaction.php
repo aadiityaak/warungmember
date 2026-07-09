@@ -10,7 +10,7 @@ class DepositTransaction extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['member_id', 'type', 'amount', 'note'];
+    protected $fillable = ['member_id', 'type', 'amount', 'reference_type', 'reference_id', 'note'];
 
     protected function casts(): array
     {

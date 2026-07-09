@@ -50,6 +50,8 @@ class RewardController extends Controller
             $member->pointTransactions()->create([
                 'type' => 'redeem',
                 'amount' => $reward->points_required,
+                'reference_type' => Reward::class,
+                'reference_id' => $reward->id,
                 'note' => "Tukar reward: {$reward->name}",
             ]);
 

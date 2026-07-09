@@ -8,12 +8,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Member extends Model
 {
-    protected $fillable = ['user_id', 'member_code', 'total_points', 'deposit_balance', 'birth_date', 'last_outlet_id'];
+    protected $fillable = ['user_id', 'member_code', 'birth_date', 'last_outlet_id'];
+
+    protected $guarded = ['total_points', 'deposit_balance'];
 
     protected function casts(): array
     {
         return [
             'birth_date' => 'date',
+            'total_points' => 'integer',
+            'deposit_balance' => 'integer',
         ];
     }
 

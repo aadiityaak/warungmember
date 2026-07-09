@@ -39,13 +39,14 @@ class MemberSeeder extends Seeder
                     'email_verified_at' => now(),
                 ]);
 
-                Member::create([
+                $member = Member::make([
                     'user_id' => $user->id,
                     'member_code' => 'WM'.strtoupper(substr(bin2hex(random_bytes(4)), 0, 8)),
-                    'total_points' => $data['total_points'],
-                    'deposit_balance' => $data['deposit_balance'],
                     'birth_date' => $data['birth_date'],
                 ]);
+                $member->total_points = $data['total_points'];
+                $member->deposit_balance = $data['deposit_balance'];
+                $member->save();
             });
         }
 
@@ -57,13 +58,14 @@ class MemberSeeder extends Seeder
                     'password' => bcrypt('password'),
                 ]);
 
-                Member::create([
+                $member = Member::make([
                     'user_id' => $user->id,
                     'member_code' => 'WM'.strtoupper(substr(bin2hex(random_bytes(4)), 0, 8)),
-                    'total_points' => fake()->numberBetween(0, 5000),
-                    'deposit_balance' => fake()->numberBetween(0, 300000),
                     'birth_date' => fake()->dateTimeBetween('-40 years', '-18 years')->format('Y-m-d'),
                 ]);
+                $member->total_points = fake()->numberBetween(0, 5000);
+                $member->deposit_balance = fake()->numberBetween(0, 300000);
+                $member->save();
             });
         }
     }
