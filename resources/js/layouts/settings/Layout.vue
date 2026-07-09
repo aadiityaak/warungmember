@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import { toUrl } from '@/lib/utils';
 import { edit as editBranding } from '@/routes/branding';
+import { edit as editPayment } from '@/routes/payment';
 import { edit as editProfile } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
 import type { NavItem } from '@/types';
@@ -21,6 +22,7 @@ const sidebarNavItems = computed<NavItem[]>(() => {
     ];
     if (isAdmin.value) {
         items.push({ title: 'Branding', href: editBranding() });
+        items.push({ title: 'Payment', href: editPayment() });
     }
     return items;
 });

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Settings\BrandingController;
+use App\Http\Controllers\Settings\PaymentController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
 use Illuminate\Auth\Middleware\RequirePassword;
@@ -26,10 +27,13 @@ Route::middleware(['auth', 'verified', 'role:admin,kasir'])->group(function () {
 
 });
 
-// Admin-only: branding settings
+// Admin-only: branding & payment settings
 Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     Route::get('settings/branding', [BrandingController::class, 'edit'])->name('branding.edit');
     Route::put('settings/branding', [BrandingController::class, 'update'])->name('branding.update');
+
+    Route::get('settings/payment', [PaymentController::class, 'edit'])->name('payment.edit');
+    Route::put('settings/payment', [PaymentController::class, 'update'])->name('payment.update');
 });
 
 Route::get('.well-known/passkey-endpoints', function () {

@@ -25,7 +25,11 @@ const { order } = defineProps<{
 }>();
 
 function formatRupiah(n: number): string {
-    return 'Rp ' + n.toLocaleString('id-ID');
+    return 'Rp' + n.toLocaleString('id-ID');
+}
+
+function padRight(s: string, len: number): string {
+    return s + ' '.repeat(Math.max(0, len - s.length));
 }
 
 const paymentLabels: Record<string, string> = {
@@ -35,75 +39,71 @@ const paymentLabels: Record<string, string> = {
 };
 
 onMounted(() => {
-    window.print();
+    setTimeout(() => window.print(), 300);
 });
 </script>
 
 <template>
     <Head title="Struk Pesanan" />
 
-    <div class="receipt">
-        <div class="receipt-content">
-            <!-- Header -->
-            <div class="text-center border-b border-dashed pb-3 mb-3">
-                <h1 class="text-lg font-bold">{{ order.outlet?.name ?? 'Warung Member' }}</h1>
-                <p class="text-xs text-gray-500">Struk Pesanan</p>
+    <div class="receipt-print">
+        <div class="header">
+            <div class="store-name">{{ order.outlet?.name ?? 'Warung Member' }}</div>
+            <div class="divider-dash">- - - - - - - - - - - - - - - -</div>
+        </div>
+
+        <div class="body">
+            <div class="info-row">
+                <span>No</span>
+                <span>#{{ order.id }}</span>
+            </div>
+            <div class="info-row">
+                <span>Member</span>
+                <span>{{ order.user.name }}</span>
+            </div>
+            <div class="info-row">
+                <span>Tgl</span>
+                <span>{{ new Date(order.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}</span>
+            </div>
+            <div class="info-row">
+                <span>Bayar</span>
+                <span>{{ paymentLabels[order.payment_method] ?? order.payment_method }}</span>
             </div>
 
-            <!-- Info -->
-            <div class="text-xs space-y-1 mb-3">
-                <div class="flex justify-between">
-                    <span>No. Pesanan</span>
-                    <span class="font-bold">#{{ order.id }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span>Member</span>
-                    <span>{{ order.user.name }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span>Tanggal</span>
-                    <span>{{ new Date(order.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span>Pembayaran</span>
-                    <span>{{ paymentLabels[order.payment_method] ?? order.payment_method }}</span>
-                </div>
-            </div>
+            <div class="divider-dash">- - - - - - - - - - - - - - - -</div>
 
-            <!-- Items -->
-            <div class="border-t border-dashed pt-3 mb-3">
-                <div class="text-xs font-bold mb-1">Pesanan:</div>
-                <div v-for="item in order.items" :key="item.id" class="text-xs flex justify-between py-1">
-                    <div class="flex-1">
-                        <span>{{ item.product.name }}</span>
-                        <span class="text-gray-500"> x{{ item.quantity }}</span>
+            <div class="items">
+                <div v-for="item in order.items" :key="item.id" class="item">
+                    <div class="item-name-qty">
+                        <span class="name">{{ item.product.name }}</span>
+                        <span class="qty">x{{ item.quantity }}</span>
                     </div>
-                    <span class="ml-2">{{ formatRupiah(item.subtotal) }}</span>
+                    <div class="item-subtotal">{{ formatRupiah(item.subtotal) }}</div>
                 </div>
             </div>
 
-            <!-- Total -->
-            <div class="border-t border-dashed pt-2 space-y-1 text-xs font-bold">
-                <div class="flex justify-between">
-                    <span>Total</span>
-                    <span>{{ formatRupiah(order.total_amount) }}</span>
+            <div class="divider-dash">- - - - - - - - - - - - - - - -</div>
+
+            <div class="total-row">
+                <span class="label">TOTAL</span>
+                <span class="value">{{ formatRupiah(order.total_amount) }}</span>
+            </div>
+
+            <div v-if="order.payment_method === 'cash' && order.paid_amount !== null" class="payment-section">
+                <div class="info-row">
+                    <span>Tunai</span>
+                    <span>{{ formatRupiah(order.paid_amount) }}</span>
                 </div>
-                <div v-if="order.payment_method === 'cash' && order.paid_amount !== null" class="font-normal text-gray-600">
-                    <div class="flex justify-between">
-                        <span>Tunai</span>
-                        <span>{{ formatRupiah(order.paid_amount) }}</span>
-                    </div>
-                    <div v-if="order.change !== null" class="flex justify-between">
-                        <span>Kembalian</span>
-                        <span>{{ formatRupiah(order.change) }}</span>
-                    </div>
+                <div v-if="order.change !== null" class="info-row change-row">
+                    <span>Kembali</span>
+                    <span>{{ formatRupiah(order.change) }}</span>
                 </div>
             </div>
 
-            <!-- Status -->
-            <div class="text-center border-t border-dashed pt-3 mt-3">
-                <p class="text-xs text-gray-500">Terima kasih telah berbelanja</p>
-            </div>
+            <div class="divider-dash">- - - - - - - - - - - - - - - -</div>
+
+            <div class="footer-text">Terima kasih</div>
+            <div class="footer-text small">Selamat berbelanja kembali</div>
         </div>
     </div>
 </template>
@@ -115,36 +115,139 @@ onMounted(() => {
     box-sizing: border-box;
 }
 
-body {
-    background: white;
-    font-family: 'Courier New', Courier, monospace;
+html, body {
+    background: #fff;
 }
 
-.receipt {
-    max-width: 80mm;
-    margin: 0 auto;
-    padding: 8px;
-    font-size: 12px;
+body {
+    font-family: 'Courier New', Courier, 'Lucida Console', monospace;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.receipt-print {
+    width: 80mm;
+    padding: 4mm 3mm;
+    font-size: 10px;
     line-height: 1.4;
     color: #000;
+    text-transform: uppercase;
 }
 
-.receipt-content {
+.header {
+    text-align: center;
+    margin-bottom: 4px;
+}
+
+.store-name {
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+}
+
+.divider-dash {
+    text-align: center;
+    letter-spacing: 2px;
+    color: #555;
+    font-size: 9px;
+    line-height: 1.8;
+}
+
+.body {
     width: 100%;
 }
 
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 1px 0;
+    font-size: 9px;
+}
+
+.items {
+    width: 100%;
+}
+
+.item {
+    display: flex;
+    justify-content: space-between;
+    padding: 1px 0;
+    font-size: 9px;
+}
+
+.item-name-qty {
+    display: flex;
+    gap: 4px;
+}
+
+.item .name {
+    max-width: 48mm;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.item .qty {
+    color: #555;
+}
+
+.item-subtotal {
+    white-space: nowrap;
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 2px 0;
+}
+
+.total-row .label {
+    letter-spacing: 2px;
+}
+
+.payment-section {
+    margin-top: 2px;
+}
+
+.change-row {
+    font-weight: bold;
+}
+
+.footer-text {
+    text-align: center;
+    font-size: 9px;
+    letter-spacing: 1px;
+    padding: 1px 0;
+}
+
+.footer-text.small {
+    font-size: 8px;
+    color: #555;
+}
+
 @media print {
-    body {
+    html, body {
+        background: #fff;
         margin: 0;
         padding: 0;
     }
-    .receipt {
-        max-width: 100%;
-        padding: 4px 8px;
+    .receipt-print {
+        padding: 2mm 3mm;
     }
     @page {
-        margin: 2mm;
+        margin: 0;
         size: 80mm auto;
+    }
+}
+
+@media screen {
+    .receipt-print {
+        border: 1px dashed #ccc;
+        margin: 16px auto;
     }
 }
 </style>
