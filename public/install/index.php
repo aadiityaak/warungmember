@@ -44,7 +44,7 @@ function formatEnvValue($value)
     }
 
     if (preg_match('/[\\s#"\'\\\\]/', $value)) {
-        return '"' . str_replace('"', '\\"', $value) . '"';
+        return '"'.str_replace('"', '\\"', $value).'"';
     }
 
     return $value;
@@ -53,8 +53,8 @@ function formatEnvValue($value)
 function setEnvValue($envContent, $key, $value)
 {
     $formatted = formatEnvValue($value);
-    $pattern = '/^' . preg_quote($key, '/') . '=.*$/m';
-    $replacement = $key . '=' . $formatted;
+    $pattern = '/^'.preg_quote($key, '/').'=.*$/m';
+    $replacement = $key.'='.$formatted;
 
     if (preg_match($pattern, $envContent)) {
         return preg_replace($pattern, $replacement, $envContent);
@@ -62,17 +62,17 @@ function setEnvValue($envContent, $key, $value)
 
     $envContent = rtrim((string) $envContent, "\r\n");
 
-    return $envContent . "\n" . $replacement . "\n";
+    return $envContent."\n".$replacement."\n";
 }
 
 function clearBootstrapCache($warungmemberPath)
 {
-    $cacheDir = rtrim(str_replace('\\', '/', $warungmemberPath), '/') . '/bootstrap/cache';
+    $cacheDir = rtrim(str_replace('\\', '/', $warungmemberPath), '/').'/bootstrap/cache';
     if (! is_dir($cacheDir)) {
         return;
     }
 
-    $files = glob($cacheDir . '/*.php') ?: [];
+    $files = glob($cacheDir.'/*.php') ?: [];
     foreach ($files as $file) {
         @unlink($file);
     }
@@ -91,7 +91,7 @@ function executeSimpleCommand($command)
         $testPhp = @shell_exec('php --version 2>/dev/null');
         if ($testPhp && strpos($testPhp, 'PHP') !== false) {
             // php command works directly
-            $output = @shell_exec($command . ' 2>&1');
+            $output = @shell_exec($command.' 2>&1');
         } else {
             // Try common cPanel paths
             $phpPaths = [
@@ -105,8 +105,8 @@ function executeSimpleCommand($command)
             $phpFound = false;
             foreach ($phpPaths as $phpPath) {
                 if (is_executable($phpPath)) {
-                    $command = str_replace('php ', $phpPath . ' ', $command);
-                    $output = @shell_exec($command . ' 2>&1');
+                    $command = str_replace('php ', $phpPath.' ', $command);
+                    $output = @shell_exec($command.' 2>&1');
                     $phpFound = true;
                     break;
                 }
@@ -117,7 +117,7 @@ function executeSimpleCommand($command)
             }
         }
     } else {
-        $output = @shell_exec($command . ' 2>&1');
+        $output = @shell_exec($command.' 2>&1');
     }
 
     return $output ?: 'Command executed (no output)';
@@ -144,28 +144,28 @@ function detectwarungmemberFolder()
     ];
 
     // Priority 1: Check if warungmember is already moved to parent of public_html (already installed)
-    $path1 = $publicHtmlParent . '/warungmember';
+    $path1 = $publicHtmlParent.'/warungmember';
     $exists1 = is_dir($path1);
     $debugInfo['checks'][] = ['path' => $path1, 'exists' => $exists1, 'priority' => 1];
     if ($exists1) {
         return rtrim($path1, '/'); // Remove trailing slash
     }
 
-    $path2a = $documentRoot !== '' ? ($documentRoot . '/warungmember') : '';
+    $path2a = $documentRoot !== '' ? ($documentRoot.'/warungmember') : '';
     $exists2a = $path2a !== '' ? is_dir($path2a) : false;
     $debugInfo['checks'][] = ['path' => $path2a, 'exists' => $exists2a, 'priority' => '2a'];
     if ($exists2a) {
         return rtrim($path2a, '/');
     }
 
-    $path2b = $documentRoot !== '' ? ($documentRoot . '/public/warungmember') : '';
+    $path2b = $documentRoot !== '' ? ($documentRoot.'/public/warungmember') : '';
     $exists2b = $path2b !== '' ? is_dir($path2b) : false;
     $debugInfo['checks'][] = ['path' => $path2b, 'exists' => $exists2b, 'priority' => '2b'];
     if ($exists2b) {
         return rtrim($path2b, '/');
     }
 
-    $path2c = $publicHtmlDir . '/warungmember';
+    $path2c = $publicHtmlDir.'/warungmember';
     $exists2c = is_dir($path2c);
     $debugInfo['checks'][] = ['path' => $path2c, 'exists' => $exists2c, 'priority' => '2c'];
     if ($exists2c) {
@@ -173,7 +173,7 @@ function detectwarungmemberFolder()
     }
 
     // Priority 3: Check relative to install directory
-    $path3 = $currentDir . '/../warungmember';
+    $path3 = $currentDir.'/../warungmember';
     $path3 = realpath($path3); // Resolve relative path
     if ($path3) {
         $path3 = str_replace('\\', '/', $path3); // Normalize
@@ -201,9 +201,9 @@ function detectIncomingwarungmemberFolder($targetwarungmemberPath)
     $documentRoot = rtrim(str_replace('\\', '/', (string) ($_SERVER['DOCUMENT_ROOT'] ?? '')), '/');
 
     $candidates = array_unique(array_filter([
-        ($documentRoot !== '' ? $documentRoot . '/warungmember' : null),
-        ($documentRoot !== '' ? $documentRoot . '/public/warungmember' : null),
-        ($publicDir !== '' ? $publicDir . '/warungmember' : null),
+        ($documentRoot !== '' ? $documentRoot.'/warungmember' : null),
+        ($documentRoot !== '' ? $documentRoot.'/public/warungmember' : null),
+        ($publicDir !== '' ? $publicDir.'/warungmember' : null),
     ]));
 
     foreach ($candidates as $candidate) {
@@ -217,6 +217,7 @@ function detectIncomingwarungmemberFolder($targetwarungmemberPath)
         if ($candidate === $targetwarungmemberPath) {
             continue;
         }
+
         return rtrim(str_replace('\\', '/', (string) $candidate), '/');
     }
 
@@ -230,24 +231,24 @@ function movewarungmemberFolder($warungmemberPath, $targetPath)
     $targetPath = rtrim(str_replace('\\', '/', $targetPath), '/');
 
     if (! is_dir($warungmemberPath)) {
-        return ['success' => false, 'message' => 'Folder warungmember tidak ditemukan di: ' . $warungmemberPath];
+        return ['success' => false, 'message' => 'Folder warungmember tidak ditemukan di: '.$warungmemberPath];
     }
 
     if (is_dir($targetPath)) {
-        return ['success' => false, 'message' => 'Folder target sudah ada di: ' . $targetPath];
+        return ['success' => false, 'message' => 'Folder target sudah ada di: '.$targetPath];
     }
 
     // Create target directory if parent doesn't exist
     $targetParent = dirname($targetPath);
     if (! is_dir($targetParent)) {
         if (! mkdir($targetParent, 0755, true)) {
-            return ['success' => false, 'message' => 'Gagal membuat direktori parent: ' . $targetParent];
+            return ['success' => false, 'message' => 'Gagal membuat direktori parent: '.$targetParent];
         }
     }
 
     // Move the folder
     if (rename($warungmemberPath, $targetPath)) {
-        return ['success' => true, 'message' => 'Folder warungmember berhasil dipindahkan ke: ' . $targetPath];
+        return ['success' => true, 'message' => 'Folder warungmember berhasil dipindahkan ke: '.$targetPath];
     }
 
     $copied = copyDirectory($warungmemberPath, $targetPath);
@@ -257,10 +258,10 @@ function movewarungmemberFolder($warungmemberPath, $targetPath)
 
     $deleted = deleteDirectoryRecursive($warungmemberPath);
     if (! $deleted) {
-        return ['success' => false, 'message' => 'Folder warungmember berhasil disalin, tapi gagal menghapus folder sumber. Silakan hapus manual: ' . $warungmemberPath];
+        return ['success' => false, 'message' => 'Folder warungmember berhasil disalin, tapi gagal menghapus folder sumber. Silakan hapus manual: '.$warungmemberPath];
     }
 
-    return ['success' => true, 'message' => 'Folder warungmember berhasil dipindahkan ke: ' . $targetPath];
+    return ['success' => true, 'message' => 'Folder warungmember berhasil dipindahkan ke: '.$targetPath];
 }
 
 function copywarungmemberFolder($warungmemberPath, $targetPath)
@@ -270,23 +271,23 @@ function copywarungmemberFolder($warungmemberPath, $targetPath)
     $targetPath = rtrim(str_replace('\\', '/', $targetPath), '/');
 
     if (! is_dir($warungmemberPath)) {
-        return ['success' => false, 'message' => 'Folder warungmember tidak ditemukan di: ' . $warungmemberPath];
+        return ['success' => false, 'message' => 'Folder warungmember tidak ditemukan di: '.$warungmemberPath];
     }
 
     if (is_dir($targetPath)) {
-        return ['success' => false, 'message' => 'Folder target sudah ada di: ' . $targetPath];
+        return ['success' => false, 'message' => 'Folder target sudah ada di: '.$targetPath];
     }
 
     // Create target directory
     if (! mkdir($targetPath, 0755, true)) {
-        return ['success' => false, 'message' => 'Gagal membuat direktori target: ' . $targetPath];
+        return ['success' => false, 'message' => 'Gagal membuat direktori target: '.$targetPath];
     }
 
     // Copy directory recursively
     $result = copyDirectory($warungmemberPath, $targetPath);
 
     if ($result) {
-        return ['success' => true, 'message' => 'Folder warungmember berhasil disalin ke: ' . $targetPath];
+        return ['success' => true, 'message' => 'Folder warungmember berhasil disalin ke: '.$targetPath];
     } else {
         return ['success' => false, 'message' => 'Gagal menyalin folder warungmember'];
     }
@@ -301,8 +302,8 @@ function copyDirectory($src, $dst)
 
     while (($file = readdir($dir)) !== false) {
         if ($file != '.' && $file != '..') {
-            $srcFile = $src . '/' . $file;
-            $dstFile = $dst . '/' . $file;
+            $srcFile = $src.'/'.$file;
+            $dstFile = $dst.'/'.$file;
 
             if (is_dir($srcFile)) {
                 if (! mkdir($dstFile, 0755, true)) {
@@ -339,7 +340,7 @@ function deleteDirectoryRecursive($dir)
     $files = array_diff(scandir($dir), ['.', '..']);
 
     foreach ($files as $file) {
-        $filePath = $dir . '/' . $file;
+        $filePath = $dir.'/'.$file;
         if (is_dir($filePath)) {
             deleteDirectoryRecursive($filePath);
         } else {
@@ -371,23 +372,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $warungmemberPath = detectwarungmemberFolder();
             if ($warungmemberPath && is_dir($warungmemberPath)) {
-                $warungmemberStorage = rtrim(str_replace('\\', '/', $warungmemberPath), '/') . '/storage';
+                $warungmemberStorage = rtrim(str_replace('\\', '/', $warungmemberPath), '/').'/storage';
                 if (! is_dir($warungmemberStorage)) {
                     @mkdir($warungmemberStorage, 0755, true);
                 }
-                if (is_dir($warungmemberStorage) && @file_put_contents($warungmemberStorage . '/installer.skip', date('Y-m-d H:i:s'))) {
-                    $written[] = $warungmemberStorage . '/installer.skip';
+                if (is_dir($warungmemberStorage) && @file_put_contents($warungmemberStorage.'/installer.skip', date('Y-m-d H:i:s'))) {
+                    $written[] = $warungmemberStorage.'/installer.skip';
                 }
             }
 
-            $laravelRoot = realpath(__DIR__ . '/../..');
+            $laravelRoot = realpath(__DIR__.'/../..');
             if ($laravelRoot) {
-                $laravelStorage = rtrim(str_replace('\\', '/', $laravelRoot), '/') . '/storage';
+                $laravelStorage = rtrim(str_replace('\\', '/', $laravelRoot), '/').'/storage';
                 if (! is_dir($laravelStorage)) {
                     @mkdir($laravelStorage, 0755, true);
                 }
-                if (is_dir($laravelStorage) && @file_put_contents($laravelStorage . '/installer.skip', date('Y-m-d H:i:s'))) {
-                    $written[] = $laravelStorage . '/installer.skip';
+                if (is_dir($laravelStorage) && @file_put_contents($laravelStorage.'/installer.skip', date('Y-m-d H:i:s'))) {
+                    $written[] = $laravelStorage.'/installer.skip';
                 }
             }
 
@@ -407,13 +408,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($warungmemberPath) {
                 // Check if warungmember is already in target location
                 $publicHtmlParent = dirname($_SERVER['DOCUMENT_ROOT']);
-                $targetPath = $publicHtmlParent . '/warungmember';
+                $targetPath = $publicHtmlParent.'/warungmember';
                 $isAlreadyInTargetLocation = (realpath($warungmemberPath) === realpath($targetPath));
 
                 echo json_encode([
                     'success' => true,
                     'path' => $warungmemberPath,
-                    'message' => 'Folder warungmember ditemukan di: ' . $warungmemberPath,
+                    'message' => 'Folder warungmember ditemukan di: '.$warungmemberPath,
                     'already_in_target_location' => $isAlreadyInTargetLocation,
                     'target_path' => $targetPath,
                     'debug' => $GLOBALS['warungmember_debug'] ?? null,
@@ -429,16 +430,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         case 'move_warungmember':
             // Debug: Log semua data POST yang diterima
-            error_log('POST data received: ' . print_r($_POST, true));
+            error_log('POST data received: '.print_r($_POST, true));
 
             $warungmemberPath = $_POST['warungmember_path'] ?? '';
 
             // Debug: Log nilai yang diambil
-            error_log('warungmember_path: ' . $warungmemberPath);
+            error_log('warungmember_path: '.$warungmemberPath);
 
             if (empty($warungmemberPath)) {
-                $errorMsg = 'Path warungmember tidak valid. Received: ' . var_export($warungmemberPath, true);
-                error_log('ERROR ' . $errorMsg);
+                $errorMsg = 'Path warungmember tidak valid. Received: '.var_export($warungmemberPath, true);
+                error_log('ERROR '.$errorMsg);
                 echo json_encode(['success' => false, 'message' => $errorMsg, 'debug_post' => $_POST]);
                 exit;
             }
@@ -448,7 +449,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Determine target path (sejajar dengan public_html)
             $publicHtmlParent = str_replace('\\', '/', dirname($_SERVER['DOCUMENT_ROOT']));
-            $targetPath = $publicHtmlParent . '/warungmember';
+            $targetPath = $publicHtmlParent.'/warungmember';
 
             $result = movewarungmemberFolder($warungmemberPath, $targetPath);
 
@@ -458,7 +459,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         case 'configure_env':
             // Log received data for debugging
             error_log('configure_env action started');
-            error_log('POST data: ' . print_r($_POST, true));
+            error_log('POST data: '.print_r($_POST, true));
 
             $appUrl = $_POST['app_url'] ?? '';
             $appName = $_POST['app_name'] ?? 'warungmember';
@@ -474,7 +475,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Pindah folder dilakukan otomatis saat klik install (configure_env), tidak ada step terpisah.
             $detectedwarungmemberPath = detectwarungmemberFolder();
             $publicHtmlParent = str_replace('\\', '/', dirname($_SERVER['DOCUMENT_ROOT']));
-            $targetwarungmemberPath = $publicHtmlParent . '/warungmember';
+            $targetwarungmemberPath = $publicHtmlParent.'/warungmember';
 
             if ($detectedwarungmemberPath) {
                 $normalizedDetected = rtrim(str_replace('\\', '/', $detectedwarungmemberPath), '/');
@@ -490,7 +491,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (! ($moveResult['success'] ?? false)) {
                         echo json_encode([
                             'success' => false,
-                            'message' => 'Gagal memindahkan folder warungmember: ' . ($moveResult['message'] ?? 'Unknown error'),
+                            'message' => 'Gagal memindahkan folder warungmember: '.($moveResult['message'] ?? 'Unknown error'),
                             'details' => $moveResult,
                         ]);
                         exit;
@@ -498,27 +499,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
-            error_log('Target warungmember path: ' . $targetwarungmemberPath);
-            error_log('Directory exists: ' . (is_dir($targetwarungmemberPath) ? 'YES' : 'NO'));
+            error_log('Target warungmember path: '.$targetwarungmemberPath);
+            error_log('Directory exists: '.(is_dir($targetwarungmemberPath) ? 'YES' : 'NO'));
 
             if (! is_dir($targetwarungmemberPath)) {
                 $fallback = $detectedwarungmemberPath ?: $targetwarungmemberPath;
-                error_log('ERROR Target warungmember directory not found: ' . $fallback);
+                error_log('ERROR Target warungmember directory not found: '.$fallback);
                 echo json_encode(['success' => false, 'message' => 'Folder warungmember tidak ditemukan. Pastikan file package sudah diextract dengan benar.']);
                 exit;
             }
 
             // Create .env file
-            $envPath = $targetwarungmemberPath . '/.env';
-            $envTemplate = $targetwarungmemberPath . '/.env.example';
+            $envPath = $targetwarungmemberPath.'/.env';
+            $envTemplate = $targetwarungmemberPath.'/.env.example';
 
-            error_log('Env template path: ' . $envTemplate);
-            error_log('Template exists: ' . (file_exists($envTemplate) ? 'YES' : 'NO'));
-            error_log('Target env path: ' . $envPath);
+            error_log('Env template path: '.$envTemplate);
+            error_log('Template exists: '.(file_exists($envTemplate) ? 'YES' : 'NO'));
+            error_log('Target env path: '.$envPath);
 
             if (! file_exists($envTemplate)) {
-                error_log('ERROR .env.example not found: ' . $envTemplate);
-                echo json_encode(['success' => false, 'message' => 'File .env.example tidak ditemukan: ' . $envTemplate]);
+                error_log('ERROR .env.example not found: '.$envTemplate);
+                echo json_encode(['success' => false, 'message' => 'File .env.example tidak ditemukan: '.$envTemplate]);
                 exit;
             }
 
@@ -552,8 +553,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $pdo->exec("USE `{$dbName}`");
                     error_log('Database connection test successful');
                 } catch (PDOException $e) {
-                    error_log('ERROR Database connection test failed: ' . $e->getMessage());
-                    echo json_encode(['success' => false, 'message' => 'Koneksi database gagal: ' . $e->getMessage()]);
+                    error_log('ERROR Database connection test failed: '.$e->getMessage());
+                    echo json_encode(['success' => false, 'message' => 'Koneksi database gagal: '.$e->getMessage()]);
                     exit;
                 }
             } else {
@@ -586,14 +587,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $envContent = setEnvValue($envContent, 'QUEUE_CONNECTION', 'sync');
 
             // Write .env file
-            error_log('Writing .env file to: ' . $envPath);
-            error_log('Content length: ' . strlen($envContent) . ' bytes');
+            error_log('Writing .env file to: '.$envPath);
+            error_log('Content length: '.strlen($envContent).' bytes');
 
             if (! file_put_contents($envPath, $envContent)) {
-                error_log('ERROR Failed to write .env file to: ' . $envPath);
+                error_log('ERROR Failed to write .env file to: '.$envPath);
                 $parentDir = dirname($envPath);
-                error_log('Parent directory writable: ' . (is_writable($parentDir) ? 'YES' : 'NO'));
-                echo json_encode(['success' => false, 'message' => 'Gagal menulis file .env ke: ' . $envPath]);
+                error_log('Parent directory writable: '.(is_writable($parentDir) ? 'YES' : 'NO'));
+                echo json_encode(['success' => false, 'message' => 'Gagal menulis file .env ke: '.$envPath]);
                 exit;
             }
 
@@ -607,32 +608,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Generate key manually since exec() is disabled
             error_log('Generating APP_KEY manually (exec disabled)');
-            $appKey = 'base64:' . base64_encode(random_bytes(32));
+            $appKey = 'base64:'.base64_encode(random_bytes(32));
 
             // Update .env file with generated key
             $envContent = file_get_contents($envPath);
             if (strpos($envContent, 'APP_KEY=') !== false) {
-                $envContent = preg_replace('/^APP_KEY=.*$/m', 'APP_KEY=' . $appKey, $envContent);
+                $envContent = preg_replace('/^APP_KEY=.*$/m', 'APP_KEY='.$appKey, $envContent);
             } else {
-                $envContent .= "\nAPP_KEY=" . $appKey;
+                $envContent .= "\nAPP_KEY=".$appKey;
             }
 
             if (file_put_contents($envPath, $envContent)) {
                 $keyGenerated = true;
-                error_log('APP_KEY generated and saved: ' . substr($appKey, 0, 20) . '...');
+                error_log('APP_KEY generated and saved: '.substr($appKey, 0, 20).'...');
             } else {
                 error_log('ERROR Failed to save APP_KEY to .env file');
             }
 
             // Create installer lock file
-            $lockPath = $targetwarungmemberPath . '/storage/installer.lock';
+            $lockPath = $targetwarungmemberPath.'/storage/installer.lock';
             if (! file_put_contents($lockPath, date('Y-m-d H:i:s'))) {
                 echo json_encode(['success' => false, 'message' => 'Gagal membuat installer lock file']);
                 exit;
             }
 
             // Generate .htaccess from template if exists
-            $htaccessTemplatePath = __DIR__ . '/htaccess-template.txt';
+            $htaccessTemplatePath = __DIR__.'/htaccess-template.txt';
             if (file_exists($htaccessTemplatePath)) {
                 $htaccessContent = file_get_contents($htaccessTemplatePath);
                 $htaccessContent = str_replace('{{DATE}}', date('Y-m-d H:i:s'), $htaccessContent);
@@ -647,22 +648,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $publicHtmlDir,
                 ])));
 
-                $htaccessPath = $candidateDirs[0] . '/.htaccess';
+                $htaccessPath = $candidateDirs[0].'/.htaccess';
 
-                error_log('Creating .htaccess at: ' . $htaccessPath);
+                error_log('Creating .htaccess at: '.$htaccessPath);
 
                 $written = false;
                 foreach ($candidateDirs as $dir) {
-                    $path = rtrim($dir, '/\\') . '/.htaccess';
+                    $path = rtrim($dir, '/\\').'/.htaccess';
                     if (@file_put_contents($path, $htaccessContent) !== false) {
-                        error_log('.htaccess created successfully at: ' . $path);
+                        error_log('.htaccess created successfully at: '.$path);
                         $written = true;
                         break;
                     }
                 }
 
                 if (! $written) {
-                    error_log('ERROR Failed to create .htaccess in: ' . implode(', ', $candidateDirs));
+                    error_log('ERROR Failed to create .htaccess in: '.implode(', ', $candidateDirs));
                 }
             }
 
@@ -679,7 +680,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         case 'delete_install_folder':
             // Security check - only allow deletion if installation is complete
-            $targetwarungmemberPath = str_replace('\\', '/', dirname($_SERVER['DOCUMENT_ROOT'])) . '/warungmember';
+            $targetwarungmemberPath = str_replace('\\', '/', dirname($_SERVER['DOCUMENT_ROOT'])).'/warungmember';
 
             // Debug: Check multiple possible paths including the one from UI
             $detectedPath = detectwarungmemberFolder();
@@ -697,17 +698,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Generate APP_KEY if not exists to prevent errors
             foreach ($possiblePaths as $path) {
                 if ($path && is_dir($path)) {
-                    $envFile = $path . '/.env';
+                    $envFile = $path.'/.env';
                     if (file_exists($envFile)) {
                         $envContent = file_get_contents($envFile);
                         // Check if APP_KEY is empty or not set
                         if (preg_match('/^APP_KEY=\s*$/m', $envContent) || ! preg_match('/^APP_KEY=/m', $envContent)) {
-                            $appKey = 'base64:' . base64_encode(random_bytes(32));
+                            $appKey = 'base64:'.base64_encode(random_bytes(32));
 
                             if (preg_match('/^APP_KEY=/m', $envContent)) {
-                                $envContent = preg_replace('/^APP_KEY=.*$/m', 'APP_KEY=' . $appKey, $envContent);
+                                $envContent = preg_replace('/^APP_KEY=.*$/m', 'APP_KEY='.$appKey, $envContent);
                             } else {
-                                $envContent .= "\nAPP_KEY=" . $appKey;
+                                $envContent .= "\nAPP_KEY=".$appKey;
                             }
 
                             file_put_contents($envFile, $envContent);
@@ -723,16 +724,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             foreach ($possiblePaths as $path) {
                 if ($path && is_dir($path)) {
-                    $envFile = $path . '/.env';
-                    $lockFile = $path . '/storage/installer.lock';
-                    $storageDir = $path . '/storage';
+                    $envFile = $path.'/.env';
+                    $lockFile = $path.'/storage/installer.lock';
+                    $storageDir = $path.'/storage';
 
                     // Log detailed check for debugging
                     error_log("Checking path: $path");
-                    error_log('Directory exists: ' . (is_dir($path) ? 'YES' : 'NO'));
-                    error_log('.env exists: ' . (file_exists($envFile) ? 'YES' : 'NO') . " at $envFile");
-                    error_log('installer.lock exists: ' . (file_exists($lockFile) ? 'YES' : 'NO') . " at $lockFile");
-                    error_log('storage dir exists: ' . (is_dir($storageDir) ? 'YES' : 'NO') . " at $storageDir");
+                    error_log('Directory exists: '.(is_dir($path) ? 'YES' : 'NO'));
+                    error_log('.env exists: '.(file_exists($envFile) ? 'YES' : 'NO')." at $envFile");
+                    error_log('installer.lock exists: '.(file_exists($lockFile) ? 'YES' : 'NO')." at $lockFile");
+                    error_log('storage dir exists: '.(is_dir($storageDir) ? 'YES' : 'NO')." at $storageDir");
 
                     // Check if .env exists (primary requirement)
                     if (file_exists($envFile)) {
@@ -741,7 +742,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $isInstallComplete = true;
                             $actualwarungmemberPath = $path;
                             error_log("Installation complete found at: $path");
-                            error_log('.env: YES, installer.lock: ' . (file_exists($lockFile) ? 'YES' : 'NO') . ', storage: ' . (is_dir($storageDir) ? 'YES' : 'NO'));
+                            error_log('.env: YES, installer.lock: '.(file_exists($lockFile) ? 'YES' : 'NO').', storage: '.(is_dir($storageDir) ? 'YES' : 'NO'));
                             break;
                         }
                     }
@@ -761,8 +762,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 foreach ($possiblePaths as $path) {
                     if ($path) {
-                        $envPath = $path . '/.env';
-                        $lockPath = $path . '/storage/installer.lock';
+                        $envPath = $path.'/.env';
+                        $lockPath = $path.'/storage/installer.lock';
                         $debugInfo['checks'][] = [
                             'path' => $path,
                             'is_dir' => is_dir($path),
@@ -770,7 +771,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             'env_path' => $envPath,
                             'has_lock' => file_exists($lockPath),
                             'lock_path' => $lockPath,
-                            'storage_dir_exists' => is_dir($path . '/storage'),
+                            'storage_dir_exists' => is_dir($path.'/storage'),
                         ];
                     }
                 }
@@ -785,12 +786,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $maintenanceDetail = null;
             if ($actualwarungmemberPath && is_dir($actualwarungmemberPath)) {
-                $maintenancePath = $actualwarungmemberPath . '/storage/framework/maintenance.php';
+                $maintenancePath = $actualwarungmemberPath.'/storage/framework/maintenance.php';
                 if (file_exists($maintenancePath)) {
                     if (@unlink($maintenancePath)) {
                         $maintenanceDetail = 'Maintenance mode dinonaktifkan';
                     } else {
-                        $maintenanceDetail = 'Maintenance mode terdeteksi, tapi gagal menghapus maintenance.php. Silakan hapus manual: ' . $maintenancePath;
+                        $maintenanceDetail = 'Maintenance mode terdeteksi, tapi gagal menghapus maintenance.php. Silakan hapus manual: '.$maintenancePath;
                     }
                 }
             }
@@ -803,7 +804,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 chdir($currentDir);
 
                 if (is_string($upOutput) && str_starts_with($upOutput, 'Error:')) {
-                    $upDetail = 'Artisan up dilewati: ' . $upOutput;
+                    $upDetail = 'Artisan up dilewati: '.$upOutput;
                 } else {
                     $upDetail = 'Artisan up dijalankan';
                 }
@@ -817,7 +818,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 chdir($currentDir);
 
                 if (is_string($optimizeOutput) && str_starts_with($optimizeOutput, 'Error:')) {
-                    $optimizeDetail = 'Optimize dilewati: ' . $optimizeOutput;
+                    $optimizeDetail = 'Optimize dilewati: '.$optimizeOutput;
                 } else {
                     $optimizeDetail = 'Optimize berhasil dijalankan';
                 }
@@ -835,7 +836,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $files = array_diff(scandir($dir), ['.', '..']);
 
                 foreach ($files as $file) {
-                    $filePath = $dir . '/' . $file;
+                    $filePath = $dir.'/'.$file;
                     if (is_dir($filePath)) {
                         deleteDirectory($filePath);
                     } else {
@@ -853,7 +854,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 // Check if APP_KEY was generated (look for log entries)
                 if ($actualwarungmemberPath) {
-                    $envFile = $actualwarungmemberPath . '/.env';
+                    $envFile = $actualwarungmemberPath.'/.env';
                     if (file_exists($envFile)) {
                         $envContent = file_get_contents($envFile);
                         if (preg_match('/^APP_KEY=base64:/m', $envContent)) {
@@ -877,7 +878,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 if (! empty($details)) {
-                    $successMessage .= "\n\n" . implode("\n", $details);
+                    $successMessage .= "\n\n".implode("\n", $details);
                 }
 
                 echo json_encode([
@@ -891,7 +892,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
 
         case 'cleanup_after_install':
-            $targetwarungmemberPath = str_replace('\\', '/', dirname($_SERVER['DOCUMENT_ROOT'])) . '/warungmember';
+            $targetwarungmemberPath = str_replace('\\', '/', dirname($_SERVER['DOCUMENT_ROOT'])).'/warungmember';
             $detectedPath = detectwarungmemberFolder();
             $possiblePaths = array_unique(array_filter([$targetwarungmemberPath, $detectedPath]));
 
@@ -901,7 +902,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     continue;
                 }
 
-                if (file_exists($path . '/.env')) {
+                if (file_exists($path.'/.env')) {
                     $actualwarungmemberPath = $path;
                     break;
                 }
@@ -921,16 +922,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $outputs[] = "== {$label} ==\n{$command}\n{$output}";
             };
 
-            $envFile = $actualwarungmemberPath . '/.env';
+            $envFile = $actualwarungmemberPath.'/.env';
             if (file_exists($envFile)) {
                 $envContent = file_get_contents($envFile);
                 if (preg_match('/^APP_KEY=\s*$/m', $envContent) || ! preg_match('/^APP_KEY=/m', $envContent)) {
-                    $appKey = 'base64:' . base64_encode(random_bytes(32));
+                    $appKey = 'base64:'.base64_encode(random_bytes(32));
 
                     if (preg_match('/^APP_KEY=/m', $envContent)) {
-                        $envContent = preg_replace('/^APP_KEY=.*$/m', 'APP_KEY=' . $appKey, $envContent);
+                        $envContent = preg_replace('/^APP_KEY=.*$/m', 'APP_KEY='.$appKey, $envContent);
                     } else {
-                        $envContent .= "\nAPP_KEY=" . $appKey;
+                        $envContent .= "\nAPP_KEY=".$appKey;
                     }
 
                     file_put_contents($envFile, $envContent);
@@ -940,7 +941,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $runInwarungmember('Artisan Up', 'php artisan up');
 
-            $lockPath = $actualwarungmemberPath . '/storage/installer.lock';
+            $lockPath = $actualwarungmemberPath.'/storage/installer.lock';
             if (! is_dir(dirname($lockPath))) {
                 @mkdir(dirname($lockPath), 0755, true);
             }
@@ -950,13 +951,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $outputs[] = "== Installer Lock ==\ninstaller.lock dibuat di: {$lockPath}";
 
             $actualReal = realpath($actualwarungmemberPath);
-            $targetLooksValid = is_file($actualwarungmemberPath . '/artisan') && (is_file($actualwarungmemberPath . '/vendor/autoload.php') || is_file($actualwarungmemberPath . '/bootstrap/app.php'));
+            $targetLooksValid = is_file($actualwarungmemberPath.'/artisan') && (is_file($actualwarungmemberPath.'/vendor/autoload.php') || is_file($actualwarungmemberPath.'/bootstrap/app.php'));
             $documentRoot = rtrim(str_replace('\\', '/', (string) ($_SERVER['DOCUMENT_ROOT'] ?? '')), '/');
             $publicDir = rtrim(str_replace('\\', '/', dirname(__DIR__)), '/');
             $cleanupCandidates = array_unique(array_filter([
-                ($documentRoot !== '' ? $documentRoot . '/warungmember' : null),
-                ($documentRoot !== '' ? $documentRoot . '/public/warungmember' : null),
-                ($publicDir !== '' ? $publicDir . '/warungmember' : null),
+                ($documentRoot !== '' ? $documentRoot.'/warungmember' : null),
+                ($documentRoot !== '' ? $documentRoot.'/public/warungmember' : null),
+                ($publicDir !== '' ? $publicDir.'/warungmember' : null),
             ]));
 
             if ($targetLooksValid && $actualReal) {
@@ -969,7 +970,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         continue;
                     }
                     $deletedSource = deleteDirectoryRecursive($candidate);
-                    $outputs[] = "== Cleanup warungmember (public_html) ==\nPath: {$candidate}\nResult: " . ($deletedSource ? 'DELETED' : 'FAILED');
+                    $outputs[] = "== Cleanup warungmember (public_html) ==\nPath: {$candidate}\nResult: ".($deletedSource ? 'DELETED' : 'FAILED');
                 }
             } else {
                 $outputs[] = "== Cleanup warungmember (public_html) ==\nDilewati demi keamanan (target warungmember tidak tervalidasi).";
@@ -989,13 +990,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     $files = array_diff(scandir($dir), ['.', '..']);
                     foreach ($files as $file) {
-                        $filePath = $dir . '/' . $file;
+                        $filePath = $dir.'/'.$file;
                         if (is_dir($filePath)) {
                             $deleteDirectoryLocal($filePath);
                         } else {
                             @unlink($filePath);
                         }
                     }
+
                     return @rmdir($dir);
                 };
 
@@ -1012,10 +1014,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         case 'detect_update':
             $documentRoot = rtrim(str_replace('\\', '/', (string) ($_SERVER['DOCUMENT_ROOT'] ?? '')), '/');
             $publicHtmlParent = str_replace('\\', '/', dirname($documentRoot));
-            $targetwarungmemberPath = $publicHtmlParent . '/warungmember';
+            $targetwarungmemberPath = $publicHtmlParent.'/warungmember';
             $incomingwarungmemberPath = detectIncomingwarungmemberFolder($targetwarungmemberPath);
 
-            $installed = is_dir($targetwarungmemberPath) && file_exists($targetwarungmemberPath . '/.env');
+            $installed = is_dir($targetwarungmemberPath) && file_exists($targetwarungmemberPath.'/.env');
             $incoming = $incomingwarungmemberPath !== '' && is_dir($incomingwarungmemberPath);
 
             echo json_encode([
@@ -1030,9 +1032,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         case 'update_app':
             $documentRoot = rtrim(str_replace('\\', '/', (string) ($_SERVER['DOCUMENT_ROOT'] ?? '')), '/');
             $publicHtmlParent = str_replace('\\', '/', dirname($documentRoot));
-            $targetwarungmemberPath = $publicHtmlParent . '/warungmember';
+            $targetwarungmemberPath = $publicHtmlParent.'/warungmember';
 
-            if (! is_dir($targetwarungmemberPath) || ! file_exists($targetwarungmemberPath . '/.env')) {
+            if (! is_dir($targetwarungmemberPath) || ! file_exists($targetwarungmemberPath.'/.env')) {
                 echo json_encode(['success' => false, 'message' => 'Target warungmember tidak ditemukan atau .env belum ada. Update hanya bisa dijalankan jika aplikasi sudah terinstall.']);
                 exit;
             }
@@ -1045,57 +1047,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $outputs = [];
             $timestamp = date('Ymd_His');
-            $backupPath = $publicHtmlParent . '/warungmember_backup_' . $timestamp;
+            $backupPath = $publicHtmlParent.'/warungmember_backup_'.$timestamp;
 
             $outputs[] = "== Update Info ==\nTarget: {$targetwarungmemberPath}\nIncoming: {$incomingwarungmemberPath}\nBackup: {$backupPath}";
 
             $currentDir = getcwd();
             chdir($targetwarungmemberPath);
-            $outputs[] = "== Maintenance Down ==\nphp artisan down\n" . executeSimpleCommand('php artisan down');
+            $outputs[] = "== Maintenance Down ==\nphp artisan down\n".executeSimpleCommand('php artisan down');
             chdir($currentDir);
 
             $moveExisting = movewarungmemberFolder($targetwarungmemberPath, $backupPath);
             if (! ($moveExisting['success'] ?? false)) {
                 echo json_encode([
                     'success' => false,
-                    'message' => 'Gagal membuat backup target warungmember: ' . ($moveExisting['message'] ?? 'Unknown error'),
+                    'message' => 'Gagal membuat backup target warungmember: '.($moveExisting['message'] ?? 'Unknown error'),
                     'output' => implode("\n\n", $outputs),
                 ]);
                 exit;
             }
-            $outputs[] = "== Backup ==\n" . ($moveExisting['message'] ?? 'Backup done');
+            $outputs[] = "== Backup ==\n".($moveExisting['message'] ?? 'Backup done');
 
             $moveIncoming = movewarungmemberFolder($incomingwarungmemberPath, $targetwarungmemberPath);
             if (! ($moveIncoming['success'] ?? false)) {
                 $rollback = movewarungmemberFolder($backupPath, $targetwarungmemberPath);
-                $outputs[] = "== Rollback ==\n" . (($rollback['success'] ?? false) ? 'Rollback berhasil' : 'Rollback gagal: ' . ($rollback['message'] ?? 'Unknown error'));
+                $outputs[] = "== Rollback ==\n".(($rollback['success'] ?? false) ? 'Rollback berhasil' : 'Rollback gagal: '.($rollback['message'] ?? 'Unknown error'));
 
                 echo json_encode([
                     'success' => false,
-                    'message' => 'Gagal memindahkan warungmember update ke target: ' . ($moveIncoming['message'] ?? 'Unknown error'),
+                    'message' => 'Gagal memindahkan warungmember update ke target: '.($moveIncoming['message'] ?? 'Unknown error'),
                     'output' => implode("\n\n", $outputs),
                 ]);
                 exit;
             }
-            $outputs[] = "== Deploy New Code ==\n" . ($moveIncoming['message'] ?? 'Deploy done');
+            $outputs[] = "== Deploy New Code ==\n".($moveIncoming['message'] ?? 'Deploy done');
 
-            $backupEnv = $backupPath . '/.env';
+            $backupEnv = $backupPath.'/.env';
             if (is_file($backupEnv)) {
-                @copy($backupEnv, $targetwarungmemberPath . '/.env');
+                @copy($backupEnv, $targetwarungmemberPath.'/.env');
                 $outputs[] = "== Restore .env ==\n.env dipulihkan dari backup";
             }
 
-            $backupSqlite = $backupPath . '/database/database.sqlite';
+            $backupSqlite = $backupPath.'/database/database.sqlite';
             if (is_file($backupSqlite)) {
-                @mkdir($targetwarungmemberPath . '/database', 0755, true);
-                @copy($backupSqlite, $targetwarungmemberPath . '/database/database.sqlite');
+                @mkdir($targetwarungmemberPath.'/database', 0755, true);
+                @copy($backupSqlite, $targetwarungmemberPath.'/database/database.sqlite');
                 $outputs[] = "== Restore SQLite ==\ndatabase.sqlite dipulihkan dari backup";
             }
 
-            $backupStorage = $backupPath . '/storage';
+            $backupStorage = $backupPath.'/storage';
             if (is_dir($backupStorage)) {
-                deleteDirectoryRecursive($targetwarungmemberPath . '/storage');
-                copyDirectory($backupStorage, $targetwarungmemberPath . '/storage');
+                deleteDirectoryRecursive($targetwarungmemberPath.'/storage');
+                copyDirectory($backupStorage, $targetwarungmemberPath.'/storage');
                 $outputs[] = "== Restore Storage ==\nstorage dipulihkan dari backup";
             }
 
@@ -1124,7 +1126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
 
         case 'finalize_install':
-            $targetwarungmemberPath = str_replace('\\', '/', dirname($_SERVER['DOCUMENT_ROOT'])) . '/warungmember';
+            $targetwarungmemberPath = str_replace('\\', '/', dirname($_SERVER['DOCUMENT_ROOT'])).'/warungmember';
             $detectedPath = detectwarungmemberFolder();
             $possiblePaths = array_unique(array_filter([$targetwarungmemberPath, $detectedPath]));
 
@@ -1134,7 +1136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     continue;
                 }
 
-                if (file_exists($path . '/.env')) {
+                if (file_exists($path.'/.env')) {
                     $actualwarungmemberPath = $path;
                     break;
                 }
@@ -1145,16 +1147,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
 
-            $envFile = $actualwarungmemberPath . '/.env';
+            $envFile = $actualwarungmemberPath.'/.env';
             if (file_exists($envFile)) {
                 $envContent = file_get_contents($envFile);
                 if (preg_match('/^APP_KEY=\s*$/m', $envContent) || ! preg_match('/^APP_KEY=/m', $envContent)) {
-                    $appKey = 'base64:' . base64_encode(random_bytes(32));
+                    $appKey = 'base64:'.base64_encode(random_bytes(32));
 
                     if (preg_match('/^APP_KEY=/m', $envContent)) {
-                        $envContent = preg_replace('/^APP_KEY=.*$/m', 'APP_KEY=' . $appKey, $envContent);
+                        $envContent = preg_replace('/^APP_KEY=.*$/m', 'APP_KEY='.$appKey, $envContent);
                     } else {
-                        $envContent .= "\nAPP_KEY=" . $appKey;
+                        $envContent .= "\nAPP_KEY=".$appKey;
                     }
 
                     file_put_contents($envFile, $envContent);
@@ -1177,7 +1179,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $runInwarungmember('Config Cache', 'php artisan config:cache');
             $runInwarungmember('Artisan Up', 'php artisan up');
 
-            $lockPath = $actualwarungmemberPath . '/storage/installer.lock';
+            $lockPath = $actualwarungmemberPath.'/storage/installer.lock';
             if (! is_dir(dirname($lockPath))) {
                 @mkdir(dirname($lockPath), 0755, true);
             }
@@ -1186,13 +1188,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $actualReal = realpath($actualwarungmemberPath);
-            $targetLooksValid = is_file($actualwarungmemberPath . '/artisan') && (is_file($actualwarungmemberPath . '/vendor/autoload.php') || is_file($actualwarungmemberPath . '/bootstrap/app.php'));
+            $targetLooksValid = is_file($actualwarungmemberPath.'/artisan') && (is_file($actualwarungmemberPath.'/vendor/autoload.php') || is_file($actualwarungmemberPath.'/bootstrap/app.php'));
             $documentRoot = rtrim(str_replace('\\', '/', (string) ($_SERVER['DOCUMENT_ROOT'] ?? '')), '/');
             $publicDir = rtrim(str_replace('\\', '/', dirname(__DIR__)), '/');
             $cleanupCandidates = array_unique(array_filter([
-                ($documentRoot !== '' ? $documentRoot . '/warungmember' : null),
-                ($documentRoot !== '' ? $documentRoot . '/public/warungmember' : null),
-                ($publicDir !== '' ? $publicDir . '/warungmember' : null),
+                ($documentRoot !== '' ? $documentRoot.'/warungmember' : null),
+                ($documentRoot !== '' ? $documentRoot.'/public/warungmember' : null),
+                ($publicDir !== '' ? $publicDir.'/warungmember' : null),
             ]));
 
             if ($targetLooksValid && $actualReal) {
@@ -1205,7 +1207,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         continue;
                     }
                     $deletedSource = deleteDirectoryRecursive($candidate);
-                    $outputs[] = "== Cleanup warungmember (public_html) ==\nPath: {$candidate}\nResult: " . ($deletedSource ? 'DELETED' : 'FAILED');
+                    $outputs[] = "== Cleanup warungmember (public_html) ==\nPath: {$candidate}\nResult: ".($deletedSource ? 'DELETED' : 'FAILED');
                 }
             } else {
                 $outputs[] = "== Cleanup warungmember (public_html) ==\nDilewati demi keamanan (target warungmember tidak tervalidasi).";
@@ -1229,13 +1231,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 $files = array_diff(scandir($dir), ['.', '..']);
                 foreach ($files as $file) {
-                    $filePath = $dir . '/' . $file;
+                    $filePath = $dir.'/'.$file;
                     if (is_dir($filePath)) {
                         $deleteDirectoryLocal($filePath);
                     } else {
                         @unlink($filePath);
                     }
                 }
+
                 return @rmdir($dir);
             };
 
@@ -1295,7 +1298,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } elseif (strpos($errorMessage, 'Unknown database') !== false) {
                     $friendlyMessage = 'Database tidak ditemukan. Pastikan database sudah dibuat atau akan dibuat otomatis.';
                 } else {
-                    $friendlyMessage = 'Error: ' . $errorMessage;
+                    $friendlyMessage = 'Error: '.$errorMessage;
                 }
 
                 echo json_encode([
@@ -1308,7 +1311,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         case 'laravel_command':
             $command = $_POST['command'] ?? '';
             $detectedwarungmemberPath = detectwarungmemberFolder();
-            $targetwarungmemberPath = $detectedwarungmemberPath ?: (str_replace('\\', '/', dirname($_SERVER['DOCUMENT_ROOT'])) . '/warungmember');
+            $targetwarungmemberPath = $detectedwarungmemberPath ?: (str_replace('\\', '/', dirname($_SERVER['DOCUMENT_ROOT'])).'/warungmember');
 
             if (! is_dir($targetwarungmemberPath)) {
                 echo json_encode(['success' => false, 'message' => 'Laravel directory not found', 'debug' => $GLOBALS['warungmember_debug'] ?? null]);
@@ -1327,27 +1330,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 switch ($command) {
                     case 'migrate':
                         $output = executeSimpleCommand('php artisan config:clear');
-                        $output .= "\n" . executeSimpleCommand('php artisan migrate --force');
+                        $output .= "\n".executeSimpleCommand('php artisan migrate --force');
                         break;
                     case 'db_seed':
                         $output = 'Seeder dinonaktifkan di installer untuk penggunaan production.';
                         break;
                     case 'storage_link':
                         $output = executeSimpleCommand('php artisan config:clear');
-                        $output .= "\n" . executeSimpleCommand('php artisan storage:link');
+                        $output .= "\n".executeSimpleCommand('php artisan storage:link');
                         break;
                     case 'key_generate':
                         $output = executeSimpleCommand('php artisan config:clear');
-                        $output .= "\n" . executeSimpleCommand('php artisan key:generate --force');
+                        $output .= "\n".executeSimpleCommand('php artisan key:generate --force');
                         break;
                     case 'clear_cache':
                         $output = executeSimpleCommand('php artisan config:clear');
-                        $output .= "\n" . executeSimpleCommand('php artisan route:clear');
-                        $output .= "\n" . executeSimpleCommand('php artisan view:clear');
+                        $output .= "\n".executeSimpleCommand('php artisan route:clear');
+                        $output .= "\n".executeSimpleCommand('php artisan view:clear');
                         if ($cacheStore !== 'database') {
-                            $output .= "\n" . executeSimpleCommand('php artisan cache:clear');
+                            $output .= "\n".executeSimpleCommand('php artisan cache:clear');
                         } else {
-                            $output .= "\n" . 'cache:clear dilewati (CACHE_STORE=database membutuhkan koneksi DB)';
+                            $output .= "\n".'cache:clear dilewati (CACHE_STORE=database membutuhkan koneksi DB)';
                         }
                         break;
                     case 'optimize':
@@ -1372,7 +1375,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $output .= ".env exists: Yes\n";
                             $output .= ".env size: {$envSize} bytes\n";
                             $output .= ".env modified: {$envModified}\n";
-                            $output .= 'APP_KEY set: ' . ($hasAppKey ? 'Yes' : 'No') . "\n";
+                            $output .= 'APP_KEY set: '.($hasAppKey ? 'Yes' : 'No')."\n";
 
                             // Check database connection
                             $dbConnection = $envData['DB_CONNECTION'] ?? 'not set';
@@ -1391,7 +1394,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $output .= "DB_USERNAME: {$dbUsername}\n";
 
                             $dbPasswordRaw = $envData['DB_PASSWORD'] ?? '';
-                            $output .= 'DB_PASSWORD set: ' . ($dbPasswordRaw !== '' ? 'Yes' : 'No') . "\n";
+                            $output .= 'DB_PASSWORD set: '.($dbPasswordRaw !== '' ? 'Yes' : 'No')."\n";
 
                             $cacheStoreValue = $envData['CACHE_STORE'] ?? ($envData['CACHE_DRIVER'] ?? 'database');
                             $output .= "CACHE_STORE: {$cacheStoreValue}\n";
@@ -1405,7 +1408,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     ]);
                                     $output .= "DB connect: OK\n";
                                 } catch (PDOException $e) {
-                                    $output .= "DB connect: FAIL (" . $e->getMessage() . ")\n";
+                                    $output .= 'DB connect: FAIL ('.$e->getMessage().")\n";
                                 }
                             }
                         } else {
@@ -1420,7 +1423,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 echo json_encode(['success' => true, 'message' => 'Command executed successfully', 'output' => $output]);
             } catch (Exception $e) {
                 chdir($currentDir);
-                echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+                echo json_encode(['success' => false, 'message' => 'Error: '.$e->getMessage()]);
             }
             exit;
     }
@@ -1430,13 +1433,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $warungmemberPath = detectwarungmemberFolder();
 $documentRoot = rtrim(str_replace('\\', '/', (string) ($_SERVER['DOCUMENT_ROOT'] ?? '')), '/');
 $publicHtmlParent = str_replace('\\', '/', dirname($documentRoot));
-$targetwarungmemberPath = $publicHtmlParent . '/warungmember';
+$targetwarungmemberPath = $publicHtmlParent.'/warungmember';
 $publicDir = rtrim(str_replace('\\', '/', dirname(__DIR__)), '/');
 
 $sourceCandidates = array_unique(array_filter([
-    ($documentRoot !== '' ? $documentRoot . '/warungmember' : null),
-    ($documentRoot !== '' ? $documentRoot . '/public/warungmember' : null),
-    ($publicDir !== '' ? $publicDir . '/warungmember' : null),
+    ($documentRoot !== '' ? $documentRoot.'/warungmember' : null),
+    ($documentRoot !== '' ? $documentRoot.'/public/warungmember' : null),
+    ($publicDir !== '' ? $publicDir.'/warungmember' : null),
 ]));
 $targetReal = realpath($targetwarungmemberPath);
 $haswarungmemberInPublicHtml = false;
@@ -1453,8 +1456,8 @@ foreach ($sourceCandidates as $candidate) {
 }
 
 // Check if installation is completely finished
-$isAlreadyInstalled = is_dir($targetwarungmemberPath) && file_exists($targetwarungmemberPath . '/.env') && file_exists($targetwarungmemberPath . '/storage/installer.lock') && ! $haswarungmemberInPublicHtml;
-$hasInstalledTarget = is_dir($targetwarungmemberPath) && file_exists($targetwarungmemberPath . '/.env');
+$isAlreadyInstalled = is_dir($targetwarungmemberPath) && file_exists($targetwarungmemberPath.'/.env') && file_exists($targetwarungmemberPath.'/storage/installer.lock') && ! $haswarungmemberInPublicHtml;
+$hasInstalledTarget = is_dir($targetwarungmemberPath) && file_exists($targetwarungmemberPath.'/.env');
 $incomingwarungmemberPath = detectIncomingwarungmemberFolder($targetwarungmemberPath);
 $hasIncomingUpdate = $incomingwarungmemberPath !== '' && is_dir($incomingwarungmemberPath);
 $isUpdateMode = $hasInstalledTarget;
@@ -1462,7 +1465,7 @@ $isUpdateMode = $hasInstalledTarget;
 // Check progress markers
 $step1Complete = (bool) $warungmemberPath; // Folder detected
 $step2Complete = is_dir($targetwarungmemberPath) && ! $haswarungmemberInPublicHtml; // Folder moved to target location
-$step3Complete = file_exists($targetwarungmemberPath . '/.env'); // Environment configured
+$step3Complete = file_exists($targetwarungmemberPath.'/.env'); // Environment configured
 
 $host = $_SERVER['HTTP_HOST'] ?? '';
 $hostNoPort = explode(':', $host)[0];
@@ -1473,7 +1476,7 @@ $scriptName = str_replace('\\', '/', (string) ($_SERVER['SCRIPT_NAME'] ?? ''));
 $scriptDir = rtrim(str_replace('\\', '/', (string) dirname($scriptName)), '/');
 $basePath = preg_replace('~/install$~', '', $scriptDir);
 $basePath = $basePath === '/' ? '' : $basePath;
-$defaultAppUrl = $scheme . '://' . $host . $basePath;
+$defaultAppUrl = $scheme.'://'.$host.$basePath;
 
 ?>
 <!DOCTYPE html>

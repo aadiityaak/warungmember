@@ -4,23 +4,23 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-echo '<h2>Debug Deployment - ' . date('Y-m-d H:i:s') . '</h2>';
+echo '<h2>Debug Deployment - '.date('Y-m-d H:i:s').'</h2>';
 
 echo '<h3>Directory Information</h3>';
-echo 'Current Directory: ' . __DIR__ . '<br>';
-echo 'Document Root: ' . ($_SERVER['DOCUMENT_ROOT'] ?? 'Not set') . '<br>';
-echo 'Script Name: ' . ($_SERVER['SCRIPT_NAME'] ?? 'Not set') . '<br>';
+echo 'Current Directory: '.__DIR__.'<br>';
+echo 'Document Root: '.($_SERVER['DOCUMENT_ROOT'] ?? 'Not set').'<br>';
+echo 'Script Name: '.($_SERVER['SCRIPT_NAME'] ?? 'Not set').'<br>';
 
 echo '<h3>Path Detection Analysis</h3>';
 
 $paths_to_check = [
-    'install_dir' => __DIR__ . '/install',
-    'warungmember_same_dir' => __DIR__ . '/warungmember',
-    'warungmember_parent' => __DIR__ . '/../warungmember',
-    'vendor_warungmember_same' => __DIR__ . '/warungmember/vendor/autoload.php',
-    'vendor_warungmember_parent' => __DIR__ . '/../warungmember/vendor/autoload.php',
-    'vendor_laravel_standard' => __DIR__ . '/../vendor/autoload.php',
-    'vendor_parent' => dirname(__DIR__) . '/vendor/autoload.php',
+    'install_dir' => __DIR__.'/install',
+    'warungmember_same_dir' => __DIR__.'/warungmember',
+    'warungmember_parent' => __DIR__.'/../warungmember',
+    'vendor_warungmember_same' => __DIR__.'/warungmember/vendor/autoload.php',
+    'vendor_warungmember_parent' => __DIR__.'/../warungmember/vendor/autoload.php',
+    'vendor_laravel_standard' => __DIR__.'/../vendor/autoload.php',
+    'vendor_parent' => dirname(__DIR__).'/vendor/autoload.php',
 ];
 
 foreach ($paths_to_check as $name => $path) {
@@ -34,16 +34,16 @@ echo '<h3>Laravel Root Detection Logic</h3>';
 $laravel_root = __DIR__;
 echo "Initial laravel_root: {$laravel_root}<br>";
 
-if (file_exists(__DIR__ . '/../warungmember/vendor/autoload.php')) {
-    $laravel_root = __DIR__ . '/../warungmember';
+if (file_exists(__DIR__.'/../warungmember/vendor/autoload.php')) {
+    $laravel_root = __DIR__.'/../warungmember';
     echo 'Found: warungmember moved outside web root<br>';
-} elseif (file_exists(__DIR__ . '/warungmember/vendor/autoload.php')) {
-    $laravel_root = __DIR__ . '/warungmember';
+} elseif (file_exists(__DIR__.'/warungmember/vendor/autoload.php')) {
+    $laravel_root = __DIR__.'/warungmember';
     echo 'Found: warungmember in same directory<br>';
-} elseif (file_exists(__DIR__ . '/../vendor/autoload.php')) {
-    $laravel_root = __DIR__ . '/..';
+} elseif (file_exists(__DIR__.'/../vendor/autoload.php')) {
+    $laravel_root = __DIR__.'/..';
     echo 'Found: standard Laravel structure<br>';
-} elseif (file_exists(dirname(__DIR__) . '/vendor/autoload.php')) {
+} elseif (file_exists(dirname(__DIR__).'/vendor/autoload.php')) {
     $laravel_root = dirname(__DIR__);
     echo 'Found: Laravel in parent directory<br>';
 } else {
@@ -55,11 +55,11 @@ echo "Final laravel_root: {$laravel_root}<br>";
 echo '<h3>Laravel Files Check</h3>';
 
 $laravel_files = [
-    'autoload' => $laravel_root . '/vendor/autoload.php',
-    'bootstrap' => $laravel_root . '/bootstrap/app.php',
-    'storage' => $laravel_root . '/storage',
-    'env_example' => $laravel_root . '/.env.example',
-    'env' => $laravel_root . '/.env',
+    'autoload' => $laravel_root.'/vendor/autoload.php',
+    'bootstrap' => $laravel_root.'/bootstrap/app.php',
+    'storage' => $laravel_root.'/storage',
+    'env_example' => $laravel_root.'/.env.example',
+    'env' => $laravel_root.'/.env',
 ];
 
 foreach ($laravel_files as $name => $file) {
@@ -69,7 +69,7 @@ foreach ($laravel_files as $name => $file) {
 }
 
 echo '<h3>PHP Environment</h3>';
-echo 'PHP Version: ' . phpversion() . '<br>';
+echo 'PHP Version: '.phpversion().'<br>';
 echo 'PHP Extensions:<br>';
 
 $required_extensions = ['pdo', 'mbstring', 'tokenizer', 'openssl', 'xml', 'ctype', 'json'];
@@ -80,9 +80,9 @@ foreach ($required_extensions as $ext) {
 
 echo '<h3>Installer Lock Check</h3>';
 $installerLockPaths = [
-    __DIR__ . '/warungmember/storage/installer.lock',
-    __DIR__ . '/../warungmember/storage/installer.lock',
-    __DIR__ . '/../storage/installer.lock',
+    __DIR__.'/warungmember/storage/installer.lock',
+    __DIR__.'/../warungmember/storage/installer.lock',
+    __DIR__.'/../storage/installer.lock',
 ];
 
 $installCompleted = false;
@@ -94,22 +94,22 @@ foreach ($installerLockPaths as $lockPath) {
     }
 }
 
-echo 'Installation completed: ' . ($installCompleted ? 'YES' : 'NO') . '<br>';
+echo 'Installation completed: '.($installCompleted ? 'YES' : 'NO').'<br>';
 
 echo '<h3>Test Autoload</h3>';
-if (file_exists($laravel_root . '/vendor/autoload.php')) {
+if (file_exists($laravel_root.'/vendor/autoload.php')) {
     try {
-        require $laravel_root . '/vendor/autoload.php';
+        require $laravel_root.'/vendor/autoload.php';
         echo 'Autoload successful<br>';
 
-        if (file_exists($laravel_root . '/bootstrap/app.php')) {
+        if (file_exists($laravel_root.'/bootstrap/app.php')) {
             echo 'Bootstrap file exists<br>';
             // Don't actually bootstrap Laravel in debug mode
         } else {
             echo 'Bootstrap file missing<br>';
         }
     } catch (Exception $e) {
-        echo 'Autoload failed: ' . $e->getMessage() . '<br>';
+        echo 'Autoload failed: '.$e->getMessage().'<br>';
     }
 } else {
     echo 'Autoload file not found<br>';
@@ -120,17 +120,17 @@ echo 'Root directory contents:<br>';
 $files = scandir(__DIR__);
 foreach ($files as $file) {
     if ($file != '.' && $file != '..') {
-        $type = is_dir(__DIR__ . '/' . $file) ? 'DIR' : 'FILE';
+        $type = is_dir(__DIR__.'/'.$file) ? 'DIR' : 'FILE';
         echo "- {$file} {$type}<br>";
     }
 }
 
-if (is_dir(__DIR__ . '/warungmember')) {
+if (is_dir(__DIR__.'/warungmember')) {
     echo '<br>warungmember directory contents:<br>';
-    $warungmember_files = scandir(__DIR__ . '/warungmember');
+    $warungmember_files = scandir(__DIR__.'/warungmember');
     foreach ($warungmember_files as $file) {
         if ($file != '.' && $file != '..') {
-            $type = is_dir(__DIR__ . '/warungmember/' . $file) ? 'DIR' : 'FILE';
+            $type = is_dir(__DIR__.'/warungmember/'.$file) ? 'DIR' : 'FILE';
             echo "- warungmember/{$file} {$type}<br>";
         }
     }

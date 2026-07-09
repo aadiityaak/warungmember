@@ -49,16 +49,16 @@ function getLaravelRoot()
     $currentDir = rtrim(str_replace('\\', '/', __DIR__), '/');
 
     $candidates = [
-        $publicHtmlParent . '/warungmember',
-        $documentRoot . '/warungmember',
-        $documentRoot . '/public/warungmember',
-        $currentDir . '/../warungmember',
+        $publicHtmlParent.'/warungmember',
+        $documentRoot.'/warungmember',
+        $documentRoot.'/public/warungmember',
+        $currentDir.'/../warungmember',
         dirname(__DIR__),
     ];
 
     foreach ($candidates as $candidate) {
         $candidate = str_replace('\\', '/', $candidate);
-        if (is_dir($candidate) && file_exists($candidate . '/artisan')) {
+        if (is_dir($candidate) && file_exists($candidate.'/artisan')) {
             return $candidate;
         }
     }
