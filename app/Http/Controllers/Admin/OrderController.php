@@ -31,7 +31,7 @@ class OrderController extends Controller
 
         $products = Product::where('is_active', true)
             ->orderBy('name')
-            ->get(['id', 'name', 'price', 'discount_price', 'discount_end_at']);
+            ->get(['id', 'name', 'image', 'price', 'discount_price', 'discount_end_at']);
 
         $members = User::where('role', 'member')
             ->orderBy('name')
@@ -112,7 +112,7 @@ class OrderController extends Controller
                     'member_id' => $member->id,
                     'type' => 'order',
                     'title' => 'Pesanan Baru Diterima',
-                    'body' => 'Pesanan #'.$order->id.' sebesar Rp'.number_format($order->total_amount, 0, ',', '.').' sedang diproses.',
+                    'body' => 'Pesanan #' . $order->id . ' sebesar Rp' . number_format($order->total_amount, 0, ',', '.') . ' sedang diproses.',
                     'data' => [
                         'order_id' => $order->id,
                         'total_amount' => $order->total_amount,
@@ -123,7 +123,7 @@ class OrderController extends Controller
             return $order;
         });
 
-        return back()->with('success', 'Pesanan #'.$order->id.' berhasil dibuat.');
+        return back()->with('success', 'Pesanan #' . $order->id . ' berhasil dibuat.');
     }
 
     public function update(Request $request, Order $order)
@@ -202,7 +202,7 @@ class OrderController extends Controller
                         'amount' => $totalPoints,
                         'reference_type' => Order::class,
                         'reference_id' => $order->id,
-                        'note' => 'Poin dari pesanan #'.$order->id,
+                        'note' => 'Poin dari pesanan #' . $order->id,
                     ]);
                 }
             }
@@ -216,10 +216,10 @@ class OrderController extends Controller
             ];
             $statusLabel = $statusLabels[$validated['status']] ?? $validated['status'];
 
-            $notifBody = 'Pesanan #'.$order->id.' berstatus: '.$statusLabel;
+            $notifBody = 'Pesanan #' . $order->id . ' berstatus: ' . $statusLabel;
 
             if ($validated['status'] === 'completed' && isset($totalPoints) && $totalPoints > 0) {
-                $notifBody .= '. Kamu mendapatkan +'.$totalPoints.' poin!';
+                $notifBody .= '. Kamu mendapatkan +' . $totalPoints . ' poin!';
             }
 
             Notification::create([

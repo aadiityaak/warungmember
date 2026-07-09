@@ -36,10 +36,24 @@ const { orders, products, members, outlets } = defineProps<{
         to: number;
         total: number;
     };
-    products: Array<{ id: number; name: string; price: number; discount_price: number | null; discount_end_at: string | null }>;
+    products: Array<{ id: number; name: string; image: string | null; price: number; discount_price: number | null; discount_end_at: string | null }>;
     members: Array<{ id: number; name: string }>;
     outlets: Array<{ id: number; name: string }>;
 }>();
+
+function formatRupiah(n: number): string {
+    return 'Rp ' + n.toLocaleString('id-ID');
+}
+
+function currentPrice(p: { price: number; discount_price: number | null; discount_end_at: string | null }): number {
+    if (!p.discount_price) return p.price;
+    if (p.discount_end_at && new Date(p.discount_end_at) < new Date()) return p.price;
+    return p.discount_price;
+}
+
+function isOnDiscount(p: { price: number; discount_price: number | null; discount_end_at: string | null }): boolean {
+    return currentPrice(p) < p.price;
+}
 
 const statusLabels: Record<string, string> = {
     pending: 'Menunggu',
@@ -127,6 +141,15 @@ function addToEditItems() {
     selectedProductId.value = '';
 }
 
+function addToEditItemsCard(product: { id: number; name: string }) {
+    if (editItems.some(i => i.product_id === product.id)) return;
+    editItems.push({
+        product_id: product.id,
+        name: product.name,
+        quantity: 1,
+    });
+}
+
 function removeEditItem(productId: number) {
     const idx = editItems.findIndex((i) => i.product_id === productId);
     if (idx !== -1) editItems.splice(idx, 1);
@@ -168,6 +191,15 @@ function addToCreateItems() {
         quantity: 1,
     });
     createSelectedProduct.value = '';
+}
+
+function addToCreateItemsCard(product: { id: number; name: string }) {
+    if (createItems.some(i => i.product_id === product.id)) return;
+    createItems.push({
+        product_id: product.id,
+        name: product.name,
+        quantity: 1,
+    });
 }
 
 function removeCreateItem(productId: number) {
@@ -515,27 +547,39 @@ const paginationPages = computed(() => {
                             </div>
                             <p v-if="createForm.errors.items" class="text-xs text-red-500 mt-1">{{ createForm.errors.items }}</p>
 
-                            <!-- Tambah Produk -->
-                            <div v-if="createAvailableProducts.length" class="mt-2 flex gap-2">
-                                <select
-                                    v-model="createSelectedProduct"
-                                    class="flex-1 rounded-xl border border-[#dadad3] bg-[#f6f6f3] px-3 py-2 text-sm leading-[1.4] text-[#000000] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E22625]"
-                                >
-                                    <option value="" disabled>+ Tambah produk...</option>
-                                    <option v-for="p in createAvailableProducts" :key="p.id" :value="p.id">
-                                        {{ p.name }}
-                                    </option>
-                                </select>
-                                <button
-                                    @click="addToCreateItems"
-                                    :disabled="!createSelectedProduct"
-                                    class="inline-flex h-9 items-center rounded-full px-4 text-sm font-bold text-white transition-colors"
-                                    :class="createSelectedProduct ? 'bg-[#E22625] hover:opacity-90' : 'bg-[#dadad3] cursor-not-allowed'"
-                                >
-                                    Tambah
-                                </button>
+                            <!-- Product Cards -->
+                            <div class="mt-2">
+                                <p class="text-xs font-semibold text-[#62625b] mb-2">Pilih Produk</p>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <button
+                                        v-for="p in products"
+                                        :key="p.id"
+                                        type="button"
+                                        @click="addToCreateItemsCard(p)"
+                                        :disabled="createItems.some(i => i.product_id === p.id)"
+                                        class="flex flex-col items-center gap-1 rounded-xl border p-2 text-center transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                                        :class="createItems.some(i => i.product_id === p.id)
+                                            ? 'border-[#E22625] bg-red-50'
+                                            : 'border-[#dadad3] bg-[#f6f6f3] hover:border-[#E22625] hover:shadow-sm'"
+                                    >
+                                        <div class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg bg-white">
+                                            <img
+                                                v-if="p.image"
+                                                :src="p.image"
+                                                :alt="p.name"
+                                                class="h-full w-full object-cover"
+                                            />
+                                            <svg v-else class="h-5 w-5 text-[#c8c8c1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                            </svg>
+                                        </div>
+                                        <span class="text-[10px] font-semibold leading-[1.3] text-[#000000] line-clamp-2">{{ p.name }}</span>
+                                        <span class="text-[10px] font-bold text-[#E22625]">{{ formatRupiah(currentPrice(p)) }}</span>
+                                        <span v-if="isOnDiscount(p)" class="text-[9px] text-[#91918c] line-through">{{ formatRupiah(p.price) }}</span>
+                                        <span v-if="createItems.some(i => i.product_id === p.id)" class="text-[9px] font-bold text-[#E22625]">✓ Ditambahkan</span>
+                                    </button>
+                                </div>
                             </div>
-                            <p v-else-if="createItems.length" class="mt-2 text-xs text-[#91918c]">Semua produk sudah ditambahkan.</p>
                         </div>
 
                         <!-- Notes -->
@@ -638,27 +682,39 @@ const paginationPages = computed(() => {
                             </div>
                             <p v-if="editForm.errors.items" class="text-xs text-red-500 mt-1">{{ editForm.errors.items }}</p>
 
-                            <!-- Tambah Produk -->
-                            <div v-if="availableProducts.length" class="mt-2 flex gap-2">
-                                <select
-                                    v-model="selectedProductId"
-                                    class="flex-1 rounded-xl border border-[#dadad3] bg-[#f6f6f3] px-3 py-2 text-sm leading-[1.4] text-[#000000] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E22625]"
-                                >
-                                    <option value="" disabled>+ Tambah produk...</option>
-                                    <option v-for="p in availableProducts" :key="p.id" :value="p.id">
-                                        {{ p.name }}
-                                    </option>
-                                </select>
-                                <button
-                                    @click="addToEditItems"
-                                    :disabled="!selectedProductId"
-                                    class="inline-flex h-9 items-center rounded-full px-4 text-sm font-bold text-white transition-colors"
-                                    :class="selectedProductId ? 'bg-[#E22625] hover:opacity-90' : 'bg-[#dadad3] cursor-not-allowed'"
-                                >
-                                    Tambah
-                                </button>
+                            <!-- Product Cards -->
+                            <div class="mt-2">
+                                <p class="text-xs font-semibold text-[#62625b] mb-2">Pilih Produk</p>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <button
+                                        v-for="p in products"
+                                        :key="p.id"
+                                        type="button"
+                                        @click="addToEditItemsCard(p)"
+                                        :disabled="editItems.some(i => i.product_id === p.id)"
+                                        class="flex flex-col items-center gap-1 rounded-xl border p-2 text-center transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                                        :class="editItems.some(i => i.product_id === p.id)
+                                            ? 'border-[#E22625] bg-red-50'
+                                            : 'border-[#dadad3] bg-[#f6f6f3] hover:border-[#E22625] hover:shadow-sm'"
+                                    >
+                                        <div class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg bg-white">
+                                            <img
+                                                v-if="p.image"
+                                                :src="p.image"
+                                                :alt="p.name"
+                                                class="h-full w-full object-cover"
+                                            />
+                                            <svg v-else class="h-5 w-5 text-[#c8c8c1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                            </svg>
+                                        </div>
+                                        <span class="text-[10px] font-semibold leading-[1.3] text-[#000000] line-clamp-2">{{ p.name }}</span>
+                                        <span class="text-[10px] font-bold text-[#E22625]">{{ formatRupiah(currentPrice(p)) }}</span>
+                                        <span v-if="isOnDiscount(p)" class="text-[9px] text-[#91918c] line-through">{{ formatRupiah(p.price) }}</span>
+                                        <span v-if="editItems.some(i => i.product_id === p.id)" class="text-[9px] font-bold text-[#E22625]">✓ Ditambahkan</span>
+                                    </button>
+                                </div>
                             </div>
-                            <p v-else-if="editItems.length" class="mt-2 text-xs text-[#91918c]">Semua produk sudah ditambahkan.</p>
                         </div>
 
                         <!-- Notes -->
