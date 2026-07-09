@@ -20,7 +20,7 @@ class OrderController extends Controller
     {
         $outlet = auth()->user()?->outlet;
 
-        $orders = Order::with(['user', 'items.product'])
+        $orders = Order::with(['user', 'items.product', 'outlet:id,name'])
             ->when(auth()->user()?->role !== 'admin', function ($query) use ($outlet) {
                 if ($outlet) {
                     $query->where('outlet_id', $outlet->id);
@@ -55,6 +55,15 @@ class OrderController extends Controller
         ]);
     }
 
+    public function receipt(Order $order): Response
+    {
+        $order->load(['user', 'items.product', 'outlet']);
+
+        return inertia('admin/orders/Receipt', [
+            'order' => $order,
+        ]);
+    }
+
     public function store(Request $request)
     {
         $outlet = auth()->user()?->outlet;
@@ -66,6 +75,7 @@ class OrderController extends Controller
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
+            'paid_amount' => 'nullable|integer|min:0|required_if:payment_method,cash',
             'notes' => 'nullable|string|max:500',
         ]);
 
@@ -105,6 +115,14 @@ class OrderController extends Controller
             }
 
             $order->update(['total_amount' => $total]);
+
+            if ($validated['payment_method'] === 'cash' && isset($validated['paid_amount'])) {
+                $paidAmount = (int) $validated['paid_amount'];
+                $order->update([
+                    'paid_amount' => $paidAmount,
+                    'change' => max(0, $paidAmount - $total),
+                ]);
+            }
 
             // Kirim notifikasi ke member
             $member = $order->user?->member;

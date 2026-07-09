@@ -74,6 +74,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('outlets/upload', [OutletController::class, 'upload'])->name('outlets.upload');
         Route::resource('kasir', KasirController::class);
         Route::resource('orders', AdminOrderController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::get('orders/{order}/receipt', [AdminOrderController::class, 'receipt'])->name('orders.receipt');
     });
 });
 
