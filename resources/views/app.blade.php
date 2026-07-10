@@ -10,6 +10,7 @@
             $favicon = $branding['favicon_url'] ?? null;
         @endphp
 
+        <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="theme-color" content="{{ $branding['primary_color'] ?? '#ffffff' }}">
 
         <style>
