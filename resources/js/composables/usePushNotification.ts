@@ -19,8 +19,10 @@ export function usePushNotification() {
             return;
         }
         try {
-            const registration = await navigator.serviceWorker.ready;
-            const sub = await registration.pushManager.getSubscription();
+            const registration = await navigator.serviceWorker.getRegistration();
+            const sub = registration
+                ? await registration.pushManager.getSubscription()
+                : null;
             subscribed.value = sub !== null;
         } catch {
             subscribed.value = false;

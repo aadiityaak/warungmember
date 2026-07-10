@@ -25,6 +25,17 @@ use App\Http\Controllers\Member\RewardController as MemberRewardController;
 use App\Http\Controllers\Member\VoucherController as MemberVoucherController;
 use Illuminate\Support\Facades\Route;
 
+// Serve service worker - picks dev-dist in dev, public/build in prod
+Route::get('sw.js', function () {
+    $file = is_file(base_path('dev-dist/sw.js'))
+        ? base_path('dev-dist/sw.js')
+        : public_path('build/sw.js');
+
+    abort_unless(is_file($file), 404);
+
+    return response()->file($file, ['Content-Type' => 'application/javascript']);
+});
+
 Route::inertia('/', 'Welcome')->name('home');
 
 Route::get('manifest.webmanifest', ManifestController::class)->name('manifest');

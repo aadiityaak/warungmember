@@ -8,8 +8,8 @@ import { initializeFlashToast } from '@/lib/flashToast';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/build/sw.js', { scope: '/build/' }).catch(() => {
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {
         // SW registration failed — non-blocking
     });
 }

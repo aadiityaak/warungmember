@@ -37,7 +37,7 @@ export default defineConfig({
             filename: 'sw.ts',
             registerType: 'autoUpdate',
             devOptions: {
-                enabled: true,
+                enabled: false,
             },
             includeAssets: [
                 'favicon.ico',
