@@ -12,7 +12,14 @@ const statusLoading = ref(true);
 
 onMounted(async () => {
     await push.checkStatus();
-    statusLoading.value = false;
+    if (push.supported && !push.subscribed) {
+        push.subscribe().catch(() => {});
+    }
+    // Beri waktu browser untuk proses popup permission, lalu refresh status
+    setTimeout(async () => {
+        await push.checkStatus();
+        statusLoading.value = false;
+    }, 500);
 });
 
 const { notifications } = defineProps<{

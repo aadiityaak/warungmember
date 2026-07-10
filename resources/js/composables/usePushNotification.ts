@@ -38,7 +38,8 @@ export function usePushNotification() {
         }
         if (permission.value !== 'granted') return;
         try {
-            const registration = await navigator.serviceWorker.ready;
+            const registration = await navigator.serviceWorker.getRegistration();
+            if (!registration) return;
             let subscription = await registration.pushManager.getSubscription();
 
             if (!subscription) {
