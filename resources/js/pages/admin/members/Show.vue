@@ -18,6 +18,7 @@ const { member, depositHistory, pointHistory } = defineProps<{
         id: number;
         name: string;
         email: string;
+        avatar: string | null;
         created_at: string;
         member?: {
             id: number;
@@ -120,6 +121,13 @@ function formatDateTime(date: string): string {
             <div class="rounded-2xl border border-[#dadad3] bg-white p-6">
                 <span class="text-xs font-medium leading-[1.5] text-[#91918c] uppercase tracking-wider">Akun</span>
                 <div class="mt-3 space-y-3">
+                    <div v-if="member.avatar" class="flex justify-center mb-2">
+                        <img
+                            :src="member.avatar"
+                            :alt="member.name"
+                            class="h-20 w-20 rounded-full object-cover border-2 border-[#dadad3]"
+                        />
+                    </div>
                     <div>
                         <p class="text-xs leading-[1.5] text-[#91918c]">Nama</p>
                         <p class="text-sm font-semibold leading-[1.4] text-[#000000]">{{ member.name }}</p>

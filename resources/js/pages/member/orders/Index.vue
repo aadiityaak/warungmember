@@ -1,25 +1,76 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useCart } from '@/composables/useCart';
 import MemberLayout from '@/layouts/MemberLayout.vue';
 
 defineOptions({ layout: MemberLayout });
 
-const { outlets, lastOutletId, depositBalance } = defineProps<{
+interface VoucherData {
+    id: number;
+    voucher_id: number;
+    status: string;
+    voucher: {
+        id: number;
+        name: string;
+        description: string | null;
+        discount_type: 'percent' | 'fixed';
+        discount_value: number;
+        max_discount: number | null;
+        min_purchase: number | null;
+        is_active: boolean;
+    };
+}
+
+const { outlets, lastOutletId, depositBalance, activeVouchers } = defineProps<{
     outlets: Array<{ id: number; name: string; address: string | null }>;
     lastOutletId: number | null;
     depositBalance: number;
+    activeVouchers: VoucherData[];
 }>();
 
 const cart = useCart();
 const selectedOutlet = ref<number | null>(lastOutletId ?? outlets?.[0]?.id ?? null);
 const paymentMethod = ref<string>('');
 const notes = ref('');
+const selectedVoucherId = ref<number | null>(null);
 const errors = ref<Record<string, string>>({});
 const submitting = ref(false);
 
 const canCheckout = computed(() => selectedOutlet.value && paymentMethod.value);
+
+// Discount calculation
+const selectedVoucher = computed(() => {
+    if (!selectedVoucherId.value) return null;
+    return activeVouchers.find((mv) => mv.id === selectedVoucherId.value) ?? null;
+});
+
+const discount = computed(() => {
+    const sv = selectedVoucher.value;
+    if (!sv) return 0;
+    const total = cart.totalAmount();
+    const v = sv.voucher;
+
+    if (v.min_purchase && total < v.min_purchase) return 0;
+
+    if (v.discount_type === 'percent') {
+        let d = Math.round(total * v.discount_value / 100);
+        if (v.max_discount && d > v.max_discount) d = v.max_discount;
+        return d;
+    }
+    return v.discount_value;
+});
+
+const finalTotal = computed(() => Math.max(0, cart.totalAmount() - discount.value));
+
+// Reset voucher if it becomes invalid (min_purchase not met)
+watch([() => cart.totalAmount(), selectedVoucherId], ([total, vid]) => {
+    if (!vid) return;
+    const sv = activeVouchers.find((mv) => mv.id === vid);
+    if (sv?.voucher.min_purchase && total < sv.voucher.min_purchase) {
+        selectedVoucherId.value = null;
+    }
+});
 
 const paymentMethods = [
     { value: 'cash', label: 'Tunai', icon: 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z' },
@@ -30,17 +81,21 @@ const paymentMethods = [
 
 function submit() {
     if (!canCheckout.value) return;
-    const payload = {
+    const payload: Record<string, unknown> = {
         outlet_id: selectedOutlet.value,
         payment_method: paymentMethod.value,
         items: cart.items.map((i) => ({ product_id: i.product_id, quantity: i.quantity })),
         notes: notes.value,
     };
+    if (selectedVoucherId.value) {
+        payload.member_voucher_id = selectedVoucherId.value;
+    }
     submitting.value = true;
     router.post(route('member.orders.store'), payload, {
         onSuccess: () => {
             cart.clear();
             notes.value = '';
+            selectedVoucherId.value = null;
             submitting.value = false;
         },
         onError: (err) => {
@@ -114,18 +169,46 @@ function submit() {
                 <p class="text-xs font-semibold text-[#62625b]">Saldo Deposit Kamu</p>
                 <p class="mt-1 text-lg font-bold text-[#000000]">Rp{{ depositBalance.toLocaleString('id-ID') }}</p>
                 <p
-                    v-if="depositBalance < cart.totalAmount()"
+                    v-if="depositBalance < finalTotal"
                     class="mt-1 text-xs text-red-500"
                 >
-                    Saldo tidak cukup untuk total belanja Rp{{ cart.totalAmount().toLocaleString('id-ID') }}
+                    Saldo tidak cukup untuk total akhir Rp{{ finalTotal.toLocaleString('id-ID') }}
                 </p>
                 <p
-                    v-else-if="cart.totalAmount() > 0"
+                    v-else-if="finalTotal > 0"
                     class="mt-1 text-xs text-green-600"
                 >
                     Saldo cukup
                 </p>
                 <p v-if="errors.payment_method" class="mt-1 text-xs text-red-500">{{ errors.payment_method }}</p>
+            </div>
+
+            <!-- Voucher -->
+            <div v-if="activeVouchers.length > 0" class="mb-3">
+                <label class="text-xs font-semibold text-[#000000] mb-1.5 block">Voucher Diskon</label>
+                <select
+                    v-model="selectedVoucherId"
+                    class="w-full rounded-xl border border-[#dadad3] bg-[#f6f6f3] px-3 py-2.5 text-sm leading-[1.4] text-[#000000] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E22625]"
+                >
+                    <option :value="null">-- Pilih Voucher --</option>
+                    <option
+                        v-for="mv in activeVouchers"
+                        :key="mv.id"
+                        :value="mv.id"
+                        :disabled="mv.voucher.min_purchase ? cart.totalAmount() < mv.voucher.min_purchase : false"
+                    >
+                        {{ mv.voucher.name }}
+                        {{ mv.voucher.discount_type === 'percent' ? `${mv.voucher.discount_value}%` : `Rp${Number(mv.voucher.discount_value).toLocaleString('id-ID')}` }}
+                        {{ mv.voucher.min_purchase ? `(min. Rp${Number(mv.voucher.min_purchase).toLocaleString('id-ID')})` : '' }}
+                    </option>
+                </select>
+                <p v-if="selectedVoucher && discount > 0" class="mt-1 text-xs text-green-600">
+                    Diskon: -Rp{{ discount.toLocaleString('id-ID') }}
+                </p>
+                <p v-else-if="selectedVoucher && discount === 0" class="mt-1 text-xs text-red-500">
+                    Total belanja belum mencapai minimum pembelian
+                </p>
+                <p v-if="errors.member_voucher_id" class="text-xs text-red-500 mt-1">{{ errors.member_voucher_id }}</p>
             </div>
 
             <!-- Cart Items -->
@@ -172,8 +255,22 @@ function submit() {
                     placeholder="Catatan (opsional)..."
                     class="w-full rounded-xl border border-[#dadad3] bg-[#f6f6f3] px-3 py-2 text-xs leading-[1.4] text-[#000000] placeholder:text-[#91918c] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E22625]"
                 />
-                <div class="flex items-center justify-between">
-                    <p class="text-sm font-bold text-[#E22625]">Rp{{ cart.totalAmount().toLocaleString('id-ID') }}</p>
+                <div class="space-y-1">
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-[#62625b]">Total</span>
+                        <span class="font-semibold text-[#000000]">Rp{{ cart.totalAmount().toLocaleString('id-ID') }}</span>
+                    </div>
+                    <div v-if="discount > 0" class="flex items-center justify-between text-sm">
+                        <span class="text-[#62625b]">Diskon</span>
+                        <span class="font-semibold text-green-600">-Rp{{ discount.toLocaleString('id-ID') }}</span>
+                    </div>
+                    <div class="flex items-center justify-between border-t border-[#dadad3] pt-1">
+                        <span class="text-sm font-bold text-[#000000]">Total Akhir</span>
+                        <span class="text-sm font-bold text-[#E22625]">Rp{{ finalTotal.toLocaleString('id-ID') }}</span>
+                    </div>
+                </div>
+                <div class="mt-3 flex items-center justify-between">
+                    <div />
                     <button
                         @click="submit"
                         :disabled="submitting || !canCheckout"

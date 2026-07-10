@@ -176,6 +176,9 @@ function receiptFormatRupiah(n: number | null | undefined): string {
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <div class="text-right">
+                                        <template v-if="order.discount_amount > 0">
+                                            <div class="text-[10px] text-green-600">Diskon -{{ formatRupiah(order.discount_amount) }}</div>
+                                        </template>
                                         <span class="text-xs font-medium text-[#91918c]">Total</span>
                                         <span class="ml-1 text-sm font-bold text-[#E22625]">{{ formatRupiah(order.total_amount) }}</span>
                                     </div>
@@ -223,6 +226,10 @@ function receiptFormatRupiah(n: number | null | undefined): string {
                                         <span class="receipt-subtotal">{{ receiptFormatRupiah(item.subtotal) }}</span>
                                     </div>
                                     <div class="receipt-divider">- - - - - - - - - - - - - - - -</div>
+                                    <div v-if="order.discount_amount > 0" class="receipt-info-row receipt-discount-row">
+                                        <span>Diskon</span>
+                                        <span>-{{ receiptFormatRupiah(order.discount_amount) }}</span>
+                                    </div>
                                     <div class="receipt-total-row">
                                         <span class="receipt-total-label">TOTAL</span>
                                         <span class="receipt-total-value">{{ receiptFormatRupiah(order.total_amount) }}</span>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
 use App\Models\DepositTransaction;
+use App\Models\MemberVoucher;
 use App\Models\Notification;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -19,19 +20,27 @@ class OrderController extends Controller
     public function index(): Response
     {
         $outlets = Outlet::where('is_active', true)->get();
-        $lastOutletId = auth()->user()->member?->last_outlet_id;
-        $depositBalance = auth()->user()->member?->deposit_balance ?? 0;
+        $member = auth()->user()->member;
+        $lastOutletId = $member?->last_outlet_id;
+        $depositBalance = $member?->deposit_balance ?? 0;
+
+        $activeVouchers = $member?->memberVouchers()
+            ->with('voucher')
+            ->where('status', 'active')
+            ->whereHas('voucher', fn ($q) => $q->where('is_active', true))
+            ->get() ?? [];
 
         return inertia('member/orders/Index', [
             'outlets' => $outlets,
             'lastOutletId' => $lastOutletId,
             'depositBalance' => $depositBalance,
+            'activeVouchers' => $activeVouchers,
         ]);
     }
 
     public function history(): Response
     {
-        $orders = Order::with(['items.product', 'outlet'])
+        $orders = Order::with(['items.product', 'outlet', 'memberVoucher.voucher'])
             ->where('user_id', auth()->id())
             ->latest()
             ->get();
@@ -50,9 +59,10 @@ class OrderController extends Controller
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
             'notes' => 'nullable|string|max:500',
+            'member_voucher_id' => 'nullable|exists:member_vouchers,id',
         ]);
 
-        $order = DB::transaction(function () use ($validated) {
+        $order = DB::transaction(function () use ($validated, $request) {
             $order = Order::create([
                 'user_id' => auth()->id(),
                 'outlet_id' => $validated['outlet_id'],
@@ -80,26 +90,77 @@ class OrderController extends Controller
                 $total += $subtotal;
             }
 
-            $order->update(['total_amount' => $total]);
+            // Apply voucher
+            $discount = 0;
+            if (! empty($validated['member_voucher_id'])) {
+                $memberVoucher = MemberVoucher::with('voucher')
+                    ->where('id', $validated['member_voucher_id'])
+                    ->where('status', 'active')
+                    ->first();
+
+                if (! $memberVoucher || ! $memberVoucher->voucher || ! $memberVoucher->voucher->is_active) {
+                    throw ValidationException::withMessages([
+                        'member_voucher_id' => 'Voucher tidak valid atau sudah digunakan.',
+                    ]);
+                }
+
+                $voucher = $memberVoucher->voucher;
+
+                // Pastikan voucher milik member ini
+                $member = auth()->user()->member;
+                if (! $member || $memberVoucher->member_id !== $member->id) {
+                    throw ValidationException::withMessages([
+                        'member_voucher_id' => 'Voucher bukan milik kamu.',
+                    ]);
+                }
+
+                // Validasi min_purchase
+                if ($voucher->min_purchase > 0 && $total < $voucher->min_purchase) {
+                    throw ValidationException::withMessages([
+                        'member_voucher_id' => 'Minimal belanja Rp '.number_format($voucher->min_purchase, 0, ',', '.').' untuk menggunakan voucher ini.',
+                    ]);
+                }
+
+                // Hitung diskon
+                if ($voucher->discount_type === 'percent') {
+                    $discount = (int) round($total * $voucher->discount_value / 100);
+                    if ($voucher->max_discount && $discount > $voucher->max_discount) {
+                        $discount = $voucher->max_discount;
+                    }
+                } else {
+                    $discount = $voucher->discount_value;
+                }
+
+                // Tandai voucher sudah terpakai
+                $memberVoucher->update(['status' => 'used']);
+
+                $order->update([
+                    'discount_amount' => $discount,
+                    'member_voucher_id' => $memberVoucher->id,
+                ]);
+            }
+
+            $finalTotal = $total - $discount;
+            $order->update(['total_amount' => $finalTotal]);
 
             if ($validated['payment_method'] === 'deposit') {
                 $member = auth()->user()->member;
-                if (! $member || $member->deposit_balance < $total) {
+                if (! $member || $member->deposit_balance < $finalTotal) {
                     throw ValidationException::withMessages([
-                        'payment_method' => 'Saldo deposit tidak cukup. Saldo: Rp'.number_format($member?->deposit_balance ?? 0, 0, ',', '.').', Total: Rp'.number_format($total, 0, ',', '.'),
+                        'payment_method' => 'Saldo deposit tidak cukup. Saldo: Rp'.number_format($member?->deposit_balance ?? 0, 0, ',', '.').', Total: Rp'.number_format($finalTotal, 0, ',', '.'),
                     ]);
                 }
-                $member->decrement('deposit_balance', $total);
+                $member->decrement('deposit_balance', $finalTotal);
                 DepositTransaction::create([
                     'member_id' => $member->id,
                     'type' => 'payment',
-                    'amount' => $total,
+                    'amount' => $finalTotal,
                     'reference_type' => Order::class,
                     'reference_id' => $order->id,
                     'note' => 'Pembayaran pesanan #'.$order->id,
                 ]);
                 $order->update([
-                    'paid_amount' => $total,
+                    'paid_amount' => $finalTotal,
                     'change' => 0,
                 ]);
             }

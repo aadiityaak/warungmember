@@ -14,9 +14,11 @@ class DepositController extends Controller
     public function index(): Response
     {
         $members = Member::with('user:id,name,email')->latest()->paginate(15);
+        $memberOptions = Member::with('user:id,name,email')->latest()->get();
 
         return inertia('admin/deposits/Index', [
             'members' => $members,
+            'memberOptions' => $memberOptions,
         ]);
     }
 

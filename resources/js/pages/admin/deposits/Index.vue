@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { dashboard } from '@/routes';
@@ -14,7 +14,7 @@ defineOptions({
     },
 });
 
-const { members } = defineProps<{
+const { members, memberOptions } = defineProps<{
     members: {
         data: Array<{
             id: number;
@@ -28,6 +28,11 @@ const { members } = defineProps<{
         to: number;
         total: number;
     };
+    memberOptions: Array<{
+        id: number;
+        user: { name: string; email: string };
+        member_code: string;
+    }>;
 }>();
 
 const form = useForm({
@@ -37,9 +42,65 @@ const form = useForm({
 
 const page = usePage();
 
+// Searchable combobox
+const searchQuery = ref('');
+const dropdownOpen = ref(false);
+const dropdownRef = ref<HTMLElement | null>(null);
+
+const filteredMembers = computed(() => {
+    if (!searchQuery.value) return memberOptions;
+    const q = searchQuery.value.toLowerCase();
+    return memberOptions.filter(
+        (m) =>
+            m.user.name.toLowerCase().includes(q) ||
+            m.member_code.toLowerCase().includes(q),
+    );
+});
+
+const selectedMemberName = computed(() => {
+    if (!form.member_id) return '';
+    const m = memberOptions.find((m) => m.id === Number(form.member_id));
+    return m ? `${m.user.name} — ${m.member_code}` : '';
+});
+
+function selectMember(id: number) {
+    form.member_id = String(id);
+    searchQuery.value = selectedMemberName.value;
+    dropdownOpen.value = false;
+}
+
+function toggleDropdown() {
+    if (!dropdownOpen.value) {
+        searchQuery.value = '';
+        dropdownOpen.value = true;
+    } else {
+        dropdownOpen.value = false;
+    }
+}
+
+function onInputFocus() {
+    searchQuery.value = '';
+    dropdownOpen.value = true;
+}
+
+// Click outside
+function onDocumentClick(e: MouseEvent) {
+    if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) {
+        dropdownOpen.value = false;
+    }
+}
+
+// Track click outside
+import { onMounted, onUnmounted } from 'vue';
+onMounted(() => document.addEventListener('click', onDocumentClick));
+onUnmounted(() => document.removeEventListener('click', onDocumentClick));
+
 function submit() {
     form.post(route('admin.deposits.store'), {
-        onSuccess: () => form.reset(),
+        onSuccess: () => {
+            form.reset();
+            searchQuery.value = '';
+        },
     });
 }
 
@@ -91,17 +152,34 @@ const paginationPages = computed(() => {
             </div>
             <form @submit.prevent="submit" class="px-5 py-4">
                 <div class="flex flex-wrap items-end gap-4">
-                    <div class="flex-1 min-w-[200px]">
+                    <div class="flex-1 min-w-[200px] relative" ref="dropdownRef">
                         <label class="mb-1 block text-sm font-bold leading-[1.4] text-[#000000]">Member</label>
-                        <select
-                            v-model="form.member_id"
-                            class="w-full rounded-full border-0 bg-[#f6f6f3] px-4 py-2.5 text-sm leading-[1.4] text-[#000000] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#c8c8c1]"
+                        <input
+                            :value="selectedMemberName"
+                            @focus="onInputFocus"
+                            @input="(e) => { searchQuery = (e.target as HTMLInputElement).value; dropdownOpen = true; }"
+                            :placeholder="form.member_id ? '' : 'Cari nama atau ID member...'"
+                            class="w-full rounded-full border-0 bg-[#f6f6f3] px-4 py-2.5 text-sm leading-[1.4] text-[#000000] placeholder:text-[#91918c] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#c8c8c1] cursor-pointer"
+                        />
+                        <!-- Dropdown -->
+                        <div
+                            v-if="dropdownOpen"
+                            class="absolute z-50 mt-1 w-full rounded-xl border border-[#dadad3] bg-white shadow-lg max-h-60 overflow-y-auto"
                         >
-                            <option value="" disabled>Pilih member</option>
-                            <option v-for="m in members.data" :key="m.id" :value="m.id">
-                                {{ m.user.name }} — {{ m.user.email }}
-                            </option>
-                        </select>
+                            <div
+                                v-for="m in filteredMembers"
+                                :key="m.id"
+                                @click="selectMember(m.id)"
+                                class="flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer hover:bg-[#f6f6f3] transition-colors"
+                                :class="{ 'bg-[#f6f6f3] font-semibold': Number(form.member_id) === m.id }"
+                            >
+                                <span class="text-[#000000]">{{ m.user.name }}</span>
+                                <span class="text-xs font-mono text-[#91918c]">{{ m.member_code }}</span>
+                            </div>
+                            <div v-if="filteredMembers.length === 0" class="px-4 py-3 text-sm text-[#91918c] text-center">
+                                Member tidak ditemukan
+                            </div>
+                        </div>
                         <p v-if="form.errors.member_id" class="mt-1 text-xs leading-[1.4] text-[#E22625]">{{ form.errors.member_id }}</p>
                     </div>
                     <div class="w-[180px]">
