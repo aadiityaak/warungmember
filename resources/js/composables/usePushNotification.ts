@@ -1,8 +1,9 @@
 import { ref } from 'vue';
 
 export function usePushNotification() {
-    const subscribed = ref(false);
     const supported = 'serviceWorker' in navigator && 'PushManager' in window;
+    const permission = ref<NotificationPermission>('default');
+    const subscribed = ref(false);
 
     function getCsrfToken(): string {
         return (
@@ -10,8 +11,26 @@ export function usePushNotification() {
         );
     }
 
+    async function checkStatus() {
+        if (!supported) return;
+        permission.value = Notification.permission;
+        try {
+            const registration = await navigator.serviceWorker.ready;
+            const sub = await registration.pushManager.getSubscription();
+            subscribed.value = sub !== null;
+        } catch {
+            subscribed.value = false;
+        }
+    }
+
     async function subscribe() {
         if (!supported) return;
+        permission.value = Notification.permission;
+        if (permission.value === 'denied') return;
+        if (permission.value === 'default') {
+            permission.value = await Notification.requestPermission();
+        }
+        if (permission.value !== 'granted') return;
         try {
             const registration = await navigator.serviceWorker.ready;
             let subscription = await registration.pushManager.getSubscription();
@@ -37,6 +56,7 @@ export function usePushNotification() {
             });
 
             subscribed.value = true;
+            permission.value = 'granted';
         } catch {
             // permission denied or error
         }
@@ -44,15 +64,11 @@ export function usePushNotification() {
 
     async function init() {
         if (!supported) return;
-        try {
-            const permission = await Notification.requestPermission();
-            if (permission === 'granted') {
-                await subscribe();
-            }
-        } catch {
-            // ignore
+        await checkStatus();
+        if (Notification.permission === 'default') {
+            await subscribe();
         }
     }
 
-    return { supported, subscribed, init, subscribe };
+    return { supported, permission, subscribed, checkStatus, init, subscribe };
 }

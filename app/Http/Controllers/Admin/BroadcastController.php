@@ -138,7 +138,7 @@ class BroadcastController extends Controller
             'body' => $validated['body'],
             'data' => [
                 'segment' => $validated['segment'],
-                'segment_value' => $validated['segment_value'],
+                'segment_value' => $validated['segment_value'] ?? null,
             ],
             'sent_count' => $sentCount,
             'sent_at' => now(),
