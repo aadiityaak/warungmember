@@ -28,6 +28,7 @@ const form = useForm({
     discount_value: 0,
     min_purchase: 0,
     max_discount: null as number | null,
+    points_required: null as number | null,
     valid_from: '',
     valid_until: '',
     is_active: true,
@@ -93,6 +94,11 @@ function submit() {
                     <Label for="min">Minimal Pembelian</Label>
                     <Input id="min" v-model="form.min_purchase" type="number" min="0" />
                     <InputError :message="form.errors.min_purchase" />
+                </div>
+                <div>
+                    <Label for="points">Poin Dibutuhkan (opsional)</Label>
+                    <Input id="points" v-model="form.points_required" type="number" min="1" />
+                    <InputError :message="form.errors.points_required" />
                 </div>
                 <div class="flex items-center gap-2">
                     <Checkbox id="active" v-model:checked="form.is_active" />

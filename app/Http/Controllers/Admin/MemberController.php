@@ -52,8 +52,18 @@ class MemberController extends Controller
 
         $member->load('member');
 
+        $depositHistory = $member->member?->depositTransactions()
+            ->latest('created_at')
+            ->paginate(20);
+
+        $pointHistory = $member->member?->pointTransactions()
+            ->latest('created_at')
+            ->paginate(20);
+
         return inertia('admin/members/Show', [
             'member' => $member,
+            'depositHistory' => $depositHistory,
+            'pointHistory' => $pointHistory,
         ]);
     }
 

@@ -13,7 +13,7 @@ defineOptions({
     },
 });
 
-const { member } = defineProps<{
+const { member, depositHistory, pointHistory } = defineProps<{
     member: {
         id: number;
         name: string;
@@ -27,7 +27,71 @@ const { member } = defineProps<{
             birth_date: string | null;
         } | null;
     };
+    depositHistory: {
+        data: Array<{
+            id: number;
+            type: 'topup' | 'payment' | 'refund';
+            amount: number;
+            note: string | null;
+            created_at: string;
+        }>;
+    } | null;
+    pointHistory: {
+        data: Array<{
+            id: number;
+            type: 'earn' | 'redeem' | 'expire';
+            amount: number;
+            note: string | null;
+            created_at: string;
+        }>;
+    } | null;
 }>();
+
+const depositTypeLabel: Record<string, string> = {
+    topup: 'Top Up',
+    payment: 'Pembayaran',
+    refund: 'Refund',
+};
+
+const depositTypeClass: Record<string, string> = {
+    topup: 'text-green-600',
+    payment: 'text-red-600',
+    refund: 'text-blue-600',
+};
+
+const depositTypeSign: Record<string, string> = {
+    topup: '+',
+    payment: '-',
+    refund: '+',
+};
+
+const pointTypeLabel: Record<string, string> = {
+    earn: 'Earn',
+    redeem: 'Redeem',
+    expire: 'Expire',
+};
+
+const pointTypeClass: Record<string, string> = {
+    earn: 'text-green-600',
+    redeem: 'text-red-600',
+    expire: 'text-red-500',
+};
+
+const pointTypeSign: Record<string, string> = {
+    earn: '+',
+    redeem: '-',
+    expire: '-',
+};
+
+function formatDateTime(date: string): string {
+    return new Date(date).toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+}
 </script>
 
 <template>
@@ -51,8 +115,8 @@ const { member } = defineProps<{
             </span>
         </div>
 
+        <!-- Info Cards -->
         <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <!-- Info Akun -->
             <div class="rounded-2xl border border-[#dadad3] bg-white p-6">
                 <span class="text-xs font-medium leading-[1.5] text-[#91918c] uppercase tracking-wider">Akun</span>
                 <div class="mt-3 space-y-3">
@@ -73,7 +137,6 @@ const { member } = defineProps<{
                 </div>
             </div>
 
-            <!-- Total Poin -->
             <div class="rounded-2xl bg-[#f6f6f3] p-6">
                 <span class="text-xs font-medium leading-[1.5] text-[#91918c] uppercase tracking-wider">Total Poin</span>
                 <p class="mt-3 text-[28px] font-bold leading-[1.2] tracking-[-1.2px] text-[#000000]">
@@ -81,7 +144,6 @@ const { member } = defineProps<{
                 </p>
             </div>
 
-            <!-- Saldo Deposit -->
             <div class="rounded-2xl bg-[#f6f6f3] p-6">
                 <span class="text-xs font-medium leading-[1.5] text-[#91918c] uppercase tracking-wider">Saldo Deposit</span>
                 <p class="mt-3 text-[28px] font-bold leading-[1.2] tracking-[-1.2px] text-[#000000]">
@@ -89,7 +151,6 @@ const { member } = defineProps<{
                 </p>
             </div>
 
-            <!-- Tgl Lahir -->
             <div class="rounded-2xl bg-[#f6f6f3] p-6">
                 <span class="text-xs font-medium leading-[1.5] text-[#91918c] uppercase tracking-wider">Tanggal Lahir</span>
                 <p class="mt-3 text-[28px] font-bold leading-[1.2] tracking-[-1.2px] text-[#000000]">
@@ -103,6 +164,70 @@ const { member } = defineProps<{
         <!-- Empty State if no member data -->
         <div v-if="!member.member" class="mt-6 rounded-2xl bg-[#f6f6f3] px-8 py-12 text-center">
             <p class="text-sm leading-[1.4] text-[#62625b]">Data loyalitas belum tersedia untuk member ini.</p>
+        </div>
+
+        <!-- Riwayat Deposit -->
+        <div v-if="depositHistory && depositHistory.data.length > 0" class="mt-6">
+            <h3 class="mb-3 text-lg font-bold">Riwayat Deposit</h3>
+            <div class="overflow-hidden rounded-2xl border border-[#dadad3] bg-white">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="border-b border-[#e5e5e0] text-xs font-medium text-[#91918c] uppercase tracking-wider">
+                            <th class="px-4 py-3">Tanggal</th>
+                            <th class="px-4 py-3">Tipe</th>
+                            <th class="px-4 py-3 text-right">Jumlah</th>
+                            <th class="px-4 py-3">Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="t in depositHistory.data" :key="t.id" class="border-b border-[#e5e5e0] last:border-0">
+                            <td class="px-4 py-3 whitespace-nowrap">{{ formatDateTime(t.created_at) }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <span :class="depositTypeClass[t.type] ?? ''">
+                                    {{ depositTypeLabel[t.type] ?? t.type }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap text-right font-semibold"
+                                :class="depositTypeClass[t.type] ?? ''">
+                                {{ depositTypeSign[t.type] ?? '' }} Rp {{ t.amount.toLocaleString('id-ID') }}
+                            </td>
+                            <td class="px-4 py-3 text-[#62625b]">{{ t.note ?? '-' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Riwayat Poin -->
+        <div v-if="pointHistory && pointHistory.data.length > 0" class="mt-6">
+            <h3 class="mb-3 text-lg font-bold">Riwayat Poin</h3>
+            <div class="overflow-hidden rounded-2xl border border-[#dadad3] bg-white">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="border-b border-[#e5e5e0] text-xs font-medium text-[#91918c] uppercase tracking-wider">
+                            <th class="px-4 py-3">Tanggal</th>
+                            <th class="px-4 py-3">Tipe</th>
+                            <th class="px-4 py-3 text-right">Jumlah</th>
+                            <th class="px-4 py-3">Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="t in pointHistory.data" :key="t.id" class="border-b border-[#e5e5e0] last:border-0">
+                            <td class="px-4 py-3 whitespace-nowrap">{{ formatDateTime(t.created_at) }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <span :class="pointTypeClass[t.type] ?? ''">
+                                    {{ pointTypeLabel[t.type] ?? t.type }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap text-right font-semibold"
+                                :class="pointTypeClass[t.type] ?? ''">
+                                {{ pointTypeSign[t.type] ?? '' }} {{ t.amount.toLocaleString('id-ID') }}
+                            </td>
+                            <td class="px-4 py-3 text-[#62625b]">{{ t.note ?? '-' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </template>

@@ -30,6 +30,7 @@ class VoucherController extends Controller
             'discount_value' => 'required|integer|min:1',
             'min_purchase' => 'integer|min:0',
             'max_discount' => 'nullable|integer|min:0',
+            'points_required' => 'nullable|integer|min:1',
             'valid_from' => 'nullable|date',
             'valid_until' => 'nullable|date|after:valid_from',
             'is_active' => 'boolean',

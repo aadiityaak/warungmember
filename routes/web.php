@@ -44,7 +44,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('rewards', [MemberRewardController::class, 'index'])->name('rewards');
         Route::post('rewards/{reward}/redeem', [MemberRewardController::class, 'redeem'])->name('rewards.redeem');
         Route::get('deposits', MemberDepositController::class)->name('deposits');
-        Route::get('vouchers', MemberVoucherController::class)->name('vouchers');
+        Route::get('vouchers', [MemberVoucherController::class, 'index'])->name('vouchers');
+        Route::post('vouchers/{voucher}/claim', [MemberVoucherController::class, 'claim'])->name('vouchers.claim');
         Route::get('notifications', [NotificationController::class, 'index'])->name('notifications');
         Route::post('notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
         Route::post('notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.readAll');
