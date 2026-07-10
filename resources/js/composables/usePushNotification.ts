@@ -14,6 +14,10 @@ export function usePushNotification() {
     async function checkStatus() {
         if (!supported) return;
         permission.value = Notification.permission;
+        if (permission.value !== 'granted') {
+            subscribed.value = false;
+            return;
+        }
         try {
             const registration = await navigator.serviceWorker.ready;
             const sub = await registration.pushManager.getSubscription();
