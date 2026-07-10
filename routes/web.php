@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DepositController;
 use App\Http\Controllers\Admin\KasirController;
+use App\Http\Controllers\Admin\BroadcastController;
 use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\OutletController;
@@ -79,6 +80,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('kasir', KasirController::class);
         Route::resource('orders', AdminOrderController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::get('orders/{order}/receipt', [AdminOrderController::class, 'receipt'])->name('orders.receipt');
+        Route::get('broadcasts', [BroadcastController::class, 'index'])->name('broadcasts.index');
+        Route::get('broadcasts/create', [BroadcastController::class, 'create'])->name('broadcasts.create');
+        Route::post('broadcasts', [BroadcastController::class, 'store'])->name('broadcasts.store');
+        Route::post('broadcasts/estimate', [BroadcastController::class, 'estimateCount'])->name('broadcasts.estimate');
     });
 });
 

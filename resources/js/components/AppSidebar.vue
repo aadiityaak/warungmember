@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { LayoutGrid, Package, Settings, ShoppingBag, Store, Ticket, Users } from '@lucide/vue';
+import { BookOpenText, LayoutGrid, Package, Settings, ShoppingBag, Store, Ticket, Users } from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes/admin';
 import { index as membersIndex } from '@/routes/admin/members';
+import { index as broadcastsIndex } from '@/routes/admin/broadcasts';
 import { index as rewardsIndex } from '@/routes/admin/rewards';
 import { index as depositsIndex } from '@/routes/admin/deposits';
 import { index as vouchersIndex } from '@/routes/admin/vouchers';
@@ -75,6 +76,11 @@ const mainNavItems: NavItem[] = [
         title: 'Voucher',
         href: vouchersIndex(),
         icon: Ticket,
+    },
+    {
+        title: 'Broadcast',
+        href: broadcastsIndex(),
+        icon: BookOpenText,
     },
     {
         title: 'Pesanan',
