@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import { useCart } from '@/composables/useCart';
 import MemberLayout from '@/layouts/MemberLayout.vue';
 
 defineOptions({ layout: MemberLayout });
+
+const page = usePage();
+const paymentSettings = computed(() => (page.props.payment as Record<string, any>) ?? {});
 
 interface VoucherData {
     id: number;
@@ -36,6 +39,7 @@ const notes = ref('');
 const selectedVoucherId = ref<number | null>(null);
 const errors = ref<Record<string, string>>({});
 const submitting = ref(false);
+const voucherModalOpen = ref(false);
 
 const canCheckout = computed(() => selectedOutlet.value && paymentMethod.value);
 
@@ -164,6 +168,42 @@ function submit() {
                 <p v-if="errors.payment_method" class="text-xs text-red-500 mt-1">{{ errors.payment_method }}</p>
             </div>
 
+            <!-- Payment Info: Bank / Transfer -->
+            <div v-if="paymentMethod === 'transfer'" class="mb-3 rounded-xl border border-[#dadad3] bg-[#f6f6f3] p-3">
+                <p class="text-xs font-semibold text-[#62625b] mb-2">Transfer ke Rekening</p>
+                <div v-if="paymentSettings.banks?.length" class="space-y-2">
+                    <div
+                        v-for="(bank, i) in paymentSettings.banks.filter((b: any) => b.enabled)"
+                        :key="i"
+                        class="rounded-lg bg-white px-3 py-2"
+                    >
+                        <p class="text-sm font-bold text-[#000000]">{{ bank.bank_name }}</p>
+                        <p class="text-xs text-[#62625b]">{{ bank.account_number }}</p>
+                        <p class="text-xs text-[#91918c]">a.n. {{ bank.account_name }}</p>
+                    </div>
+                </div>
+                <p v-else class="text-xs text-[#91918c]">Belum ada rekening yang dikonfigurasi.</p>
+            </div>
+
+            <!-- Payment Info: QRIS -->
+            <div v-if="paymentMethod === 'qris'" class="mb-3 rounded-xl border border-[#dadad3] bg-[#f6f6f3] p-3">
+                <p class="text-xs font-semibold text-[#62625b] mb-2">Scan QRIS</p>
+                <div v-if="paymentSettings.qris?.qr_image" class="flex flex-col items-center">
+                    <img
+                        :src="paymentSettings.qris.qr_image"
+                        alt="QRIS"
+                        class="h-48 w-48 rounded-xl object-contain bg-white border border-[#dadad3]"
+                    />
+                    <p v-if="paymentSettings.qris.merchant_name" class="mt-2 text-sm font-bold text-[#000000]">
+                        {{ paymentSettings.qris.merchant_name }}
+                    </p>
+                    <p v-if="paymentSettings.qris.merchant_id" class="text-xs text-[#91918c]">
+                        MID: {{ paymentSettings.qris.merchant_id }}
+                    </p>
+                </div>
+                <p v-else class="text-xs text-[#91918c]">QRIS belum dikonfigurasi.</p>
+            </div>
+
             <!-- Deposit Info -->
             <div v-if="paymentMethod === 'deposit'" class="mb-3 rounded-xl border border-[#dadad3] bg-[#f6f6f3] p-3">
                 <p class="text-xs font-semibold text-[#62625b]">Saldo Deposit Kamu</p>
@@ -184,24 +224,18 @@ function submit() {
             </div>
 
             <!-- Voucher -->
-            <div v-if="activeVouchers.length > 0" class="mb-3">
+            <div class="mb-3">
                 <label class="text-xs font-semibold text-[#000000] mb-1.5 block">Voucher Diskon</label>
-                <select
-                    v-model="selectedVoucherId"
-                    class="w-full rounded-xl border border-[#dadad3] bg-[#f6f6f3] px-3 py-2.5 text-sm leading-[1.4] text-[#000000] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E22625]"
+                <button
+                    type="button"
+                    @click="voucherModalOpen = true"
+                    class="w-full rounded-xl border border-[#dadad3] bg-[#f6f6f3] px-3 py-2.5 text-sm leading-[1.4] text-left flex items-center justify-between focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E22625]"
                 >
-                    <option :value="null">-- Pilih Voucher --</option>
-                    <option
-                        v-for="mv in activeVouchers"
-                        :key="mv.id"
-                        :value="mv.id"
-                        :disabled="mv.voucher.min_purchase ? cart.totalAmount() < mv.voucher.min_purchase : false"
-                    >
-                        {{ mv.voucher.name }}
-                        {{ mv.voucher.discount_type === 'percent' ? `${mv.voucher.discount_value}%` : `Rp${Number(mv.voucher.discount_value).toLocaleString('id-ID')}` }}
-                        {{ mv.voucher.min_purchase ? `(min. Rp${Number(mv.voucher.min_purchase).toLocaleString('id-ID')})` : '' }}
-                    </option>
-                </select>
+                    <span v-if="selectedVoucher" class="text-[#000000] font-medium">{{ selectedVoucher.voucher.name }}</span>
+                    <span v-else-if="activeVouchers.length === 0" class="text-[#91918c]">Belum ada voucher tersedia</span>
+                    <span v-else class="text-[#91918c]">Ketuk untuk pilih voucher</span>
+                    <svg class="h-4 w-4 text-[#91918c] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
                 <p v-if="selectedVoucher && discount > 0" class="mt-1 text-xs text-green-600">
                     Diskon: -Rp{{ discount.toLocaleString('id-ID') }}
                 </p>
@@ -210,6 +244,59 @@ function submit() {
                 </p>
                 <p v-if="errors.member_voucher_id" class="text-xs text-red-500 mt-1">{{ errors.member_voucher_id }}</p>
             </div>
+
+            <!-- Modal Pilih Voucher -->
+            <Teleport to="body">
+                <div v-if="voucherModalOpen" class="fixed inset-0 z-50 flex items-end justify-center" @click.self="voucherModalOpen = false">
+                    <!-- Backdrop -->
+                    <div class="fixed inset-0 bg-black/40" @click="voucherModalOpen = false" />
+                    <!-- Sheet -->
+                    <div class="relative z-10 w-full max-w-md rounded-t-2xl bg-white pb-6 shadow-xl animate-slide-up">
+                        <div class="flex items-center justify-between px-5 pt-4 pb-2">
+                            <h3 class="text-base font-bold text-[#000000]">Pilih Voucher</h3>
+                            <button @click="voucherModalOpen = false" class="p-1 text-[#91918c] hover:text-[#000000]">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+                        <div class="max-h-64 overflow-y-auto px-5">
+                            <div v-if="activeVouchers.length === 0" class="py-8 text-center">
+                                <p class="text-sm text-[#91918c]">Belum ada voucher tersedia</p>
+                            </div>
+                            <div
+                                v-for="mv in activeVouchers"
+                                :key="mv.id"
+                                @click="selectedVoucherId = mv.id; voucherModalOpen = false"
+                                class="flex items-center justify-between rounded-xl border px-4 py-3 mb-2 cursor-pointer transition-colors"
+                                :class="selectedVoucherId === mv.id
+                                    ? 'border-[#E22625] bg-[#E22625]/5'
+                                    : 'border-[#dadad3] hover:bg-[#f6f6f3]'"
+                            >
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-semibold text-[#000000]">{{ mv.voucher.name }}</p>
+                                    <p class="text-xs text-[#91918c] mt-0.5">
+                                        {{ mv.voucher.discount_type === 'percent' ? `Diskon ${mv.voucher.discount_value}%` : `Diskon Rp${Number(mv.voucher.discount_value).toLocaleString('id-ID')}` }}
+                                        {{ mv.voucher.max_discount ? ` (maks. Rp${Number(mv.voucher.max_discount).toLocaleString('id-ID')})` : '' }}
+                                    </p>
+                                    <p v-if="mv.voucher.min_purchase" class="text-xs text-[#91918c]">
+                                        Min. belanja Rp{{ Number(mv.voucher.min_purchase).toLocaleString('id-ID') }}
+                                    </p>
+                                </div>
+                                <div v-if="selectedVoucherId === mv.id" class="shrink-0 ml-2">
+                                    <svg class="h-5 w-5 text-[#E22625]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3 px-5">
+                            <button
+                                @click="selectedVoucherId = null; voucherModalOpen = false"
+                                class="w-full rounded-full border border-[#dadad3] py-2.5 text-sm font-semibold text-[#000000] hover:bg-[#f6f6f3] transition-colors"
+                            >
+                                {{ selectedVoucherId ? 'Gunakan tanpa voucher' : 'Tutup' }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </Teleport>
 
             <!-- Cart Items -->
             <div class="flex flex-col gap-2">
@@ -313,3 +400,14 @@ function submit() {
         </a>
     </div>
 </template>
+
+<style scoped>
+@keyframes slide-up {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+.animate-slide-up {
+    animation: slide-up 0.25s ease-out;
+}
+</style>

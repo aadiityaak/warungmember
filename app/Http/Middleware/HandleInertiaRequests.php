@@ -50,7 +50,27 @@ class HandleInertiaRequests extends Middleware
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'unreadNotifications' => $unreadCount,
             'branding' => $this->branding(),
+            'payment' => $this->payment(),
         ];
+    }
+
+    private function payment(): array
+    {
+        $defaults = [
+            'qris' => [
+                'enabled' => false,
+                'merchant_name' => '',
+                'merchant_id' => '',
+                'qr_image' => null,
+            ],
+            'banks' => [],
+        ];
+
+        $data = Storage::exists('payment.json')
+            ? json_decode(Storage::get('payment.json'), true)
+            : [];
+
+        return array_merge($defaults, array_filter($data ?? [], fn ($v) => $v !== null && $v !== ''));
     }
 
     private function branding(): array
