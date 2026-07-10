@@ -52,7 +52,7 @@ const { orders, products, members, outlets } = defineProps<{
         id: number;
         name: string;
         avatar: string | null;
-        member: { member_code: string } | null;
+        member: { member_code: string; deposit_balance: number } | null;
     }>;
     outlets: Array<{ id: number; name: string }>;
 }>();
@@ -91,10 +91,11 @@ const paymentLabels: Record<string, string> = {
     cash: 'Tunai',
     qris: 'QRIS',
     transfer: 'Transfer',
+    deposit: 'Deposit',
 };
 
 const allStatuses = ['pending', 'processing', 'completed', 'cancelled'];
-const paymentMethods = ['cash', 'qris', 'transfer'];
+const paymentMethods = ['cash', 'qris', 'transfer', 'deposit'];
 
 interface EditItem {
     product_id: number;
@@ -128,6 +129,10 @@ const createAvailableProducts = computed(() => {
     const existingIds = createItems.map((i) => i.product_id);
     return products.filter((p) => !existingIds.includes(p.id));
 });
+
+const selectedMember = computed(() =>
+    members.find((m) => m.id === Number(createForm.user_id)),
+);
 
 const createForm = useForm({
     user_id: '',
@@ -354,8 +359,12 @@ function productNames(
     return items.map((i) => `${i.product.name} x${i.quantity}`).join(', ');
 }
 
+const showReceiptModal = ref(false);
+const receiptUrl = ref('');
+
 function printOrder(orderId: number) {
-    window.open(route('admin.orders.receipt', orderId), '_blank');
+    receiptUrl.value = route('admin.orders.receipt', orderId);
+    showReceiptModal.value = true;
 }
 
 const paginationPages = computed(() => {
@@ -568,9 +577,10 @@ const paginationPages = computed(() => {
                             <!-- Aksi -->
                             <td class="px-2 py-3">
                                 <div
-                                    class="flex items-center justify-center gap-1"
+                                    class="flex items-center justify-end gap-1"
                                 >
                                     <button
+                                        v-if="order.status === 'completed'"
                                         @click="printOrder(order.id)"
                                         class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[#62625b] transition-colors hover:bg-[#f6f6f3] hover:text-[#000000]"
                                         title="Cetak Struk"
@@ -937,6 +947,36 @@ const paginationPages = computed(() => {
                             </p>
                         </div>
 
+                        <!-- Deposit Info -->
+                        <div v-if="createForm.payment_method === 'deposit'">
+                            <div class="rounded-xl border border-[#dadad3] bg-[#f6f6f3] p-3">
+                                <p class="text-xs font-semibold text-[#62625b]">
+                                    Saldo Deposit Member
+                                </p>
+                                <p class="mt-1 text-lg font-bold text-[#000000]">
+                                    Rp{{ (selectedMember?.member?.deposit_balance ?? 0).toLocaleString('id-ID') }}
+                                </p>
+                                <p
+                                    v-if="selectedMember && selectedMember.member && selectedMember.member.deposit_balance < totalCreateAmount"
+                                    class="mt-1 text-xs text-red-500"
+                                >
+                                    Saldo tidak cukup untuk total belanja Rp{{ totalCreateAmount.toLocaleString('id-ID') }}
+                                </p>
+                                <p
+                                    v-else-if="selectedMember && selectedMember.member && totalCreateAmount > 0"
+                                    class="mt-1 text-xs text-green-600"
+                                >
+                                    Saldo cukup
+                                </p>
+                                <p
+                                    v-if="createForm.errors.payment_method"
+                                    class="mt-1 text-xs text-red-500"
+                                >
+                                    {{ createForm.errors.payment_method }}
+                                </p>
+                            </div>
+                        </div>
+
                         <!-- Items -->
                         <div>
                             <label
@@ -1023,7 +1063,7 @@ const paginationPages = computed(() => {
                                 >
                                     Pilih Produk
                                 </p>
-                                <div class="grid grid-cols-3 gap-2">
+                                <div class="grid grid-cols-3 gap-2 max-h-[50vh] overflow-y-auto">
                                     <button
                                         v-for="p in products"
                                         :key="p.id"
@@ -1267,7 +1307,7 @@ const paginationPages = computed(() => {
                                 >
                                     Pilih Produk
                                 </p>
-                                <div class="grid grid-cols-3 gap-2">
+                                <div class="grid grid-cols-3 gap-2 max-h-[50vh] overflow-y-auto">
                                     <button
                                         v-for="p in products"
                                         :key="p.id"
@@ -1378,6 +1418,43 @@ const paginationPages = computed(() => {
                             Simpan
                         </button>
                     </div>
+                </div>
+            </div>
+        </Teleport>
+
+        <!-- Receipt Modal -->
+        <Teleport to="body">
+            <div
+                v-if="showReceiptModal"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+                @click.self="showReceiptModal = false"
+            >
+                <div
+                    class="relative h-[90vh] w-[380px] rounded-2xl bg-white shadow-xl"
+                >
+                    <button
+                        @click="showReceiptModal = false"
+                        class="absolute top-2 right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-md hover:bg-gray-100"
+                    >
+                        <svg
+                            class="h-4 w-4 text-[#62625b]"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"
+                            />
+                        </svg>
+                    </button>
+                    <iframe
+                        :src="receiptUrl"
+                        class="h-full w-full rounded-2xl border-0 pt-10"
+                        title="Struk Pesanan"
+                    />
                 </div>
             </div>
         </Teleport>

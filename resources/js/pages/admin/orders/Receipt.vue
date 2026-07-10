@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
-import { onMounted } from 'vue';
 
 const { order } = defineProps<{
     order: {
@@ -24,7 +23,9 @@ const { order } = defineProps<{
     };
 }>();
 
-function formatRupiah(n: number): string {
+function formatRupiah(n: number | null | undefined): string {
+    if (n == null) return 'Rp0';
+
     return 'Rp' + n.toLocaleString('id-ID');
 }
 
@@ -36,15 +37,26 @@ const paymentLabels: Record<string, string> = {
     cash: 'Tunai',
     qris: 'QRIS',
     transfer: 'Transfer',
+    deposit: 'Deposit',
 };
 
-onMounted(() => {
-    setTimeout(() => window.print(), 300);
-});
+function printReceipt() {
+    window.print();
+}
+
 </script>
 
 <template>
     <Head title="Struk Pesanan" />
+
+    <div class="print-btn-container">
+        <button @click="printReceipt" class="print-btn">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+            Cetak Struk
+        </button>
+    </div>
 
     <div class="receipt-print">
         <div class="header">
@@ -97,6 +109,13 @@ onMounted(() => {
                 <div v-if="order.change !== null" class="info-row change-row">
                     <span>Kembali</span>
                     <span>{{ formatRupiah(order.change) }}</span>
+                </div>
+            </div>
+
+            <div v-if="order.payment_method === 'deposit' && order.paid_amount !== null" class="payment-section">
+                <div class="info-row">
+                    <span>Deposit</span>
+                    <span>{{ formatRupiah(order.paid_amount) }}</span>
                 </div>
             </div>
 
@@ -234,9 +253,16 @@ body {
         background: #fff;
         margin: 0;
         padding: 0;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
     .receipt-print {
         padding: 2mm 3mm;
+        width: 100%;
+        max-width: 80mm;
+    }
+    .print-btn-container {
+        display: none !important;
     }
     @page {
         margin: 0;
@@ -248,6 +274,34 @@ body {
     .receipt-print {
         border: 1px dashed #ccc;
         margin: 16px auto;
+    }
+    .print-btn-container {
+        display: flex;
+        justify-content: center;
+        padding: 16px;
+    }
+    .print-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 24px;
+        border-radius: 999px;
+        background: #E22625;
+        color: #fff;
+        font-size: 14px;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+    .print-btn:hover {
+        opacity: 0.9;
+    }
+}
+
+@media print {
+    .print-btn-container {
+        display: none !important;
     }
 }
 </style>

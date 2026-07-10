@@ -6,9 +6,10 @@ import MemberLayout from '@/layouts/MemberLayout.vue';
 
 defineOptions({ layout: MemberLayout });
 
-const { outlets, lastOutletId } = defineProps<{
+const { outlets, lastOutletId, depositBalance } = defineProps<{
     outlets: Array<{ id: number; name: string; address: string | null }>;
     lastOutletId: number | null;
+    depositBalance: number;
 }>();
 
 const cart = useCart();
@@ -24,6 +25,7 @@ const paymentMethods = [
     { value: 'cash', label: 'Tunai', icon: 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z' },
     { value: 'qris', label: 'QRIS', icon: 'M5 3h4v4H5zM16 3h4v4h-4zM5 16h4v4H5zM21 16h-3a2 2 0 0 0-2 2v3M21 21v.01M12 7v3a2 2 0 0 1-2 2H7M3 12h.01M12 3h.01M12 16v.01M16 12h1M21 12v.01M12 21v-1' },
     { value: 'transfer', label: 'Transfer', icon: 'M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4' },
+    { value: 'deposit', label: 'Deposit', icon: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0 13c-2.33 0-4.31-1.46-5.11-3.5h10.22c-.8 2.04-2.78 3.5-5.11 3.5z' },
 ];
 
 function submit() {
@@ -87,7 +89,7 @@ function submit() {
             <!-- Payment Method -->
             <div class="mb-3">
                 <label class="text-xs font-semibold text-[#000000] mb-1.5 block">Metode Pembayaran</label>
-                <div class="grid grid-cols-3 gap-2">
+                <div class="grid grid-cols-4 gap-2">
                     <button
                         v-for="pm in paymentMethods"
                         :key="pm.value"
@@ -105,6 +107,25 @@ function submit() {
                     </button>
                 </div>
                 <p v-if="errors.payment_method" class="text-xs text-red-500 mt-1">{{ errors.payment_method }}</p>
+            </div>
+
+            <!-- Deposit Info -->
+            <div v-if="paymentMethod === 'deposit'" class="mb-3 rounded-xl border border-[#dadad3] bg-[#f6f6f3] p-3">
+                <p class="text-xs font-semibold text-[#62625b]">Saldo Deposit Kamu</p>
+                <p class="mt-1 text-lg font-bold text-[#000000]">Rp{{ depositBalance.toLocaleString('id-ID') }}</p>
+                <p
+                    v-if="depositBalance < cart.totalAmount()"
+                    class="mt-1 text-xs text-red-500"
+                >
+                    Saldo tidak cukup untuk total belanja Rp{{ cart.totalAmount().toLocaleString('id-ID') }}
+                </p>
+                <p
+                    v-else-if="cart.totalAmount() > 0"
+                    class="mt-1 text-xs text-green-600"
+                >
+                    Saldo cukup
+                </p>
+                <p v-if="errors.payment_method" class="mt-1 text-xs text-red-500">{{ errors.payment_method }}</p>
             </div>
 
             <!-- Cart Items -->

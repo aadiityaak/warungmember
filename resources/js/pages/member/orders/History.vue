@@ -26,6 +26,7 @@ const paymentLabels: Record<string, string> = {
     cash: 'Tunai',
     qris: 'QRIS',
     transfer: 'Transfer',
+    deposit: 'Deposit',
 };
 </script>
 

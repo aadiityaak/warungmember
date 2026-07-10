@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\DepositTransaction;
 use App\Models\Notification;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -12,6 +13,7 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Inertia\Response;
 
 class OrderController extends Controller
@@ -34,7 +36,7 @@ class OrderController extends Controller
             ->get(['id', 'name', 'image', 'price', 'discount_price', 'discount_end_at']);
 
         $members = User::where('role', 'member')
-            ->with('member:id,user_id,member_code')
+            ->with('member:id,user_id,member_code,deposit_balance')
             ->orderBy('name')
             ->get(['id', 'name', 'avatar']);
 
@@ -71,7 +73,7 @@ class OrderController extends Controller
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'outlet_id' => 'required|exists:outlets,id',
-            'payment_method' => 'required|in:cash,qris,transfer',
+            'payment_method' => 'required|in:cash,qris,transfer,deposit',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
@@ -121,6 +123,28 @@ class OrderController extends Controller
                 $order->update([
                     'paid_amount' => $paidAmount,
                     'change' => max(0, $paidAmount - $total),
+                ]);
+            }
+
+            if ($validated['payment_method'] === 'deposit') {
+                $member = $order->user?->member;
+                if (! $member || $member->deposit_balance < $total) {
+                    throw ValidationException::withMessages([
+                        'payment_method' => 'Saldo deposit tidak cukup. Saldo: Rp'.number_format($member?->deposit_balance ?? 0, 0, ',', '.').', Total: Rp'.number_format($total, 0, ',', '.'),
+                    ]);
+                }
+                $member->decrement('deposit_balance', $total);
+                DepositTransaction::create([
+                    'member_id' => $member->id,
+                    'type' => 'payment',
+                    'amount' => $total,
+                    'reference_type' => Order::class,
+                    'reference_id' => $order->id,
+                    'note' => 'Pembayaran pesanan #'.$order->id,
+                ]);
+                $order->update([
+                    'paid_amount' => $total,
+                    'change' => 0,
                 ]);
             }
 
