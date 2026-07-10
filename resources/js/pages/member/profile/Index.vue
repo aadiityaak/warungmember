@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import JsBarcode from 'jsbarcode';
 import MemberLayout from '@/layouts/MemberLayout.vue';
 
@@ -52,6 +52,13 @@ const menuItems: MenuItem[] = [
         external: true,
     },
     {
+        title: 'Install Aplikasi',
+        subtitle: 'Pasang WarungMember di layar depan',
+        icon: 'install',
+        href: '#',
+        method: 'get',
+    },
+    {
         title: 'Syarat & Ketentuan',
         subtitle: 'Baca aturan program loyalitas',
         icon: 'file',
@@ -91,6 +98,33 @@ function formatRupiah(n: number): string {
 
 const barcodeRef = ref<HTMLOrSVGImageElement | null>(null);
 
+// PWA Install
+const deferredPrompt = ref<any>(null);
+const isInstallable = ref(false);
+const isStandalone = ref(window.matchMedia('(display-mode: standalone)').matches);
+
+function onBeforeInstallPrompt(e: Event) {
+    e.preventDefault();
+    deferredPrompt.value = e;
+    isInstallable.value = true;
+}
+
+function onAppInstalled() {
+    isInstallable.value = false;
+    deferredPrompt.value = null;
+}
+
+function installApp() {
+    if (!deferredPrompt.value) return;
+    deferredPrompt.value.prompt();
+    deferredPrompt.value.userChoice.then((result: { outcome: string }) => {
+        if (result.outcome === 'accepted') {
+            isInstallable.value = false;
+        }
+        deferredPrompt.value = null;
+    });
+}
+
 onMounted(() => {
     if (profile.member_code && barcodeRef.value) {
         JsBarcode(barcodeRef.value, profile.member_code, {
@@ -103,6 +137,14 @@ onMounted(() => {
             lineColor: '#000000',
         });
     }
+
+    window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt);
+    window.addEventListener('appinstalled', onAppInstalled);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt);
+    window.removeEventListener('appinstalled', onAppInstalled);
 });
 </script>
 
@@ -181,34 +223,37 @@ onMounted(() => {
 
         <!-- Menu List -->
         <div class="overflow-hidden rounded-2xl border border-[#dadad3] bg-white">
-            <button
-                v-for="(item, idx) in menuItems"
-                :key="item.title"
-                @click="openMenuItem(item)"
-                class="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-[#fbfbf9]"
-                :class="{ 'border-t border-[#e5e5e0]': idx > 0 }"
-            >
-                <!-- Icon -->
-                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f6f6f3]">
-                    <!-- User -->
-                    <svg v-if="item.icon === 'user'" class="h-4 w-4 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                    <!-- History -->
-                    <svg v-else-if="item.icon === 'history'" class="h-4 w-4 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    <!-- Chat -->
-                    <svg v-else-if="item.icon === 'chat'" class="h-4 w-4 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-                    <!-- File -->
-                    <svg v-else-if="item.icon === 'file'" class="h-4 w-4 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                    <!-- Shield -->
-                    <svg v-else-if="item.icon === 'shield'" class="h-4 w-4 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                    <!-- Info -->
-                    <svg v-else-if="item.icon === 'info'" class="h-4 w-4 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold leading-[1.4] text-[#000000]">{{ item.title }}</p>
-                    <p v-if="item.subtitle" class="text-xs leading-[1.4] text-[#62625b]">{{ item.subtitle }}</p>
-                </div>
-                <svg class="h-4 w-4 shrink-0 text-[#91918c]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-            </button>
+            <template v-for="(item, idx) in menuItems" :key="item.title">
+                <button
+                    v-if="item.icon !== 'install' || (isInstallable && !isStandalone)"
+                    @click="item.icon === 'install' ? installApp() : openMenuItem(item)"
+                    class="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-[#fbfbf9]"
+                    :class="{ 'border-t border-[#e5e5e0]': idx > 0 }"
+                >
+                    <!-- Icon -->
+                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f6f6f3]">
+                        <!-- User -->
+                        <svg v-if="item.icon === 'user'" class="h-4 w-4 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                        <!-- History -->
+                        <svg v-else-if="item.icon === 'history'" class="h-4 w-4 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <!-- Chat -->
+                        <svg v-else-if="item.icon === 'chat'" class="h-4 w-4 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                        <!-- Install -->
+                        <svg v-else-if="item.icon === 'install'" class="h-4 w-4 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v12m0 0l-4-4m4 4l4-4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" /></svg>
+                        <!-- File -->
+                        <svg v-else-if="item.icon === 'file'" class="h-4 w-4 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        <!-- Shield -->
+                        <svg v-else-if="item.icon === 'shield'" class="h-4 w-4 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                        <!-- Info -->
+                        <svg v-else-if="item.icon === 'info'" class="h-4 w-4 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold leading-[1.4] text-[#000000]">{{ item.title }}</p>
+                        <p v-if="item.subtitle" class="text-xs leading-[1.4] text-[#62625b]">{{ item.subtitle }}</p>
+                    </div>
+                    <svg class="h-4 w-4 shrink-0 text-[#91918c]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                </button>
+            </template>
         </div>
 
         <!-- Logout -->
