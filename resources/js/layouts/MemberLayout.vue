@@ -2,7 +2,6 @@
 import { Toaster } from '@/components/ui/sonner';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { useCart } from '@/composables/useCart';
-import { usePushNotification } from '@/composables/usePushNotification';
 import { computed, onMounted } from 'vue';
 
 defineProps<{ title?: string }>();
@@ -18,7 +17,6 @@ function isActive(...names: string[]): boolean {
 
 onMounted(() => {
     cart.loadFromServer();
-    usePushNotification().init();
 });
 </script>
 

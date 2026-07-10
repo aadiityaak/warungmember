@@ -69,9 +69,6 @@ export function usePushNotification() {
     async function init() {
         if (!supported) return;
         await checkStatus();
-        if (Notification.permission === 'default') {
-            await subscribe();
-        }
     }
 
     return { supported, permission, subscribed, checkStatus, init, subscribe };

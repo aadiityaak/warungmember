@@ -1,15 +1,22 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
 import { router } from '@inertiajs/vue3';
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import MemberLayout from '@/layouts/MemberLayout.vue';
 import { usePushNotification } from '@/composables/usePushNotification';
 
 defineOptions({ layout: MemberLayout });
 
 const push = usePushNotification();
+const statusLoading = ref(true);
 
-onMounted(() => push.checkStatus());
+onMounted(async () => {
+    if ('serviceWorker' in navigator) {
+        try { await navigator.serviceWorker.ready; } catch { /* ignore */ }
+    }
+    await push.checkStatus();
+    statusLoading.value = false;
+});
 
 const { notifications } = defineProps<{
     notifications: {
@@ -105,50 +112,59 @@ function parseBody(body: string): Array<{ text: string; highlight: boolean }> {
             class="rounded-2xl border px-4 py-3.5"
             :class="push.subscribed ? 'border-[#22c55e] bg-[#f0fdf4]' : 'border-[#dadad3] bg-white'"
         >
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div
-                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
-                        :class="push.subscribed ? 'bg-[#22c55e]/10' : 'bg-[#f6f6f3]'"
-                    >
-                        <svg
-                            v-if="push.subscribed"
-                            class="h-5 w-5 text-[#22c55e]"
-                            fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                        >
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                        </svg>
-                        <svg
-                            v-else
-                            class="h-5 w-5 text-[#91918c]"
-                            fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                        >
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-sm font-semibold leading-[1.4] text-[#000000]">
-                            {{ push.subscribed ? 'Notifikasi Aktif' : 'Notifikasi Belum Aktif' }}
-                        </p>
-                        <p v-if="push.subscribed" class="text-xs leading-[1.4] text-[#62625b] mt-0.5">
-                            Kamu akan menerima notifikasi langsung di perangkat ini
-                        </p>
-                        <p v-else-if="push.permission === 'denied'" class="text-xs leading-[1.4] text-[#62625b] mt-0.5">
-                            Izin notifikasi ditolak. Aktifkan melalui pengaturan browser
-                        </p>
-                        <p v-else class="text-xs leading-[1.4] text-[#62625b] mt-0.5">
-                            Aktifkan notifikasi untuk mendapat info promo & pesanan real-time
-                        </p>
-                    </div>
+            <div v-if="statusLoading" class="flex items-center gap-3 animate-pulse">
+                <div class="h-10 w-10 shrink-0 rounded-full bg-[#dadad3]" />
+                <div class="flex-1 space-y-2">
+                    <div class="h-4 w-32 rounded bg-[#dadad3]" />
+                    <div class="h-3 w-56 rounded bg-[#dadad3]" />
                 </div>
-                <button
-                    v-if="!push.subscribed"
-                    @click="push.subscribe()"
-                    class="shrink-0 rounded-full bg-[#E22625] px-4 py-1.5 text-xs font-bold leading-[1] text-white transition-colors hover:opacity-90"
-                >
-                    Aktifkan
-                </button>
             </div>
+            <template v-else>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+                            :class="push.subscribed ? 'bg-[#22c55e]/10' : 'bg-[#f6f6f3]'"
+                        >
+                            <svg
+                                v-if="push.subscribed"
+                                class="h-5 w-5 text-[#22c55e]"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            >
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                            <svg
+                                v-else
+                                class="h-5 w-5 text-[#91918c]"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            >
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold leading-[1.4] text-[#000000]">
+                                {{ push.subscribed ? 'Notifikasi Aktif' : 'Notifikasi Belum Aktif' }}
+                            </p>
+                            <p v-if="push.subscribed" class="text-xs leading-[1.4] text-[#62625b] mt-0.5">
+                                Kamu akan menerima notifikasi langsung di perangkat ini
+                            </p>
+                            <p v-else-if="push.permission === 'denied'" class="text-xs leading-[1.4] text-[#62625b] mt-0.5">
+                                Izin notifikasi ditolak. Aktifkan melalui pengaturan browser
+                            </p>
+                            <p v-else class="text-xs leading-[1.4] text-[#62625b] mt-0.5">
+                                Aktifkan notifikasi untuk mendapat info promo & pesanan real-time
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        v-if="!push.subscribed"
+                        @click="push.subscribe()"
+                        class="shrink-0 rounded-full bg-[#E22625] px-4 py-1.5 text-xs font-bold leading-[1] text-white transition-colors hover:opacity-90"
+                    >
+                        Aktifkan
+                    </button>
+                </div>
+            </template>
         </div>
 
         <!-- Empty State -->
