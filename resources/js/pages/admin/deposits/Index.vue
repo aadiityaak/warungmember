@@ -146,8 +146,8 @@ const paginationPages = computed(() => {
         </header>
 
         <!-- Top-up Form -->
-        <div class="mb-6 overflow-hidden rounded-2xl border border-[#dadad3] bg-white">
-            <div class="border-b border-[#dadad3] px-5 py-4">
+        <div class="mb-6 rounded-2xl border border-[#dadad3] bg-white">
+            <div class="overflow-hidden rounded-t-2xl border-b border-[#dadad3] px-5 py-4">
                 <h3 class="text-base font-bold leading-[1.2] text-[#000000]">Top-up Deposit</h3>
             </div>
             <form @submit.prevent="submit" class="px-5 py-4">
@@ -155,7 +155,7 @@ const paginationPages = computed(() => {
                     <div class="flex-1 min-w-[200px] relative" ref="dropdownRef">
                         <label class="mb-1 block text-sm font-bold leading-[1.4] text-[#000000]">Member</label>
                         <input
-                            :value="selectedMemberName"
+                            :value="dropdownOpen ? searchQuery : selectedMemberName"
                             @focus="onInputFocus"
                             @input="(e) => { searchQuery = (e.target as HTMLInputElement).value; dropdownOpen = true; }"
                             :placeholder="form.member_id ? '' : 'Cari nama atau ID member...'"

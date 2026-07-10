@@ -46,6 +46,21 @@ class DashboardController extends Controller
                 'created_at' => $o->created_at?->toIso8601String(),
             ]);
 
+        // Top spenders
+        $topSpenders = (clone $orderQuery)
+            ->where('status', 'completed')
+            ->select('user_id', DB::raw('COALESCE(SUM(total_amount), 0) as total_spent'))
+            ->with('user:id,name,avatar')
+            ->groupBy('user_id')
+            ->orderByDesc('total_spent')
+            ->take(10)
+            ->get()
+            ->map(fn (Order $o) => [
+                'user_name' => $o->user?->name,
+                'avatar' => $o->user?->avatar,
+                'total_spent' => (int) $o->total_spent,
+            ]);
+
         // Chart: daily order count per outlet for last 30 days
         $labels = collect(range(29, 0))->map(fn (int $d) => now()->subDays($d)->format('Y-m-d'))->values();
 
@@ -99,6 +114,7 @@ class DashboardController extends Controller
                 'pending_orders' => $pendingOrders,
             ],
             'recent_orders' => $recentOrders,
+            'top_spenders' => $topSpenders,
             'chart' => $chart,
         ]);
     }

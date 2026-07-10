@@ -36,7 +36,7 @@ defineOptions({
     },
 });
 
-const { stats, recent_orders, chart } = defineProps<{
+const { stats, recent_orders, top_spenders, chart } = defineProps<{
     stats: {
         total_members: number;
         total_outlets: number;
@@ -56,6 +56,11 @@ const { stats, recent_orders, chart } = defineProps<{
         status: string;
         total_amount: number;
         created_at: string;
+    }>;
+    top_spenders: Array<{
+        user_name: string;
+        avatar: string | null;
+        total_spent: number;
     }>;
     chart: {
         labels: string[];
@@ -302,9 +307,37 @@ const chartOptions = {
                 </div>
             </div>
 
-            <!-- Quick Actions -->
-            <div class="rounded-2xl border border-[#dadad3] bg-white p-6">
-                <h3 class="text-sm font-bold leading-[1.4] text-[#000000] mb-4">Aksi Cepat</h3>
+            <!-- Quick Actions + Top Spenders -->
+            <div class="flex flex-col gap-4">
+                <!-- Top Spenders -->
+                <div v-if="top_spenders.length" class="rounded-2xl border border-[#dadad3] bg-white p-6">
+                    <h3 class="text-sm font-bold leading-[1.4] text-[#000000] mb-4">Top Spender</h3>
+                    <div class="space-y-3">
+                        <div
+                            v-for="(s, i) in top_spenders"
+                            :key="i"
+                            class="flex items-center gap-3"
+                        >
+                            <span class="w-5 text-sm font-bold text-[#91918c] shrink-0">{{ i + 1 }}</span>
+                            <div class="relative h-8 w-8 shrink-0">
+                                <div class="h-8 w-8 overflow-hidden rounded-full bg-[#f6f6f3]">
+                                    <img v-if="s.avatar" :src="s.avatar" :alt="s.user_name" class="h-full w-full object-cover" />
+                                    <div v-else class="flex h-full w-full items-center justify-center text-xs font-bold text-[#91918c]">
+                                        {{ s.user_name?.charAt(0) ?? '?' }}
+                                    </div>
+                                </div>
+                                <span v-if="i === 0" class="absolute -right-1 -top-1 text-sm leading-none drop-shadow">👑</span>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm font-semibold leading-[1.3] text-[#000000] truncate">{{ s.user_name }}</p>
+                            </div>
+                            <span class="text-sm font-bold text-[#E22625] shrink-0">Rp{{ s.total_spent.toLocaleString('id-ID') }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-2xl border border-[#dadad3] bg-white p-6">
+                    <h3 class="text-sm font-bold leading-[1.4] text-[#000000] mb-4">Aksi Cepat</h3>
                 <div class="flex flex-col gap-2">
                     <Link
                         :href="route('admin.members.index')"
@@ -337,6 +370,7 @@ const chartOptions = {
                         Kelola Deposit
                     </Link>
                 </div>
+            </div>
             </div>
         </div>
     </div>
