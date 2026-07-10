@@ -3,13 +3,6 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="theme-color" content="#ffffff">
-
-        <style>
-            html {
-                background-color: oklch(1 0 0);
-            }
-        </style>
 
         @php
             $branding = $page['props']['branding'] ?? [];
@@ -17,12 +10,21 @@
             $favicon = $branding['favicon_url'] ?? null;
         @endphp
 
+        <meta name="theme-color" content="{{ $branding['primary_color'] ?? '#ffffff' }}">
+
+        <style>
+            html {
+                background-color: oklch(1 0 0);
+            }
+        </style>
+
         @if($favicon)
             <link rel="icon" href="{{ $favicon }}" type="image/png">
         @else
             <link rel="icon" href="/logo/logo-mas-mbull-favicon.png" type="image/png">
         @endif
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        <link rel="manifest" href="{{ route('manifest') }}">
 
         @fonts
         @routes

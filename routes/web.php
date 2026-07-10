@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\OutletController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\RewardController;
 use App\Http\Controllers\Admin\VoucherController;
+use App\Http\Controllers\ManifestController;
 use App\Http\Controllers\Member\CartController;
 use App\Http\Controllers\Member\DashboardController as MemberDashboardController;
 use App\Http\Controllers\Member\DepositController as MemberDepositController;
@@ -23,6 +24,8 @@ use App\Http\Controllers\Member\VoucherController as MemberVoucherController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'Welcome')->name('home');
+
+Route::get('manifest.webmanifest', ManifestController::class)->name('manifest');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Redirect /dashboard to appropriate dashboard based on role

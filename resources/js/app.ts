@@ -8,6 +8,12 @@ import { initializeFlashToast } from '@/lib/flashToast';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/build/sw.js', { scope: '/' }).catch(() => {
+        // SW registration failed — non-blocking
+    });
+}
+
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     layout: (name) => {
