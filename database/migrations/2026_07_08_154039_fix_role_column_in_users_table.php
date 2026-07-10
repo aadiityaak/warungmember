@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (Schema::hasColumn('users', 'role')) {
+        if (Schema::hasColumn('users', 'role') && DB::connection()->getDriverName() !== 'sqlite') {
             DB::statement("ALTER TABLE `users` MODIFY COLUMN `role` ENUM('admin', 'member', 'kasir') NOT NULL DEFAULT 'member'");
         }
     }

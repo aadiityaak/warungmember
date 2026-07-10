@@ -32,6 +32,9 @@ export default defineConfig({
             formVariants: true,
         }),
         VitePWA({
+            strategies: 'injectManifest',
+            srcDir: 'resources',
+            filename: 'sw.ts',
             registerType: 'autoUpdate',
             devOptions: {
                 enabled: true,
@@ -62,23 +65,6 @@ export default defineConfig({
                         src: '/pwa-icons/pwa-512x512.png',
                         sizes: '512x512',
                         type: 'image/png',
-                    },
-                ],
-            },
-            workbox: {
-                globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,woff,woff2}'],
-                runtimeCaching: [
-                    {
-                        urlPattern: /^https?:\/\/.*\/api\/.*/i,
-                        handler: 'NetworkFirst',
-                        options: {
-                            cacheName: 'api-cache',
-                            expiration: {
-                                maxEntries: 100,
-                                maxAgeSeconds: 60 * 60 * 24,
-                            },
-                            networkTimeoutSeconds: 5,
-                        },
                     },
                 ],
             },

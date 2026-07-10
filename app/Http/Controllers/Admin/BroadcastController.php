@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SendPushNotification;
 use App\Models\Broadcast;
 use App\Models\Member;
 use App\Models\Notification;
+use App\Models\PushSubscription;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -95,6 +97,20 @@ class BroadcastController extends Controller
                 Notification::insert($notifications);
             }
             $sentCount = count($notifications);
+
+            // Send push notifications to subscribed members
+            $memberIds = $members->pluck('id');
+            $subscriptions = PushSubscription::whereIn('member_id', $memberIds)->get();
+            $pushPayload = [
+                'title' => $validated['title'],
+                'body' => $validated['body'],
+                'icon' => '/pwa-icons/pwa-192x192.png',
+                'badge' => '/pwa-icons/pwa-192x192.png',
+                'url' => '/member/notifications',
+            ];
+            foreach ($subscriptions as $subscription) {
+                dispatch(new SendPushNotification($subscription, $pushPayload));
+            }
         }
 
         if ($validated['type'] === 'email') {

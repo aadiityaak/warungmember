@@ -20,6 +20,7 @@ use App\Http\Controllers\Member\OutletController as MemberOutletController;
 use App\Http\Controllers\Member\PointController;
 use App\Http\Controllers\Member\ProductController as MemberProductController;
 use App\Http\Controllers\Member\ProfileController;
+use App\Http\Controllers\Member\PushSubscriptionController;
 use App\Http\Controllers\Member\RewardController as MemberRewardController;
 use App\Http\Controllers\Member\VoucherController as MemberVoucherController;
 use Illuminate\Support\Facades\Route;
@@ -63,6 +64,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('outlets/select', [MemberOutletController::class, 'select'])->name('outlets.select');
         Route::get('cart', [CartController::class, 'index'])->name('cart.index');
         Route::post('cart/sync', [CartController::class, 'sync'])->name('cart.sync');
+        Route::get('push/vapid-key', [PushSubscriptionController::class, 'vapidKey'])->name('push.vapid-key');
+        Route::post('push/subscribe', [PushSubscriptionController::class, 'subscribe'])->name('push.subscribe');
+        Route::post('push/unsubscribe', [PushSubscriptionController::class, 'unsubscribe'])->name('push.unsubscribe');
     });
 
     // Admin routes (desktop - for admin & kasir)
