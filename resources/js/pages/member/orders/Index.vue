@@ -43,6 +43,25 @@ const voucherModalOpen = ref(false);
 
 const canCheckout = computed(() => selectedOutlet.value && paymentMethod.value);
 
+// Copy norek
+const copiedIndex = ref<number | null>(null);
+
+function copyNorek(norek: string, index: number) {
+    navigator.clipboard.writeText(norek);
+    copiedIndex.value = index;
+    setTimeout(() => { copiedIndex.value = null; }, 2000);
+}
+
+// Download QRIS
+function downloadQris(url: string) {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'qris-wm.jpg';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
 // Discount calculation
 const selectedVoucher = computed(() => {
     if (!selectedVoucherId.value) return null;
@@ -178,7 +197,16 @@ function submit() {
                         class="rounded-lg bg-white px-3 py-2"
                     >
                         <p class="text-sm font-bold text-[#000000]">{{ bank.bank_name }}</p>
-                        <p class="text-xs text-[#62625b]">{{ bank.account_number }}</p>
+                        <div class="flex items-center justify-between gap-2">
+                            <p class="text-xs text-[#62625b] font-mono">{{ bank.account_number }}</p>
+                            <button
+                                type="button"
+                                @click="copyNorek(bank.account_number, i)"
+                                class="shrink-0 rounded-full border border-[#dadad3] px-2.5 py-1 text-xs font-semibold text-[#000000] hover:bg-[#f6f6f3] transition-colors"
+                            >
+                                {{ copiedIndex === i ? 'Tersalin' : 'Salin' }}
+                            </button>
+                        </div>
                         <p class="text-xs text-[#91918c]">a.n. {{ bank.account_name }}</p>
                     </div>
                 </div>
@@ -194,6 +222,13 @@ function submit() {
                         alt="QRIS"
                         class="h-48 w-48 rounded-xl object-contain bg-white border border-[#dadad3]"
                     />
+                    <button
+                        type="button"
+                        @click="downloadQris(paymentSettings.qris.qr_image)"
+                        class="mt-2 rounded-full border border-[#dadad3] px-3 py-1.5 text-xs font-semibold text-[#000000] hover:bg-[#f6f6f3] transition-colors"
+                    >
+                        Unduh QRIS
+                    </button>
                     <p v-if="paymentSettings.qris.merchant_name" class="mt-2 text-sm font-bold text-[#000000]">
                         {{ paymentSettings.qris.merchant_name }}
                     </p>
