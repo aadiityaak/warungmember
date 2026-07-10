@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, router, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue';
 import JsBarcode from 'jsbarcode';
 import MemberLayout from '@/layouts/MemberLayout.vue';
@@ -161,14 +161,22 @@ onMounted(() => {
 
         <!-- Stats -->
         <div class="flex gap-2">
-            <div class="flex-1 rounded-2xl bg-[#f6f6f3] px-4 py-3 text-center">
-                <p class="text-xs leading-[1.4] text-[#91918c]">Total Poin</p>
-                <p class="mt-0.5 text-lg font-semibold leading-[1.3] text-[#000000]">{{ profile.total_points.toLocaleString('id-ID') }}</p>
-            </div>
-            <div class="flex-1 rounded-2xl bg-[#f6f6f3] px-4 py-3 text-center">
-                <p class="text-xs leading-[1.4] text-[#91918c]">Saldo</p>
-                <p class="mt-0.5 text-lg font-semibold leading-[1.3] text-[#000000]">{{ formatRupiah(profile.deposit_balance) }}</p>
-            </div>
+            <Link
+                :href="route('member.points')"
+                class="flex-1 rounded-2xl bg-[#f6f6f3] px-4 py-3 text-center transition-all hover:bg-[#000000] hover:text-white group"
+            >
+                <p class="text-xs leading-[1.4] text-[#91918c] group-hover:text-white/70">Total Poin</p>
+                <p class="mt-0.5 text-lg font-semibold leading-[1.3] text-[#000000] group-hover:text-white">{{ profile.total_points.toLocaleString('id-ID') }}</p>
+                <p class="mt-0.5 text-[10px] font-medium text-[#91918c] group-hover:text-white/50">Lihat Riwayat →</p>
+            </Link>
+            <Link
+                :href="route('member.deposits')"
+                class="flex-1 rounded-2xl bg-[#f6f6f3] px-4 py-3 text-center transition-all hover:bg-[#000000] hover:text-white group"
+            >
+                <p class="text-xs leading-[1.4] text-[#91918c] group-hover:text-white/70">Saldo Deposit</p>
+                <p class="mt-0.5 text-lg font-semibold leading-[1.3] text-[#000000] group-hover:text-white">{{ formatRupiah(profile.deposit_balance) }}</p>
+                <p class="mt-0.5 text-[10px] font-medium text-[#91918c] group-hover:text-white/50">Lihat Riwayat →</p>
+            </Link>
         </div>
 
         <!-- Menu List -->
