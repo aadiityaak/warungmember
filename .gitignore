@@ -24,7 +24,6 @@ yarn-error.log
 /auth.json
 /dist
 /capacitor-www
-/android
 /.fleet
 /.idea
 /.nova

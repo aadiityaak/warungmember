@@ -5,8 +5,7 @@ const config: CapacitorConfig = {
   appName: 'WarungMember',
   webDir: 'capacitor-www',
   server: {
-    // Ganti dengan URL production Laravel app setelah deploy
-    url: 'https://your-app.com',
+    url: 'https://prototype8.sweet.web.id',
     cleartext: true,
   },
   plugins: {
