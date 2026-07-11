@@ -105,6 +105,7 @@
         ],
         "build:production-full": [
             "composer install",
+            "@php artisan migrate:fresh --force",
             "@php artisan db:seed --force",
             "@php artisan build:package --output=dist/warungmember.{version}.zip --force --no-interaction"
         ]
