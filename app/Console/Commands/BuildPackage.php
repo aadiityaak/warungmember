@@ -292,6 +292,12 @@ class BuildPackage extends Command
             'install-htaccess-template.txt',
             'debug-deployment.php',
             'deployment-index.php',
+            'android',
+            'capacitor-www',
+            'docs',
+            'opencode.json',
+            'tsconfig.json',
+            'tsconfig.mcp.json',
         ];
 
         $this->copyDirectory(base_path(), $tempDir, $excludes);
