@@ -19,9 +19,9 @@ return new class extends Migration
             $table->string('auth')->nullable()->change();
             $table->string('p256dh')->nullable()->change();
 
-            $table->dropUnique(['member_id', 'endpoint']);
             $table->index('member_id');
             $table->index('platform');
+            $table->dropUnique(['member_id', 'endpoint']);
         });
     }
 
