@@ -298,6 +298,7 @@ class BuildPackage extends Command
             'opencode.json',
             'tsconfig.json',
             'tsconfig.mcp.json',
+            'cmdline-tools.zip',
         ];
 
         $this->copyDirectory(base_path(), $tempDir, $excludes);

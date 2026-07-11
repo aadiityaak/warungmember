@@ -75,9 +75,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('outlets/select', [MemberOutletController::class, 'select'])->name('outlets.select');
         Route::get('cart', [CartController::class, 'index'])->name('cart.index');
         Route::post('cart/sync', [CartController::class, 'sync'])->name('cart.sync');
-        Route::post('push/subscribe', [PushSubscriptionController::class, 'subscribe'])->name('push.subscribe');
-        Route::post('push/unsubscribe', [PushSubscriptionController::class, 'unsubscribe'])->name('push.unsubscribe');
-        Route::get('push/status', [PushSubscriptionController::class, 'status'])->name('push.status');
+    });
+
+    // Push notification endpoints (JSON API — excludes Inertia middleware)
+    Route::withoutMiddleware([\App\Http\Middleware\HandleInertiaRequests::class])->group(function () {
+        Route::middleware(['auth', 'verified', 'role:member'])->prefix('member')->name('member.')->group(function () {
+            Route::post('push/subscribe', [PushSubscriptionController::class, 'subscribe'])->name('push.subscribe');
+            Route::post('push/unsubscribe', [PushSubscriptionController::class, 'unsubscribe'])->name('push.unsubscribe');
+            Route::get('push/status', [PushSubscriptionController::class, 'status'])->name('push.status');
+        });
     });
 
     // Admin routes (desktop - for admin & kasir)
