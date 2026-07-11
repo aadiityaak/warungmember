@@ -63,10 +63,10 @@ class RewardSeeder extends Seeder
             Reward::create([
                 'name' => $item['name'],
                 'description' => $item['desc'],
-                'image' => fake()->randomElement($images),
-                'points_required' => fake()->numberBetween(150, 10000),
-                'stock' => fake()->numberBetween(5, 150),
-                'is_active' => fake()->boolean(85),
+                'image' => $images[array_rand($images)],
+                'points_required' => rand(150, 10000),
+                'stock' => rand(5, 150),
+                'is_active' => rand(1, 100) <= 85,
             ]);
         }
     }

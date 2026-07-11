@@ -50,21 +50,42 @@ class MemberSeeder extends Seeder
             });
         }
 
-        // Generate 15 more members using faker
-        for ($i = 0; $i < 15; $i++) {
-            DB::transaction(function () {
-                $user = User::factory()->create([
-                    'role' => 'member',
+        // Generate 15 more members (static data, no faker dependency)
+        $extraMembers = [
+            ['name' => 'Doni Prasetyo', 'email' => 'doni@member.test'],
+            ['name' => 'Sri Wahyuni', 'email' => 'sri@member.test'],
+            ['name' => 'Eko Susanto', 'email' => 'eko@member.test'],
+            ['name' => 'Rina Marlina', 'email' => 'rina2@member.test'],
+            ['name' => 'Adi Nugroho', 'email' => 'adi@member.test'],
+            ['name' => 'Nia Kurniawati', 'email' => 'nia@member.test'],
+            ['name' => 'Tono Wijaya', 'email' => 'tono@member.test'],
+            ['name' => 'Dewi Sartika', 'email' => 'dewi2@member.test'],
+            ['name' => 'Irfan Hakim', 'email' => 'irfan@member.test'],
+            ['name' => 'Mega Sari', 'email' => 'mega@member.test'],
+            ['name' => 'Rizky Pratama', 'email' => 'rizky@member.test'],
+            ['name' => 'Putri Ayu', 'email' => 'putri@member.test'],
+            ['name' => 'Yoga Pratama', 'email' => 'yoga@member.test'],
+            ['name' => 'Sari Dewi', 'email' => 'sari@member.test'],
+            ['name' => 'Bambang Sutejo', 'email' => 'bambang@member.test'],
+        ];
+
+        foreach ($extraMembers as $data) {
+            DB::transaction(function () use ($data) {
+                $user = User::create([
+                    'name' => $data['name'],
+                    'email' => $data['email'],
                     'password' => bcrypt('password'),
+                    'role' => 'member',
+                    'email_verified_at' => now(),
                 ]);
 
                 $member = Member::make([
                     'user_id' => $user->id,
                     'member_code' => 'WM'.strtoupper(substr(bin2hex(random_bytes(4)), 0, 8)),
-                    'birth_date' => fake()->dateTimeBetween('-40 years', '-18 years')->format('Y-m-d'),
+                    'birth_date' => date('Y-m-d', strtotime('-'.rand(18, 40).' years')),
                 ]);
-                $member->total_points = fake()->numberBetween(0, 5000);
-                $member->deposit_balance = fake()->numberBetween(0, 300000);
+                $member->total_points = rand(0, 5000);
+                $member->deposit_balance = rand(0, 300000);
                 $member->save();
             });
         }

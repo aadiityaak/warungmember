@@ -83,7 +83,7 @@ class OutletSeeder extends Seeder
             $data['user_id'] = $kasir->id;
 
             // Assign gallery
-            $data['gallery'] = fake()->randomElements([
+            $galleryItems = [
                 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&h=600&fit=crop',
                 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop',
                 'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800&h=600&fit=crop',
@@ -91,7 +91,9 @@ class OutletSeeder extends Seeder
                 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&h=600&fit=crop',
                 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800&h=600&fit=crop',
                 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&h=600&fit=crop',
-            ], fake()->numberBetween(3, 5));
+            ];
+            $randKeys = array_rand($galleryItems, rand(3, 5));
+            $data['gallery'] = array_map(fn($k) => $galleryItems[$k], $randKeys);
 
             Outlet::create($data);
         }

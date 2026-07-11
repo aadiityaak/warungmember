@@ -211,16 +211,16 @@ class ProductSeeder extends Seeder
         ];
 
         foreach ($additionalProducts as $item) {
-            $hasDiscount = fake()->boolean(25);
+            $hasDiscount = rand(1, 100) <= 25;
             $product = Product::create([
                 'name' => $item['name'],
                 'description' => $item['desc'],
-                'image' => fake()->randomElement($images),
+                'image' => $images[array_rand($images)],
                 'price' => $item['price'],
-                'discount_price' => $hasDiscount ? $item['price'] - fake()->numberBetween(1000, 5000) : null,
-                'discount_end_at' => $hasDiscount ? now()->addDays(fake()->numberBetween(3, 30)) : null,
+                'discount_price' => $hasDiscount ? $item['price'] - rand(1000, 5000) : null,
+                'discount_end_at' => $hasDiscount ? now()->addDays(rand(3, 30)) : null,
                 'points_earned' => $item['pts'],
-                'is_active' => fake()->boolean(90),
+                'is_active' => rand(1, 100) <= 90,
             ]);
 
             $product->categories()->sync(

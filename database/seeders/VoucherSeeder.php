@@ -29,20 +29,20 @@ class VoucherSeeder extends Seeder
         $discountTypes = ['percent', 'fixed'];
 
         for ($i = 0; $i < 22; $i++) {
-            $type = fake()->randomElement($types);
-            $discountType = fake()->randomElement($discountTypes);
-            $minPurchase = fake()->numberBetween(0, 150000);
+            $type = $types[array_rand($types)];
+            $discountType = $discountTypes[array_rand($discountTypes)];
+            $minPurchase = rand(0, 150000);
 
             Voucher::create([
-                'code' => 'VC'.strtoupper(fake()->lexify('??????')),
+                'code' => 'VC'.strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 6)),
                 'type' => $type,
                 'discount_type' => $discountType,
-                'discount_value' => $discountType === 'percent' ? fake()->numberBetween(5, 50) : fake()->randomElement([3000, 5000, 7500, 10000, 15000, 20000]),
+                'discount_value' => $discountType === 'percent' ? rand(5, 50) : [3000, 5000, 7500, 10000, 15000, 20000][array_rand([3000, 5000, 7500, 10000, 15000, 20000])],
                 'min_purchase' => $minPurchase,
-                'max_discount' => $discountType === 'percent' ? fake()->numberBetween(5000, 50000) : null,
-                'valid_from' => now()->subDays(fake()->numberBetween(0, 7)),
-                'valid_until' => now()->addDays(fake()->numberBetween(7, 365)),
-                'is_active' => fake()->boolean(80),
+                'max_discount' => $discountType === 'percent' ? rand(5000, 50000) : null,
+                'valid_from' => now()->subDays(rand(0, 7)),
+                'valid_until' => now()->addDays(rand(7, 365)),
+                'is_active' => rand(1, 100) <= 80,
             ]);
         }
     }

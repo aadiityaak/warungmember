@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class KasirSeeder extends Seeder
 {
@@ -29,9 +30,19 @@ class KasirSeeder extends Seeder
             );
         }
 
-        // Generate 25 more kasir using factory
-        User::factory()->count(25)->kasir()->create([
-            'password' => bcrypt('password'),
-        ]);
+        // Generate 25 more kasir (static data, no faker dependency)
+        for ($i = 0; $i < 25; $i++) {
+            User::create([
+                'name' => 'Kasir ' . ($i + 6),
+                'email' => 'kasir' . ($i + 6) . '@warungmember.test',
+                'password' => bcrypt('password'),
+                'role' => 'kasir',
+                'email_verified_at' => now(),
+                'remember_token' => Str::random(10),
+                'two_factor_secret' => null,
+                'two_factor_recovery_codes' => null,
+                'two_factor_confirmed_at' => null,
+            ]);
+        }
     }
 }
