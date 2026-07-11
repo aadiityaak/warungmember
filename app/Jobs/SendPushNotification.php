@@ -7,8 +7,6 @@ use App\Models\PushSubscription;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Http;
-use Minishlink\WebPush\Subscription;
-use Minishlink\WebPush\WebPush;
 
 class SendPushNotification implements ShouldQueue
 {
@@ -28,10 +26,6 @@ class SendPushNotification implements ShouldQueue
         foreach ($subscriptions as $subscription) {
             if ($subscription->ntfy_topic) {
                 $this->sendNtfy($subscription);
-            }
-
-            if ($subscription->endpoint) {
-                $this->sendWebPush($subscription);
             }
         }
     }
@@ -59,43 +53,6 @@ class SendPushNotification implements ShouldQueue
                 'click' => $this->payload['url'] ?? route('member.notifications'),
                 'icon' => $this->payload['icon'] ?? asset('pwa-icons/pwa-192x192.png'),
             ]);
-        } catch (\Throwable $e) {
-            report($e);
-        }
-    }
-
-    private function sendWebPush(PushSubscription $subscription): void
-    {
-        try {
-            $auth = [
-                'VAPID' => [
-                    'subject' => config('webpush.vapid.subject'),
-                    'publicKey' => config('webpush.vapid.public_key'),
-                    'privateKey' => config('webpush.vapid.private_key'),
-                ],
-            ];
-
-            $webPush = new WebPush($auth);
-
-            $sub = Subscription::create([
-                'endpoint' => $subscription->endpoint,
-                'authToken' => $subscription->auth,
-                'publicKey' => $subscription->p256dh,
-            ]);
-
-            $webPush->queueNotification(
-                $sub,
-                json_encode($this->payload),
-                ['TTL' => 86400],
-            );
-
-            $responses = $webPush->flush();
-
-            foreach ($responses as $response) {
-                if ($response->isExpired()) {
-                    $subscription->delete();
-                }
-            }
         } catch (\Throwable $e) {
             report($e);
         }
