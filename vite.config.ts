@@ -46,9 +46,9 @@ export default defineConfig({
                 'logo/logo-mas-mbull.jpg',
             ],
             manifest: {
-                name: 'WarungMember',
-                short_name: 'WarungMember',
-                description: 'Aplikasi manajemen membership warung',
+                name: 'Mas Mbull',
+                short_name: 'Mas Mbull',
+                description: 'Aplikasi membership & kasir warung',
                 theme_color: '#ffffff',
                 background_color: '#ffffff',
                 display: 'standalone',
