@@ -24,9 +24,14 @@ export function useNtfy() {
         }
 
         try {
-            const res = await fetch(route('member.push.status'), {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
-            });
+            const res = await Promise.race([
+                fetch(route('member.push.status'), {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                }),
+                new Promise<never>((_, reject) =>
+                    setTimeout(() => reject(new Error('timeout')), 3000)
+                ),
+            ]);
             const data = await res.json();
             subscribed.value = data.subscribed;
             topic = data.topic ?? '';
@@ -51,14 +56,19 @@ export function useNtfy() {
         }
 
         try {
-            const res = await fetch(route('member.push.subscribe'), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': getCsrfToken(),
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-            });
+            const res = await Promise.race([
+                fetch(route('member.push.subscribe'), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': getCsrfToken(),
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                }),
+                new Promise<never>((_, reject) =>
+                    setTimeout(() => reject(new Error('timeout')), 3000)
+                ),
+            ]);
             const data = await res.json();
 
             if (data.success) {
