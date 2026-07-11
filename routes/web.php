@@ -78,6 +78,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('push/vapid-key', [PushSubscriptionController::class, 'vapidKey'])->name('push.vapid-key');
         Route::post('push/subscribe', [PushSubscriptionController::class, 'subscribe'])->name('push.subscribe');
         Route::post('push/unsubscribe', [PushSubscriptionController::class, 'unsubscribe'])->name('push.unsubscribe');
+        Route::post('push/fcm/subscribe', [PushSubscriptionController::class, 'subscribeFcm'])->name('push.fcm.subscribe');
+        Route::post('push/fcm/unsubscribe', [PushSubscriptionController::class, 'unsubscribeFcm'])->name('push.fcm.unsubscribe');
     });
 
     // Admin routes (desktop - for admin & kasir)

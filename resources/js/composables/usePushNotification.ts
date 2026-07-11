@@ -1,8 +1,11 @@
 import { ref } from 'vue';
+import { Capacitor } from '@capacitor/core';
+import { PushNotifications } from '@capacitor/push-notifications';
 
 export function usePushNotification() {
-    const supported = 'serviceWorker' in navigator && 'PushManager' in window;
-    const permission = ref<NotificationPermission>('default');
+    const isNative = Capacitor.isNativePlatform();
+    const supported = ref(isNative || ('serviceWorker' in navigator && 'PushManager' in window));
+    const permission = ref<NotificationPermission | string>('default');
     const subscribed = ref(false);
 
     function getCsrfToken(): string {
@@ -12,7 +15,21 @@ export function usePushNotification() {
     }
 
     async function checkStatus() {
-        if (!supported) return;
+        if (!supported.value) return;
+
+        if (isNative) {
+            try {
+                const perm = await PushNotifications.checkPermissions();
+                permission.value = perm.receive;
+                if (perm.receive === 'granted') {
+                    subscribed.value = localStorage.getItem('fcm_subscribed') === 'true';
+                }
+            } catch {
+                permission.value = 'denied';
+            }
+            return;
+        }
+
         permission.value = Notification.permission;
         if (permission.value !== 'granted') {
             subscribed.value = false;
@@ -30,7 +47,57 @@ export function usePushNotification() {
     }
 
     async function subscribe() {
-        if (!supported) return;
+        if (!supported.value) return;
+
+        if (isNative) {
+            await subscribeNative();
+            return;
+        }
+
+        await subscribeWeb();
+    }
+
+    async function subscribeNative() {
+        try {
+            let perm = await PushNotifications.checkPermissions();
+
+            if (perm.receive === 'prompt') {
+                perm = await PushNotifications.requestPermissions();
+            }
+
+            if (perm.receive !== 'granted') {
+                permission.value = perm.receive;
+                return;
+            }
+
+            permission.value = 'granted';
+
+            await PushNotifications.register();
+
+            PushNotifications.addListener('registration', async (token) => {
+                await fetch(route('member.push.fcm.subscribe'), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': getCsrfToken(),
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify({ fcm_token: token.value }),
+                });
+
+                localStorage.setItem('fcm_subscribed', 'true');
+                subscribed.value = true;
+            });
+
+            PushNotifications.addListener('registrationError', () => {
+                subscribed.value = false;
+            });
+        } catch {
+            subscribed.value = false;
+        }
+    }
+
+    async function subscribeWeb() {
         permission.value = Notification.permission;
         if (permission.value === 'denied') return;
         if (permission.value === 'default') {
@@ -70,7 +137,7 @@ export function usePushNotification() {
     }
 
     async function init() {
-        if (!supported) return;
+        if (!supported.value) return;
         await checkStatus();
     }
 

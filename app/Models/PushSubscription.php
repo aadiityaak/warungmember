@@ -14,6 +14,8 @@ class PushSubscription extends Model
         'endpoint',
         'auth',
         'p256dh',
+        'fcm_token',
+        'platform',
         'user_agent',
     ];
 

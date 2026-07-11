@@ -38,11 +38,47 @@ class PushSubscriptionController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function subscribeFcm(Request $request): JsonResponse
+    {
+        $member = $request->user()->member;
+
+        $data = $request->validate([
+            'fcm_token' => 'required|string',
+        ]);
+
+        PushSubscription::updateOrCreate(
+            [
+                'member_id' => $member->id,
+                'platform' => 'android',
+            ],
+            [
+                'fcm_token' => $data['fcm_token'],
+                'endpoint' => null,
+                'auth' => null,
+                'p256dh' => null,
+                'user_agent' => $request->userAgent(),
+            ]
+        );
+
+        return response()->json(['success' => true]);
+    }
+
     public function unsubscribe(Request $request): JsonResponse
     {
         $request->validate(['endpoint' => 'required|url']);
 
         PushSubscription::where('endpoint', $request->endpoint)->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function unsubscribeFcm(Request $request): JsonResponse
+    {
+        $member = $request->user()->member;
+
+        PushSubscription::where('member_id', $member->id)
+            ->where('platform', 'android')
+            ->delete();
 
         return response()->json(['success' => true]);
     }

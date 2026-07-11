@@ -37,6 +37,10 @@
         "ziggy-js": "^2.6.3"
     },
     "dependencies": {
+        "@capacitor/android": "^8.4.1",
+        "@capacitor/cli": "^8.4.1",
+        "@capacitor/core": "^8.4.1",
+        "@capacitor/push-notifications": "^8.1.1",
         "@inertiajs/vite": "^3.0.0",
         "@inertiajs/vue3": "^3.0.0",
         "@laravel/passkeys": "^0.2.0",

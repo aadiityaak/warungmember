@@ -11,6 +11,13 @@ const push = usePushNotification();
 const statusLoading = ref(true);
 
 onMounted(async () => {
+    if ('serviceWorker' in navigator) {
+        try {
+            await navigator.serviceWorker.ready;
+        } catch {
+            /* ignore */
+        }
+    }
     await push.checkStatus();
     statusLoading.value = false;
 });
