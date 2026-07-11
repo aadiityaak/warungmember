@@ -1,5 +1,6 @@
 import { createInertiaApp } from '@inertiajs/vue3';
 import { createSSRApp, h } from 'vue';
+import { Capacitor } from '@capacitor/core';
 import './ziggy';
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
@@ -38,8 +39,43 @@ createInertiaApp({
         app.use(plugin);
         app.config.globalProperties.route = window.route;
         app.mount(el);
+
+        initNative();
+
         return app;
     },
 });
+
+async function initNative() {
+    if (!Capacitor.isNativePlatform()) return;
+
+    try {
+        // --- Status Bar ---
+        const { StatusBar, Style } = await import('@capacitor/status-bar');
+        await StatusBar.setStyle({ style: Style.Dark });
+        await StatusBar.setBackgroundColor({ color: '#00897B' });
+
+        // --- Keyboard ---
+        const { Keyboard } = await import('@capacitor/keyboard');
+        Keyboard.addListener('keyboardWillShow', () => {
+            document.body.classList.add('keyboard-visible');
+        });
+        Keyboard.addListener('keyboardWillHide', () => {
+            document.body.classList.remove('keyboard-visible');
+        });
+
+        // --- Back Button ---
+        const { App } = await import('@capacitor/app');
+        App.addListener('backButton', ({ canGoBack }) => {
+            if (canGoBack) {
+                window.history.back();
+            } else {
+                App.exitApp();
+            }
+        });
+    } catch {
+        // Plugins not available — non-blocking
+    }
+}
 
 initializeFlashToast();
