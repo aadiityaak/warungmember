@@ -100,6 +100,10 @@
         "build:production": [
             "@php artisan build:package --output=dist/warungmember.{version}.zip --force --no-interaction"
         ],
+        "build:apk": [
+            "npx cap sync android",
+            "cd android && gradlew.bat assembleDebug"
+        ],
         "seed": [
             "@php artisan db:seed --force"
         ],

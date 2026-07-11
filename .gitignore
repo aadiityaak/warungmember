@@ -29,3 +29,5 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+/android/local-sdk/
+cmdline-tools.zip

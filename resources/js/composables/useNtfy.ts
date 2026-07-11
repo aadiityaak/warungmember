@@ -50,8 +50,14 @@ export function useNtfy() {
     async function subscribe() {
         if (!supported.value) return;
 
-        // Request notification permission first
-        if ('Notification' in window && Notification.permission === 'default') {
+        // Request notification permission — browser or Capacitor (Android WebView)
+        const capacitor = (window as any).Capacitor;
+        if (capacitor?.Plugins?.LocalNotifications) {
+            const perm = await capacitor.Plugins.LocalNotifications.checkPermissions();
+            if (perm.display === 'prompt') {
+                await capacitor.Plugins.LocalNotifications.requestPermissions();
+            }
+        } else if ('Notification' in window && Notification.permission === 'default') {
             await Notification.requestPermission();
         }
 
@@ -133,7 +139,22 @@ export function useNtfy() {
         const body = data.message ?? '';
         const clickUrl = data.click ?? '/member/notifications';
 
-        if ('Notification' in window && Notification.permission === 'granted') {
+        // Capacitor native notification (Android WebView)
+        const capacitor = (window as any).Capacitor;
+        if (capacitor?.Plugins?.LocalNotifications) {
+            capacitor.Plugins.LocalNotifications.schedule({
+                notifications: [{
+                    title,
+                    body,
+                    id: Date.now(),
+                    smallIcon: 'ic_stat_icon',
+                    largeIcon: 'ic_launcher_round',
+                    actionTypeId: 'OPEN_PAGE',
+                    extra: { url: clickUrl },
+                }],
+            }).catch(() => {});
+        } else if ('Notification' in window && Notification.permission === 'granted') {
+            // Fallback: browser notification
             new Notification(title, {
                 body,
                 icon: '/pwa-icons/pwa-192x192.png',
