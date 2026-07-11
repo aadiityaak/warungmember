@@ -7,7 +7,6 @@ use App\Jobs\SendPushNotification;
 use App\Models\Broadcast;
 use App\Models\Member;
 use App\Models\Notification;
-use App\Models\PushSubscription;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -98,18 +97,16 @@ class BroadcastController extends Controller
             }
             $sentCount = count($notifications);
 
-            // Send push notifications to subscribed members
-            $memberIds = $members->pluck('id');
-            $subscriptions = PushSubscription::whereIn('member_id', $memberIds)->get();
+            // Send push notifications to members
             $pushPayload = [
                 'title' => $validated['title'],
                 'body' => $validated['body'],
+                'type' => $validated['icon'] ?? 'umum',
                 'icon' => '/pwa-icons/pwa-192x192.png',
-                'badge' => '/pwa-icons/pwa-192x192.png',
-                'url' => '/member/notifications',
+                'url' => route('member.notifications'),
             ];
-            foreach ($subscriptions as $subscription) {
-                dispatch(new SendPushNotification($subscription, $pushPayload));
+            foreach ($members as $member) {
+                dispatch(new SendPushNotification($member, $pushPayload));
             }
         }
 

@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\Member;
 use App\Models\PushSubscription;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -14,53 +15,56 @@ class SendPushNotification implements ShouldQueue
     use Queueable;
 
     public function __construct(
-        public PushSubscription $subscription,
+        public Member $member,
         public array $payload,
     ) {}
 
     public function handle(): void
     {
-        if ($this->subscription->platform === 'android' && $this->subscription->fcm_token) {
-            $this->sendFcm();
-        } else {
-            $this->sendWebPush();
+        $subscriptions = PushSubscription::where('member_id', $this->member->id)
+            ->where('subscribed', true)
+            ->get();
+
+        foreach ($subscriptions as $subscription) {
+            if ($subscription->ntfy_topic) {
+                $this->sendNtfy($subscription);
+            }
+
+            if ($subscription->endpoint) {
+                $this->sendWebPush($subscription);
+            }
         }
     }
 
-    private function sendFcm(): void
+    private function sendNtfy(PushSubscription $subscription): void
     {
-        $serverKey = config('services.fcm.server_key');
-        if (! $serverKey) {
+        $server = config('services.ntfy.server');
+
+        if (! $server) {
             return;
         }
 
         try {
-            $response = Http::withHeaders([
-                'Authorization' => 'key='.$serverKey,
-                'Content-Type' => 'application/json',
-            ])->post('https://fcm.googleapis.com/fcm/send', [
-                'to' => $this->subscription->fcm_token,
-                'notification' => [
-                    'title' => $this->payload['title'] ?? 'WarungMember',
-                    'body' => $this->payload['body'] ?? '',
-                    'icon' => $this->payload['icon'] ?? '/pwa-icons/pwa-192x192.png',
-                    'sound' => 'default',
-                ],
-                'data' => [
-                    'url' => $this->payload['url'] ?? '/member/notifications',
-                    'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
-                ],
-            ]);
-
-            if ($response->json('failure') === 1) {
-                $this->subscription->delete();
+            $headers = [];
+            if ($secret = config('services.ntfy.secret')) {
+                $headers['Authorization'] = 'Bearer ' . $secret;
             }
+
+            Http::withHeaders($headers)->post(rtrim($server, '/') . '/' . $subscription->ntfy_topic, [
+                'topic' => $subscription->ntfy_topic,
+                'title' => $this->payload['title'] ?? 'WarungMember',
+                'message' => $this->payload['body'] ?? '',
+                'tags' => [$this->payload['type'] ?? 'info'],
+                'priority' => 4,
+                'click' => $this->payload['url'] ?? route('member.notifications'),
+                'icon' => $this->payload['icon'] ?? asset('pwa-icons/pwa-192x192.png'),
+            ]);
         } catch (\Throwable $e) {
             report($e);
         }
     }
 
-    private function sendWebPush(): void
+    private function sendWebPush(PushSubscription $subscription): void
     {
         try {
             $auth = [
@@ -73,23 +77,23 @@ class SendPushNotification implements ShouldQueue
 
             $webPush = new WebPush($auth);
 
-            $subscription = Subscription::create([
-                'endpoint' => $this->subscription->endpoint,
-                'authToken' => $this->subscription->auth,
-                'publicKey' => $this->subscription->p256dh,
+            $sub = Subscription::create([
+                'endpoint' => $subscription->endpoint,
+                'authToken' => $subscription->auth,
+                'publicKey' => $subscription->p256dh,
             ]);
 
             $webPush->queueNotification(
-                $subscription,
+                $sub,
                 json_encode($this->payload),
-                ['TTL' => 86400]
+                ['TTL' => 86400],
             );
 
             $responses = $webPush->flush();
 
             foreach ($responses as $response) {
                 if ($response->isExpired()) {
-                    $this->subscription->delete();
+                    $subscription->delete();
                 }
             }
         } catch (\Throwable $e) {

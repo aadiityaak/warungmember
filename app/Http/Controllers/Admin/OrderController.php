@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SendPushNotification;
 use App\Models\DepositTransaction;
 use App\Models\Notification;
 use App\Models\Order;
@@ -161,6 +162,13 @@ class OrderController extends Controller
                         'total_amount' => $order->total_amount,
                     ],
                 ]);
+
+                dispatch(new SendPushNotification($member, [
+                    'title' => 'Pesanan Baru Diterima',
+                    'body' => 'Pesanan #'.$order->id.' sebesar Rp'.number_format($order->total_amount, 0, ',', '.').' sedang diproses.',
+                    'type' => 'order',
+                    'url' => route('member.notifications'),
+                ]));
             }
 
             return $order;
@@ -224,6 +232,13 @@ class OrderController extends Controller
             if (! $member) {
                 return;
             }
+
+            dispatch(new SendPushNotification($member, [
+                'title' => 'Status Pesanan Diperbarui',
+                'body' => 'Pesanan #'.$order->id.' berstatus: '.$statusLabel,
+                'type' => 'order_status',
+                'url' => route('member.notifications'),
+            ]));
 
             // Tambah poin saat order completed (hanya transisi PERTAMA ke completed)
             if ($validated['status'] === 'completed' && $oldStatus !== 'completed') {

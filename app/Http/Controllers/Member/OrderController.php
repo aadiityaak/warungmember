@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SendPushNotification;
 use App\Models\DepositTransaction;
 use App\Models\MemberVoucher;
 use App\Models\Notification;
@@ -184,6 +185,14 @@ class OrderController extends Controller
                     'total_amount' => $order->total_amount,
                 ],
             ]);
+
+            // Send push notification via ntfy + web push
+            dispatch(new SendPushNotification($member, [
+                'title' => 'Pesanan Baru Diterima',
+                'body' => 'Pesanan #'.$order->id.' sebesar Rp'.number_format($order->total_amount, 0, ',', '.').' sedang diproses.',
+                'type' => 'order',
+                'url' => route('member.notifications'),
+            ]));
         }
 
         return redirect()->route('member.orders.index')

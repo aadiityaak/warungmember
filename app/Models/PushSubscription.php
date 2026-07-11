@@ -11,13 +11,19 @@ class PushSubscription extends Model
 
     protected $fillable = [
         'member_id',
-        'endpoint',
-        'auth',
-        'p256dh',
-        'fcm_token',
+        'ntfy_topic',
+        'ntfy_token',
+        'subscribed',
         'platform',
         'user_agent',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'subscribed' => 'boolean',
+        ];
+    }
 
     public function member(): BelongsTo
     {

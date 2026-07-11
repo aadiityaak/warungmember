@@ -35,8 +35,9 @@ return [
         ],
     ],
 
-    'fcm' => [
-        'server_key' => env('FCM_SERVER_KEY'),
+    'ntfy' => [
+        'server' => env('NTFY_SERVER_URL', 'http://localhost:2586'),
+        'secret' => env('NTFY_TOPIC_SECRET'),
     ],
 
 ];

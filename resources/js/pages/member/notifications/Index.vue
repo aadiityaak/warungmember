@@ -1,25 +1,16 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
 import { router } from '@inertiajs/vue3';
-import { onMounted, ref } from 'vue';
+import { onMounted } from 'vue';
 import MemberLayout from '@/layouts/MemberLayout.vue';
-import { usePushNotification } from '@/composables/usePushNotification';
+import { useNtfy } from '@/composables/useNtfy';
 
 defineOptions({ layout: MemberLayout });
 
-const push = usePushNotification();
-const statusLoading = ref(true);
+const ntfy = useNtfy();
 
 onMounted(async () => {
-    if ('serviceWorker' in navigator) {
-        try {
-            await navigator.serviceWorker.ready;
-        } catch {
-            /* ignore */
-        }
-    }
-    await push.checkStatus();
-    statusLoading.value = false;
+    await ntfy.init();
 });
 
 const { notifications } = defineProps<{
@@ -112,11 +103,11 @@ function parseBody(body: string): Array<{ text: string; highlight: boolean }> {
 
         <!-- Push Notification Status -->
         <div
-            v-if="push.supported"
+            v-if="ntfy.supported"
             class="rounded-2xl border px-4 py-3.5"
-            :class="push.subscribed ? 'border-[#22c55e] bg-[#f0fdf4]' : 'border-[#dadad3] bg-white'"
+            :class="ntfy.subscribed ? 'border-[#22c55e] bg-[#f0fdf4]' : 'border-[#dadad3] bg-white'"
         >
-            <div v-if="statusLoading" class="flex items-center gap-3 animate-pulse">
+            <div v-if="ntfy.loading" class="flex items-center gap-3 animate-pulse">
                 <div class="h-10 w-10 shrink-0 rounded-full bg-[#dadad3]" />
                 <div class="flex-1 space-y-2">
                     <div class="h-4 w-32 rounded bg-[#dadad3]" />
@@ -128,10 +119,10 @@ function parseBody(body: string): Array<{ text: string; highlight: boolean }> {
                     <div class="flex items-center gap-3">
                         <div
                             class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
-                            :class="push.subscribed ? 'bg-[#22c55e]/10' : 'bg-[#f6f6f3]'"
+                            :class="ntfy.subscribed ? 'bg-[#22c55e]/10' : 'bg-[#f6f6f3]'"
                         >
                             <svg
-                                v-if="push.subscribed"
+                                v-if="ntfy.subscribed"
                                 class="h-5 w-5 text-[#22c55e]"
                                 fill="none" stroke="currentColor" viewBox="0 0 24 24"
                             >
@@ -147,13 +138,13 @@ function parseBody(body: string): Array<{ text: string; highlight: boolean }> {
                         </div>
                         <div>
                             <p class="text-sm font-semibold leading-[1.4] text-[#000000]">
-                                {{ push.subscribed ? 'Notifikasi Aktif' : 'Notifikasi Belum Aktif' }}
+                                {{ ntfy.subscribed ? 'Notifikasi Aktif' : 'Notifikasi Belum Aktif' }}
                             </p>
-                            <p v-if="push.subscribed" class="text-xs leading-[1.4] text-[#62625b] mt-0.5">
+                            <p v-if="ntfy.subscribed" class="text-xs leading-[1.4] text-[#62625b] mt-0.5">
                                 Kamu akan menerima notifikasi langsung di perangkat ini
                             </p>
-                            <p v-else-if="push.permission === 'denied'" class="text-xs leading-[1.4] text-[#62625b] mt-0.5">
-                                Izin notifikasi ditolak. Aktifkan melalui pengaturan browser
+                            <p v-else-if="ntfy.error" class="text-xs leading-[1.4] text-[#62625b] mt-0.5">
+                                {{ ntfy.error }}
                             </p>
                             <p v-else class="text-xs leading-[1.4] text-[#62625b] mt-0.5">
                                 Aktifkan notifikasi untuk mendapat info promo & pesanan real-time
@@ -161,8 +152,8 @@ function parseBody(body: string): Array<{ text: string; highlight: boolean }> {
                         </div>
                     </div>
                     <button
-                        v-if="!push.subscribed"
-                        @click="push.subscribe()"
+                        v-if="!ntfy.subscribed"
+                        @click="ntfy.subscribe()"
                         class="shrink-0 rounded-full bg-[#E22625] px-4 py-1.5 text-xs font-bold leading-[1] text-white transition-colors hover:opacity-90"
                     >
                         Aktifkan

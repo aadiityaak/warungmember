@@ -75,11 +75,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('outlets/select', [MemberOutletController::class, 'select'])->name('outlets.select');
         Route::get('cart', [CartController::class, 'index'])->name('cart.index');
         Route::post('cart/sync', [CartController::class, 'sync'])->name('cart.sync');
-        Route::get('push/vapid-key', [PushSubscriptionController::class, 'vapidKey'])->name('push.vapid-key');
         Route::post('push/subscribe', [PushSubscriptionController::class, 'subscribe'])->name('push.subscribe');
         Route::post('push/unsubscribe', [PushSubscriptionController::class, 'unsubscribe'])->name('push.unsubscribe');
-        Route::post('push/fcm/subscribe', [PushSubscriptionController::class, 'subscribeFcm'])->name('push.fcm.subscribe');
-        Route::post('push/fcm/unsubscribe', [PushSubscriptionController::class, 'unsubscribeFcm'])->name('push.fcm.unsubscribe');
+        Route::get('push/status', [PushSubscriptionController::class, 'status'])->name('push.status');
     });
 
     // Admin routes (desktop - for admin & kasir)
