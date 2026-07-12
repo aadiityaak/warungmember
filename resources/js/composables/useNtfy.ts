@@ -161,7 +161,11 @@ export function useNtfy() {
         const body = data.message ?? '';
         const clickUrl = data.click ?? '/member/notifications';
 
-        // Capacitor native notification (Android WebView)
+        console.log('[useNtfy] handleNotification — received', { title, body, clickUrl });
+
+        let shown = false;
+
+        // Capacitor native notification (Android APK)
         const capacitor = (window as any).Capacitor;
         if (capacitor?.Plugins?.LocalNotifications) {
             capacitor.Plugins.LocalNotifications.schedule({
@@ -174,17 +178,29 @@ export function useNtfy() {
                     actionTypeId: 'OPEN_PAGE',
                     extra: { url: clickUrl },
                 }],
-            }).catch(() => {});
+            }).then(() => {
+                console.log('[useNtfy] LocalNotifications — scheduled');
+                shown = true;
+            }).catch((e: any) => {
+                console.error('[useNtfy] LocalNotifications — failed', e);
+            });
         } else if ('Notification' in window && Notification.permission === 'granted') {
-            // Fallback: browser notification
+            // Fallback: browser notification (PWA / desktop)
             new Notification(title, {
                 body,
                 icon: '/pwa-icons/pwa-192x192.png',
                 tag: 'warungmember-notification',
             });
+            console.log('[useNtfy] Notification API — shown');
+            shown = true;
         }
 
-        // Refresh notification list if on notifications page
+        // Fallback for WebView without Capacitor plugin: vibrate + log
+        if (!shown && navigator.vibrate) {
+            navigator.vibrate([200, 100, 200]);
+        }
+
+        // Always refresh notification list if on notifications page
         if (window.location.pathname.includes('/member/notifications')) {
             router.reload({ only: ['notifications', 'unreadNotifications'] });
         }
