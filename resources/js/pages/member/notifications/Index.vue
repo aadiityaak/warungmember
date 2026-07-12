@@ -107,59 +107,54 @@ function parseBody(body: string): Array<{ text: string; highlight: boolean }> {
             class="rounded-2xl border px-4 py-3.5"
             :class="ntfy.subscribed ? 'border-[#22c55e] bg-[#f0fdf4]' : 'border-[#dadad3] bg-white'"
         >
-            <div v-if="ntfy.loading" class="flex items-center gap-3 animate-pulse">
-                <div class="h-10 w-10 shrink-0 rounded-full bg-[#dadad3]" />
-                <div class="flex-1 space-y-2">
-                    <div class="h-4 w-32 rounded bg-[#dadad3]" />
-                    <div class="h-3 w-56 rounded bg-[#dadad3]" />
-                </div>
-            </div>
-            <template v-else>
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div
-                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
-                            :class="ntfy.subscribed ? 'bg-[#22c55e]/10' : 'bg-[#f6f6f3]'"
-                        >
-                            <svg
-                                v-if="ntfy.subscribed"
-                                class="h-5 w-5 text-[#22c55e]"
-                                fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                            >
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                            </svg>
-                            <svg
-                                v-else
-                                class="h-5 w-5 text-[#91918c]"
-                                fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                            >
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold leading-[1.4] text-[#000000]">
-                                {{ ntfy.subscribed ? 'Notifikasi Aktif' : 'Notifikasi Belum Aktif' }}
-                            </p>
-                            <p v-if="ntfy.subscribed" class="text-xs leading-[1.4] text-[#62625b] mt-0.5">
-                                Kamu akan menerima notifikasi langsung di perangkat ini
-                            </p>
-                            <p v-else-if="ntfy.error" class="text-xs leading-[1.4] text-[#62625b] mt-0.5">
-                                {{ ntfy.error }}
-                            </p>
-                            <p v-else class="text-xs leading-[1.4] text-[#62625b] mt-0.5">
-                                Aktifkan notifikasi untuk mendapat info promo & pesanan real-time
-                            </p>
-                        </div>
-                    </div>
-                    <button
-                        v-if="!ntfy.subscribed"
-                        @click="ntfy.subscribe()"
-                        class="shrink-0 rounded-full bg-[#E22625] px-4 py-1.5 text-xs font-bold leading-[1] text-white transition-colors hover:opacity-90"
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+                        :class="ntfy.subscribed ? 'bg-[#22c55e]/10' : 'bg-[#f6f6f3]'"
                     >
-                        Aktifkan
-                    </button>
+                        <svg
+                            v-if="ntfy.subscribed"
+                            class="h-5 w-5 text-[#22c55e]"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        >
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                        <svg
+                            v-else
+                            class="h-5 w-5 text-[#91918c]"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        >
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold leading-[1.4] text-[#000000]">
+                            {{ ntfy.subscribed ? 'Notifikasi Aktif' : 'Notifikasi Belum Aktif' }}
+                        </p>
+                        <p v-if="ntfy.subscribed" class="text-xs leading-[1.4] text-[#62625b] mt-0.5">
+                            Kamu akan menerima notifikasi langsung di perangkat ini
+                        </p>
+                        <p v-else class="text-xs leading-[1.4] text-[#62625b] mt-0.5">
+                            Aktifkan notifikasi untuk mendapat info promo & pesanan real-time
+                        </p>
+                    </div>
                 </div>
-            </template>
+                <button
+                    v-if="!ntfy.subscribed"
+                    @click="ntfy.subscribe()"
+                    class="shrink-0 rounded-full bg-[#E22625] px-4 py-1.5 text-xs font-bold leading-[1] text-white transition-colors hover:opacity-90"
+                >
+                    Aktifkan
+                </button>
+                <button
+                    v-else
+                    @click="ntfy.unsubscribe()"
+                    class="shrink-0 rounded-full border border-[#dadad3] bg-white px-4 py-1.5 text-xs font-bold leading-[1] text-[#62625b] transition-colors hover:bg-[#f6f6f3]"
+                >
+                    Nonaktifkan
+                </button>
+            </div>
         </div>
 
         <!-- Empty State -->

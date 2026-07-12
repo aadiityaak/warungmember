@@ -11,6 +11,8 @@ export function useNtfy() {
     let topic = '';
     let server = '';
 
+    const BASE = window.location.origin || '';
+
     function getCsrfToken(): string {
         return (
             (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || ''
@@ -24,15 +26,22 @@ export function useNtfy() {
         }
 
         try {
+            const url = `${BASE}/member/push/status`;
+            console.log('[useNtfy] checkStatus — fetching', url);
             const res = await Promise.race([
-                fetch(route('member.push.status'), {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
                 }),
                 new Promise<never>((_, reject) =>
-                    setTimeout(() => reject(new Error('timeout')), 3000)
+                    setTimeout(() => reject(new Error('timeout')), 5000)
                 ),
             ]);
+            console.log('[useNtfy] checkStatus — response', res.status, res.ok);
             const data = await res.json();
+            console.log('[useNtfy] checkStatus — data', data);
             subscribed.value = data.subscribed;
             topic = data.topic ?? '';
             server = data.server ?? '';
@@ -40,7 +49,8 @@ export function useNtfy() {
             if (data.subscribed && data.topic && data.server) {
                 connectSse(data.server, data.topic);
             }
-        } catch {
+        } catch (e) {
+            console.error('[useNtfy] checkStatus — error', e);
             subscribed.value = false;
         } finally {
             loading.value = false;
@@ -62,20 +72,25 @@ export function useNtfy() {
         }
 
         try {
+            const url = `${BASE}/member/push/subscribe`;
+            console.log('[useNtfy] subscribe — fetching', url);
             const res = await Promise.race([
-                fetch(route('member.push.subscribe'), {
+                fetch(url, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': getCsrfToken(),
                         'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
                     },
                 }),
                 new Promise<never>((_, reject) =>
-                    setTimeout(() => reject(new Error('timeout')), 3000)
+                    setTimeout(() => reject(new Error('timeout')), 5000)
                 ),
             ]);
+            console.log('[useNtfy] subscribe — response', res.status, res.ok);
             const data = await res.json();
+            console.log('[useNtfy] subscribe — data', data);
 
             if (data.success) {
                 subscribed.value = true;
@@ -83,18 +98,21 @@ export function useNtfy() {
                 server = data.server;
                 connectSse(data.server, data.topic);
             }
-        } catch {
+        } catch (e) {
+            console.error('[useNtfy] subscribe — error', e);
             error.value = 'Gagal mengaktifkan notifikasi';
         }
     }
 
     async function unsubscribe() {
         try {
-            await fetch(route('member.push.unsubscribe'), {
+            const url = `${BASE}/member/push/unsubscribe`;
+            await fetch(url, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': getCsrfToken(),
                     'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
                 },
             });
         } catch {
@@ -169,6 +187,7 @@ export function useNtfy() {
     }
 
     async function init() {
+        console.log('[useNtfy] init — starting');
         await checkStatus();
     }
 
