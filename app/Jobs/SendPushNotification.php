@@ -42,7 +42,9 @@ class SendPushNotification implements ShouldQueue
             return;
         }
 
-        $serviceAccount = json_decode($credentials, true);
+        $serviceAccount = is_file($credentials)
+            ? json_decode(file_get_contents($credentials), true)
+            : json_decode($credentials, true);
 
         if (! $serviceAccount) {
             return;
@@ -54,15 +56,10 @@ class SendPushNotification implements ShouldQueue
 
             $title = $this->payload['title'] ?? 'WarungMember';
             $body = $this->payload['body'] ?? '';
-            $url = $this->payload['url'] ?? route('member.notifications');
 
-            $message = CloudMessage::withTarget('token', $subscription->fcm_token)
-                ->withNotification(Notification::create($title, $body))
-                ->withWebPushConfig([
-                    'fcm_options' => [
-                        'link' => $url,
-                    ],
-                ]);
+            $message = CloudMessage::new()
+                ->withToken($subscription->fcm_token)
+                ->withNotification(Notification::create($title, $body));
 
             $messaging->send($message);
 
