@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
-import { router } from '@inertiajs/vue3';
+import { Head, router, usePoll } from '@inertiajs/vue3';
 import { onMounted } from 'vue';
 import MemberLayout from '@/layouts/MemberLayout.vue';
 import { useNtfy } from '@/composables/useNtfy';
@@ -12,6 +11,11 @@ const ntfy = useNtfy();
 onMounted(async () => {
     // init push notifikasi — check status dari server
     await ntfy.init();
+});
+
+// Polling setiap 30 detik untuk notifikasi baru & jumlah unread
+usePoll(30000, {
+    only: ['notifications', 'unreadNotifications'],
 });
 
 const { notifications } = defineProps<{
