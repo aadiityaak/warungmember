@@ -1,5 +1,6 @@
 import { ref, reactive, onUnmounted } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { LocalNotifications } from '@capacitor/local-notifications';
 
 export function useNtfy() {
     const supported = ref(typeof EventSource !== 'undefined');
@@ -62,11 +63,10 @@ export function useNtfy() {
         if (!supported.value) return;
 
         // Request notification permission — browser or Capacitor (Android WebView)
-        const capacitor = (window as any).Capacitor;
-        if (capacitor?.Plugins?.LocalNotifications) {
-            const perm = await capacitor.Plugins.LocalNotifications.checkPermissions();
+        if ('LocalNotifications' in window) {
+            const perm = await LocalNotifications.checkPermissions();
             if (perm.display === 'prompt') {
-                await capacitor.Plugins.LocalNotifications.requestPermissions();
+                await LocalNotifications.requestPermissions();
             }
         } else if ('Notification' in window && Notification.permission === 'default') {
             await Notification.requestPermission();
@@ -166,9 +166,8 @@ export function useNtfy() {
         let shown = false;
 
         // Capacitor native notification (Android APK)
-        const capacitor = (window as any).Capacitor;
-        if (capacitor?.Plugins?.LocalNotifications) {
-            capacitor.Plugins.LocalNotifications.schedule({
+        if ('LocalNotifications' in window) {
+            LocalNotifications.schedule({
                 notifications: [{
                     title,
                     body,
