@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Member;
+use App\Models\PushSubscription;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -52,6 +53,10 @@ class MemberController extends Controller
 
         $member->load('member');
 
+        $pushSubscription = PushSubscription::where('member_id', $member->member?->id)
+            ->latest('created_at')
+            ->first();
+
         $depositHistory = $member->member?->depositTransactions()
             ->latest('created_at')
             ->paginate(20);
@@ -64,6 +69,7 @@ class MemberController extends Controller
             'member' => $member,
             'depositHistory' => $depositHistory,
             'pointHistory' => $pointHistory,
+            'pushSubscription' => $pushSubscription,
         ]);
     }
 

@@ -13,7 +13,7 @@ defineOptions({
     },
 });
 
-const { member, depositHistory, pointHistory } = defineProps<{
+const { member, depositHistory, pointHistory, pushSubscription } = defineProps<{
     member: {
         id: number;
         name: string;
@@ -45,6 +45,12 @@ const { member, depositHistory, pointHistory } = defineProps<{
             note: string | null;
             created_at: string;
         }>;
+    } | null;
+    pushSubscription: {
+        fcm_token: string | null;
+        platform: string | null;
+        subscribed: boolean;
+        created_at: string | null;
     } | null;
 }>();
 
@@ -166,6 +172,38 @@ function formatDateTime(date: string): string {
                         ? new Date(member.member.birth_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
                         : '-' }}
                 </p>
+            </div>
+        </div>
+
+        <!-- Push Notification Card -->
+        <div class="mt-6">
+            <div class="rounded-2xl border border-[#dadad3] bg-white p-6">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="text-xs font-medium leading-[1.5] text-[#91918c] uppercase tracking-wider">Push Notification</span>
+                    <span v-if="pushSubscription?.subscribed" class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-700">Aktif</span>
+                    <span v-else class="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-600">Tidak Aktif</span>
+                </div>
+                <div v-if="pushSubscription?.fcm_token" class="space-y-3">
+                    <div>
+                        <p class="text-xs leading-[1.5] text-[#91918c]">FCM Token</p>
+                        <p class="mt-0.5 text-xs font-mono text-[#000000] break-all select-all">
+                            {{ pushSubscription.fcm_token }}
+                        </p>
+                    </div>
+                    <div class="flex gap-6">
+                        <div>
+                            <p class="text-xs leading-[1.5] text-[#91918c]">Platform</p>
+                            <p class="mt-0.5 text-sm font-semibold text-[#000000]">{{ pushSubscription.platform ?? '-' }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs leading-[1.5] text-[#91918c]">Subscribe Sejak</p>
+                            <p class="mt-0.5 text-sm font-semibold text-[#000000]">
+                                {{ pushSubscription.created_at ? new Date(pushSubscription.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-' }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <p v-else class="text-sm text-[#62625b]">Belum ada perangkat yang terdaftar untuk push notification.</p>
             </div>
         </div>
 
