@@ -42,11 +42,12 @@ export function useNtfy() {
             console.log('[useNtfy] checkStatus — response', res.status, res.ok);
             const data = await res.json();
             console.log('[useNtfy] checkStatus — data', data);
-            subscribed.value = data.subscribed;
+            subscribed.value = Boolean(data.subscribed);
             topic = data.topic ?? '';
             server = data.server ?? '';
+            console.log('[useNtfy] checkStatus — after set, subscribed =', subscribed.value, 'topic =', topic, 'server =', server);
 
-            if (data.subscribed && data.topic && data.server) {
+            if (subscribed.value && topic && server) {
                 connectSse(data.server, data.topic);
             }
         } catch (e) {
@@ -105,6 +106,7 @@ export function useNtfy() {
     }
 
     async function unsubscribe() {
+        console.log('[useNtfy] unsubscribe — called');
         try {
             const url = `${BASE}/member/push/unsubscribe`;
             await fetch(url, {
@@ -115,14 +117,16 @@ export function useNtfy() {
                     'Accept': 'application/json',
                 },
             });
-        } catch {
-            // ignore
+            console.log('[useNtfy] unsubscribe — fetch done');
+        } catch (e) {
+            console.error('[useNtfy] unsubscribe — fetch error', e);
         }
 
         disconnectSse();
         subscribed.value = false;
         topic = '';
         server = '';
+        console.log('[useNtfy] unsubscribe — state reset, subscribed =', subscribed.value);
     }
 
     function connectSse(srv: string, tpc: string) {

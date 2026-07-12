@@ -101,9 +101,23 @@ function parseBody(body: string): Array<{ text: string; highlight: boolean }> {
             <p class="mt-1 text-sm leading-[1.4] text-[#62625b]">Pusat pemberitahuan & info terbaru</p>
         </div>
 
-        <!-- Push Notification Status -->
+        <!-- Push Notification Status - Skeleton (loading) -->
+        <div v-if="ntfy.supported && ntfy.loading" class="rounded-2xl border border-[#dadad3] bg-white px-4 py-3.5 animate-pulse">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-full bg-[#f6f6f3]" />
+                    <div class="space-y-2">
+                        <div class="h-4 w-36 rounded bg-[#f6f6f3]" />
+                        <div class="h-3 w-56 rounded bg-[#f6f6f3]" />
+                    </div>
+                </div>
+                <div class="h-7 w-20 rounded-full bg-[#f6f6f3]" />
+            </div>
+        </div>
+
+        <!-- Push Notification Status - Real content (loaded) -->
         <div
-            v-if="ntfy.supported"
+            v-if="ntfy.supported && !ntfy.loading"
             class="rounded-2xl border px-4 py-3.5"
             :class="ntfy.subscribed ? 'border-[#22c55e] bg-[#f0fdf4]' : 'border-[#dadad3] bg-white'"
         >

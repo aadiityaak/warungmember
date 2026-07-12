@@ -55,7 +55,7 @@ class PushSubscriptionController extends Controller
         return response()->json([
             'subscribed' => $sub !== null,
             'topic' => $sub?->ntfy_topic,
-            'server' => config('services.ntfy.server'),
+            'server' => $sub ? config('services.ntfy.server') : null,
         ]);
     }
 }
