@@ -8,6 +8,9 @@ plugins {
 android {
     namespace = "com.warungmember.app"
     compileSdk = rootProject.ext.compileSdkVersion
+    buildFeatures {
+        resValues = true
+    }
     defaultConfig {
         applicationId "com.warungmember.app"
         minSdkVersion rootProject.ext.minSdkVersion
