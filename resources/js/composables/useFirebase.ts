@@ -5,15 +5,15 @@ import type { Messaging } from 'firebase/messaging';
 import { deleteToken, getMessaging, getToken, onMessage } from 'firebase/messaging';
 
 const firebaseConfig = {
-    apiKey: 'YOUR_API_KEY',
-    authDomain: 'YOUR_PROJECT.firebaseapp.com',
-    projectId: 'YOUR_PROJECT_ID',
-    storageBucket: 'YOUR_PROJECT.appspot.com',
-    messagingSenderId: 'YOUR_SENDER_ID',
-    appId: 'YOUR_APP_ID',
+    apiKey: 'AIzaSyCqSpwOZzyQGVHAI39e2KNxEHtEQVrUpRA',
+    authDomain: 'masmbull.firebaseapp.com',
+    projectId: 'masmbull',
+    storageBucket: 'masmbull.firebasestorage.app',
+    messagingSenderId: '370089596973',
+    appId: '1:370089596973:web:YOUR_WEB_APP_ID', // TODO: ganti dari Firebase Console (buat Web app)
 };
 
-const VAPID_KEY = 'YOUR_VAPID_KEY';
+const VAPID_KEY = 'BCQFBT9kOFZiXT0MQbIPEfER3X3-HiGdQz5zgaU59pxnTNd7xNAyn3Gv1yKeK4ZbSUKrYHtAapMup3MwA1snL_Y';
 
 let firebaseApp: FirebaseApp | null = null;
 let messaging: Messaging | null = null;

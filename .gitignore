@@ -28,6 +28,7 @@ yarn-error.log
 /.idea
 /.nova
 /.vscode
+/android/app/google-services.json
 /.zed
 /android/local-sdk/
 cmdline-tools.zip
