@@ -1,23 +1,6 @@
-import { onUnmounted, reactive } from 'vue';
-import type { FirebaseApp } from 'firebase/app';
-import { initializeApp } from 'firebase/app';
-import type { Messaging } from 'firebase/messaging';
-import { deleteToken, getMessaging, getToken, onMessage } from 'firebase/messaging';
-
-const firebaseConfig = {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    appId: import.meta.env.VITE_FIREBASE_APP_ID,
-};
-
-const VAPID_KEY = import.meta.env.VITE_VAPID_KEY;
-
-let firebaseApp: FirebaseApp | null = null;
-let messaging: Messaging | null = null;
-let onMessageUnsubscribe: (() => void) | null = null;
+import { reactive } from 'vue';
+import { Capacitor } from '@capacitor/core';
+import { PushNotifications } from '@capacitor/push-notifications';
 
 function getCsrfToken(): string {
     if (typeof window === 'undefined') {
@@ -26,22 +9,8 @@ function getCsrfToken(): string {
     return (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '';
 }
 
-function isSupported(): boolean {
-    return typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window;
-}
-
-function getFirebaseApp(): FirebaseApp {
-    if (!firebaseApp) {
-        firebaseApp = initializeApp(firebaseConfig);
-    }
-    return firebaseApp;
-}
-
-function getFirebaseMessaging(): Messaging {
-    if (!messaging) {
-        messaging = getMessaging(getFirebaseApp());
-    }
-    return messaging;
+function isPushAvailable(): boolean {
+    return Capacitor.isPluginAvailable('PushNotifications');
 }
 
 async function checkStatus(): Promise<boolean> {
@@ -68,14 +37,46 @@ async function checkStatus(): Promise<boolean> {
     }
 }
 
-async function requestFcmToken(): Promise<string | null> {
+async function checkPermission(): Promise<boolean> {
     try {
-        const msg = getFirebaseMessaging();
-        const token = await getToken(msg, { vapidKey: VAPID_KEY });
-        return token;
+        const perm = await PushNotifications.checkPermissions();
+        return perm.receive === 'granted';
     } catch {
-        return null;
+        return false;
     }
+}
+
+async function requestPermission(): Promise<boolean> {
+    try {
+        const perm = await PushNotifications.requestPermissions();
+        return perm.receive === 'granted';
+    } catch {
+        return false;
+    }
+}
+
+function registerPush(): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const handler = PushNotifications.addListener('registration', (data) => {
+            handler.remove();
+            resolve(data.value);
+        });
+
+        const errorHandler = PushNotifications.addListener('registrationError', (err) => {
+            errorHandler.remove();
+            handler.remove();
+            reject(new Error(err.error));
+        });
+
+        PushNotifications.register();
+
+        // Timeout 30s — pastikan ga pending selamanya
+        setTimeout(() => {
+            handler.remove();
+            errorHandler.remove();
+            reject(new Error('Timeout registrasi push notification'));
+        }, 30000);
+    });
 }
 
 async function postSubscribe(token: string): Promise<boolean> {
@@ -141,10 +142,6 @@ const state = reactive({
         try {
             const isSubscribed = await checkStatus();
             state.subscribed = isSubscribed;
-
-            if (isSubscribed) {
-                await requestFcmToken();
-            }
         } catch (err) {
             state.error = err instanceof Error ? err.message : 'Gagal memeriksa status notifikasi';
         } finally {
@@ -162,14 +159,17 @@ const state = reactive({
         }
 
         try {
-            const permission = await Notification.requestPermission();
-            if (permission !== 'granted') {
-                state.error = 'Izin notifikasi tidak diberikan';
-                state.loading = false;
-                return;
+            const hasPerm = await checkPermission();
+            if (!hasPerm) {
+                const granted = await requestPermission();
+                if (!granted) {
+                    state.error = 'Izin notifikasi tidak diberikan';
+                    state.loading = false;
+                    return;
+                }
             }
 
-            const token = await requestFcmToken();
+            const token = await registerPush();
             if (!token) {
                 state.error = 'Gagal mendapatkan token notifikasi';
                 state.loading = false;
@@ -184,16 +184,6 @@ const state = reactive({
             }
 
             state.subscribed = true;
-
-            try {
-                const msg = getFirebaseMessaging();
-                onMessageUnsubscribe = onMessage(msg, (_payload: unknown) => {
-                    // Foreground message diterima — handled silently,
-                    // service worker akan menampilkan notification.
-                });
-            } catch {
-                // onMessage gagal — tidak fatal, service worker tetap handle
-            }
         } catch (err) {
             state.error = err instanceof Error ? err.message : 'Gagal mengaktifkan notifikasi';
         } finally {
@@ -206,17 +196,10 @@ const state = reactive({
         state.error = null;
 
         try {
-            if (onMessageUnsubscribe) {
-                onMessageUnsubscribe();
-                onMessageUnsubscribe = null;
-            }
-
-            if (messaging) {
-                try {
-                    await deleteToken(messaging);
-                } catch {
-                    // Token mungkin sudah invalid — lanjutkan
-                }
+            try {
+                await PushNotifications.unregister();
+            } catch {
+                // lanjutkan
             }
 
             await postUnsubscribe();
@@ -230,14 +213,7 @@ const state = reactive({
 });
 
 export function useFirebase() {
-    state.supported = isSupported();
-
-    onUnmounted(() => {
-        if (onMessageUnsubscribe) {
-            onMessageUnsubscribe();
-            onMessageUnsubscribe = null;
-        }
-    });
+    state.supported = isPushAvailable();
 
     return state;
 }
