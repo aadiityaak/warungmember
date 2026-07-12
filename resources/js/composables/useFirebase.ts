@@ -5,15 +5,15 @@ import type { Messaging } from 'firebase/messaging';
 import { deleteToken, getMessaging, getToken, onMessage } from 'firebase/messaging';
 
 const firebaseConfig = {
-    apiKey: 'AIzaSyCqSpwOZzyQGVHAI39e2KNxEHtEQVrUpRA',
-    authDomain: 'masmbull.firebaseapp.com',
-    projectId: 'masmbull',
-    storageBucket: 'masmbull.firebasestorage.app',
-    messagingSenderId: '370089596973',
-    appId: '1:370089596973:web:YOUR_WEB_APP_ID', // TODO: ganti dari Firebase Console (buat Web app)
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const VAPID_KEY = 'BCQFBT9kOFZiXT0MQbIPEfER3X3-HiGdQz5zgaU59pxnTNd7xNAyn3Gv1yKeK4ZbSUKrYHtAapMup3MwA1snL_Y';
+const VAPID_KEY = import.meta.env.VITE_VAPID_KEY;
 
 let firebaseApp: FirebaseApp | null = null;
 let messaging: Messaging | null = null;
