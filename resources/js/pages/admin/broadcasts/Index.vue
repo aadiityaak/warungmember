@@ -23,8 +23,8 @@ const { broadcasts: broadcastsData } = defineProps<{
             sent_count: number;
             delivery_log: null | {
                 total_push_attempts: number;
-                ntfy_success: number;
-                ntfy_failed: number;
+                fcm_success: number;
+                fcm_failed: number;
             };
             read_count: number;
             sent_at: string | null;
@@ -72,11 +72,11 @@ function formatDate(d: string) {
                                 <span class="text-[#91918c]">Push:</span>
                                 <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 font-medium text-emerald-700">
                                     <span class="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                                    {{ b.delivery_log.ntfy_success }} berhasil
+                                    {{ b.delivery_log.fcm_success }} berhasil
                                 </span>
-                                <span v-if="b.delivery_log.ntfy_failed > 0" class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 font-medium text-red-700">
+                                <span v-if="b.delivery_log.fcm_failed > 0" class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 font-medium text-red-700">
                                     <span class="h-1.5 w-1.5 rounded-full bg-red-500" />
-                                    {{ b.delivery_log.ntfy_failed }} gagal
+                                    {{ b.delivery_log.fcm_failed }} gagal
                                 </span>
                             </div>
                         </div>

@@ -1,15 +1,2 @@
-services:
-  ntfy:
-    image: binwiederhier/ntfy:v2.11.0
-    container_name: ntfy
-    ports:
-      - "2586:80"
-    volumes:
-      - ntfy_data:/var/lib/ntfy
-      - ./docker/ntfy/server.yml:/etc/ntfy/server.yml:ro
-    environment:
-      - TZ=Asia/Jakarta
-    restart: unless-stopped
-
-volumes:
-  ntfy_data:
+# Empty docker-compose — worker services removed.
+# Add services as needed.

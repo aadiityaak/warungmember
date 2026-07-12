@@ -63,7 +63,7 @@ class OrderController extends Controller
             'member_voucher_id' => 'nullable|exists:member_vouchers,id',
         ]);
 
-        $order = DB::transaction(function () use ($validated, $request) {
+        $order = DB::transaction(function () use ($validated) {
             $order = Order::create([
                 'user_id' => auth()->id(),
                 'outlet_id' => $validated['outlet_id'],
@@ -186,7 +186,7 @@ class OrderController extends Controller
                 ],
             ]);
 
-            // Send push notification via ntfy + web push
+            // Send push notification via Firebase FCM
             dispatch(new SendPushNotification($member, [
                 'title' => 'Pesanan Baru Diterima',
                 'body' => 'Pesanan #'.$order->id.' sebesar Rp'.number_format($order->total_amount, 0, ',', '.').' sedang diproses.',

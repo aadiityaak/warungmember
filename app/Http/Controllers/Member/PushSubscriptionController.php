@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\PushSubscription;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class PushSubscriptionController extends Controller
 {
@@ -14,24 +13,19 @@ class PushSubscriptionController extends Controller
     {
         $member = $request->user()->member;
 
-        $topic = 'wm-'.$member->id.'-'.Str::random(8);
-        $token = Str::random(32);
+        $fcmToken = $request->input('token');
 
-        $sub = PushSubscription::updateOrCreate(
-            ['member_id' => $member->id, 'platform' => 'web'],
+        PushSubscription::updateOrCreate(
+            ['member_id' => $member->id],
             [
-                'ntfy_topic' => $topic,
-                'ntfy_token' => $token,
+                'fcm_token' => $fcmToken,
                 'subscribed' => true,
+                'platform' => 'web',
                 'user_agent' => $request->userAgent(),
             ],
         );
 
-        return response()->json([
-            'success' => true,
-            'topic' => $sub->ntfy_topic,
-            'server' => config('services.ntfy.server'),
-        ]);
+        return response()->json(['success' => true]);
     }
 
     public function unsubscribe(Request $request): JsonResponse
@@ -54,8 +48,6 @@ class PushSubscriptionController extends Controller
 
         return response()->json([
             'subscribed' => $sub !== null,
-            'topic' => $sub?->ntfy_topic,
-            'server' => $sub ? config('services.ntfy.server') : null,
         ]);
     }
 }

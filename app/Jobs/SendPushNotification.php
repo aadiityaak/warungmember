@@ -7,7 +7,9 @@ use App\Models\Member;
 use App\Models\PushSubscription;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Facades\Http;
+use Kreait\Firebase\Factory;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification;
 
 class SendPushNotification implements ShouldQueue
 {
@@ -26,37 +28,45 @@ class SendPushNotification implements ShouldQueue
             ->get();
 
         foreach ($subscriptions as $subscription) {
-            if ($subscription->ntfy_topic) {
-                $this->sendNtfy($subscription);
+            if ($subscription->fcm_token) {
+                $this->sendFcm($subscription);
             }
         }
     }
 
-    private function sendNtfy(PushSubscription $subscription): void
+    private function sendFcm(PushSubscription $subscription): void
     {
-        $server = config('services.ntfy.server');
+        $credentials = config('services.firebase.credentials');
 
-        if (! $server) {
+        if (empty($credentials)) {
+            return;
+        }
+
+        $serviceAccount = json_decode($credentials, true);
+
+        if (! $serviceAccount) {
             return;
         }
 
         try {
-            $headers = [];
-            if ($secret = config('services.ntfy.secret')) {
-                $headers['Authorization'] = 'Bearer ' . $secret;
-            }
+            $factory = (new Factory)->withServiceAccount($serviceAccount);
+            $messaging = $factory->createMessaging();
 
-            $response = Http::withHeaders($headers)->post(rtrim($server, '/') . '/' . $subscription->ntfy_topic, [
-                'topic' => $subscription->ntfy_topic,
-                'title' => $this->payload['title'] ?? 'WarungMember',
-                'message' => $this->payload['body'] ?? '',
-                'tags' => [$this->payload['type'] ?? 'info'],
-                'priority' => 4,
-                'click' => $this->payload['url'] ?? route('member.notifications'),
-                'icon' => $this->payload['icon'] ?? asset('pwa-icons/pwa-192x192.png'),
-            ]);
+            $title = $this->payload['title'] ?? 'WarungMember';
+            $body = $this->payload['body'] ?? '';
+            $url = $this->payload['url'] ?? route('member.notifications');
 
-            $this->logDelivery(result: $response->successful());
+            $message = CloudMessage::withTarget('token', $subscription->fcm_token)
+                ->withNotification(Notification::create($title, $body))
+                ->withWebPushConfig([
+                    'fcm_options' => [
+                        'link' => $url,
+                    ],
+                ]);
+
+            $messaging->send($message);
+
+            $this->logDelivery(result: true);
         } catch (\Throwable $e) {
             $this->logDelivery(result: false);
 
@@ -77,16 +87,16 @@ class SendPushNotification implements ShouldQueue
 
         $log = $broadcast->delivery_log ?? [
             'total_push_attempts' => 0,
-            'ntfy_success' => 0,
-            'ntfy_failed' => 0,
+            'fcm_success' => 0,
+            'fcm_failed' => 0,
         ];
 
         $log['total_push_attempts']++;
 
         if ($result) {
-            $log['ntfy_success']++;
+            $log['fcm_success']++;
         } else {
-            $log['ntfy_failed']++;
+            $log['fcm_failed']++;
         }
 
         $broadcast->update(['delivery_log' => $log]);

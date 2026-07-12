@@ -11,8 +11,7 @@ class PushSubscription extends Model
 
     protected $fillable = [
         'member_id',
-        'ntfy_topic',
-        'ntfy_token',
+        'fcm_token',
         'subscribed',
         'platform',
         'user_agent',

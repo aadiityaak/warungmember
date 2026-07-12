@@ -35,9 +35,8 @@ return [
         ],
     ],
 
-    'ntfy' => [
-        'server' => env('NTFY_SERVER_URL', 'http://localhost:2586'),
-        'secret' => env('NTFY_TOPIC_SECRET'),
+    'firebase' => [
+        'credentials' => env('FIREBASE_CREDENTIALS'),
     ],
 
 ];

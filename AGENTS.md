@@ -40,11 +40,6 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - Use descriptive names for variables and methods. For example, `isRegisteredForDiscounts`, not `discount()`.
 - Check for existing components to reuse before writing a new one.
 
-### Vue Composables — Reactive Return
-
-- **ALWAYS wrap composable return with `reactive()`** when returning `ref()` values. Vue does NOT auto-unwrap refs inside plain objects: `{ subscribed: ref(false) }` → `.subscribed` is a `Ref` object (always truthy), not the boolean. Use `return reactive({ subscribed, loading, ... })` so templates get auto-unwrapped primitives.
-- Example: `resources/js/composables/useNtfy.ts` had this bug — plain object return made `ntfy.subscribed` truthy forever, showing "Notifikasi Aktif" even when API returned `false`.
-
 ## Verification Scripts
 
 - Do not create verification scripts or tinker when tests cover that functionality and prove they work. Unit and feature tests are more important.

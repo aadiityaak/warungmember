@@ -2,15 +2,15 @@
 import { Head, router, usePoll } from '@inertiajs/vue3';
 import { onMounted } from 'vue';
 import MemberLayout from '@/layouts/MemberLayout.vue';
-import { useNtfy } from '@/composables/useNtfy';
+import { useFirebase } from '@/composables/useFirebase';
 
 defineOptions({ layout: MemberLayout });
 
-const ntfy = useNtfy();
+const push = useFirebase();
 
 onMounted(async () => {
     // init push notifikasi — check status dari server
-    await ntfy.init();
+    await push.init();
 });
 
 // Polling setiap 30 detik untuk notifikasi baru & jumlah unread
@@ -108,18 +108,18 @@ function parseBody(body: string): Array<{ text: string; highlight: boolean }> {
 
         <!-- Push Notification Status v2 -->
         <div
-            v-if="ntfy.supported"
+            v-if="push.supported"
             class="rounded-2xl border px-4 py-3.5"
-            :class="ntfy.subscribed ? 'border-[#22c55e] bg-[#f0fdf4]' : 'border-[#dadad3] bg-white'"
+            :class="push.subscribed ? 'border-[#22c55e] bg-[#f0fdf4]' : 'border-[#dadad3] bg-white'"
         >
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div
                         class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
-                        :class="ntfy.subscribed ? 'bg-[#22c55e]/10' : 'bg-[#f6f6f3]'"
+                        :class="push.subscribed ? 'bg-[#22c55e]/10' : 'bg-[#f6f6f3]'"
                     >
                         <svg
-                            v-if="ntfy.subscribed"
+                            v-if="push.subscribed"
                             class="h-5 w-5 text-[#22c55e]"
                             fill="none" stroke="currentColor" viewBox="0 0 24 24"
                         >
@@ -135,9 +135,9 @@ function parseBody(body: string): Array<{ text: string; highlight: boolean }> {
                     </div>
                     <div>
                         <p class="text-sm font-semibold leading-[1.4] text-[#000000]">
-                            {{ ntfy.subscribed ? 'Notifikasi Aktif' : 'Belum Aktif' }}
+                            {{ push.subscribed ? 'Notifikasi Aktif' : 'Belum Aktif' }}
                         </p>
-                        <p v-if="ntfy.subscribed" class="text-xs leading-[1.4] text-[#62625b] mt-0.5">
+                        <p v-if="push.subscribed" class="text-xs leading-[1.4] text-[#62625b] mt-0.5">
                             Kamu akan menerima notifikasi langsung di perangkat ini
                         </p>
                         <p v-else class="text-xs leading-[1.4] text-[#62625b] mt-0.5">
@@ -146,15 +146,15 @@ function parseBody(body: string): Array<{ text: string; highlight: boolean }> {
                     </div>
                 </div>
                 <button
-                    v-if="!ntfy.subscribed"
-                    @click="ntfy.subscribe()"
+                    v-if="!push.subscribed"
+                    @click="push.subscribe()"
                     class="shrink-0 rounded-full bg-[#E22625] px-4 py-1.5 text-xs font-bold leading-[1] text-white transition-colors hover:opacity-90"
                 >
                     Aktifkan
                 </button>
                 <button
                     v-else
-                    @click="ntfy.unsubscribe()"
+                    @click="push.unsubscribe()"
                     class="shrink-0 rounded-full border border-[#dadad3] bg-white px-4 py-1.5 text-xs font-bold leading-[1] text-[#62625b] transition-colors hover:bg-[#f6f6f3]"
                 >
                     Nonaktifkan

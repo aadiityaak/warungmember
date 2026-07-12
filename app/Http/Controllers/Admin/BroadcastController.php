@@ -7,10 +7,11 @@ use App\Jobs\SendPushNotification;
 use App\Models\Broadcast;
 use App\Models\Member;
 use App\Models\Notification;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
+use Illuminate\Mail\Message;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Response;
 
 class BroadcastController extends Controller
@@ -114,8 +115,8 @@ class BroadcastController extends Controller
                 ],
                 'delivery_log' => [
                     'total_push_attempts' => 0,
-                    'ntfy_success' => 0,
-                    'ntfy_failed' => 0,
+                    'fcm_success' => 0,
+                    'fcm_failed' => 0,
                 ],
                 'sent_count' => 0,
                 'sent_at' => now(),
@@ -169,9 +170,9 @@ class BroadcastController extends Controller
             foreach ($members as $member) {
                 if ($member->user?->email) {
                     try {
-                        \Illuminate\Support\Facades\Mail::html(
+                        Mail::html(
                             $validated['body'],
-                            function (\Illuminate\Mail\Message $message) use ($member, $validated) {
+                            function (Message $message) use ($member, $validated) {
                                 $message->to($member->user->email)
                                     ->subject($validated['title']);
                             }
@@ -196,8 +197,8 @@ class BroadcastController extends Controller
         $broadcast->update([
             'delivery_log' => [
                 'total_push_attempts' => 0,
-                'ntfy_success' => 0,
-                'ntfy_failed' => 0,
+                'fcm_success' => 0,
+                'fcm_failed' => 0,
             ],
         ]);
 
@@ -220,11 +221,11 @@ class BroadcastController extends Controller
         $members = $query->get();
 
         $pushPayload = [
-            'title'   => $broadcast->title,
-            'body'    => $broadcast->body,
-            'type'    => 'umum',
-            'icon'    => '/pwa-icons/pwa-192x192.png',
-            'url'     => route('member.notifications'),
+            'title' => $broadcast->title,
+            'body' => $broadcast->body,
+            'type' => 'umum',
+            'icon' => '/pwa-icons/pwa-192x192.png',
+            'url' => route('member.notifications'),
         ];
 
         foreach ($members as $member) {

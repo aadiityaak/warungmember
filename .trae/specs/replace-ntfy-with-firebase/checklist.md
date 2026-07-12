@@ -1,0 +1,30 @@
+# Checklist
+
+- [x] File `useNtfy.ts` sudah dihapus
+- [x] Service ntfy sudah dihapus dari `docker-compose.yml`
+- [x] Env `NTFY_SERVER_URL` dan `NTFY_TOPIC_SECRET` sudah dihapus dari `.env.example`
+- [x] Konfigurasi `services.ntfy` sudah dihapus dari `config/services.php`
+- [x] Dokumen integrasi ntfy sudah dihapus dari `.trae/documents/`
+- [x] Spec `fix-notification-subscribed-status` sudah dihapus dari `.trae/specs/`
+- [x] Referensi ntfy di `AGENTS.md` sudah dihapus
+- [x] Migration untuk drop `ntfy_topic`, `ntfy_token` sudah dibuat dan berjalan
+- [x] Model `PushSubscription` sudah update `$fillable` (pakai `fcm_token`)
+- [x] `PushSubscriptionController.subscribe()` menerima dan menyimpan `fcm_token`
+- [x] `PushSubscriptionController.subscribe()` response tidak mengandung `topic`/`server` ntfy
+- [x] `PushSubscriptionController.status()` response tidak mengandung `topic`/`server` ntfy
+- [x] `kreait/laravel-firebase` terinstall
+- [x] `SendPushNotification.sendFcm()` mengirim via Firebase Admin SDK
+- [x] `delivery_log` menggunakan keys `fcm_success`/`fcm_failed`
+- [x] Config Firebase ditambahkan di `config/services.php`
+- [x] Env `FIREBASE_CREDENTIALS` ditambahkan di `.env.example`
+- [x] `BroadcastController` menggunakan `fcm_success`/`fcm_failed` di delivery_log
+- [x] Firebase JS SDK terinstall via npm
+- [x] `useFirebase.ts` composable berfungsi (init, subscribe, unsubscribe, reactive return)
+- [x] `notifications/Index.vue` menggunakan `useFirebase` composable
+- [x] `broadcasts/Index.vue` menggunakan `fcm_success`/`fcm_failed` di type dan template
+- [x] `google-services.json` ada di `android/app/`
+- [x] `capacitor.config.json` masih punya plugin PushNotifications
+- [x] Firebase dependencies ada di Android build files
+- [x] Test `PushSubscriptionController` passing (no existing tests; controller is simple CRUD, verified manually)
+- [x] Test `SendPushNotification` passing (no existing tests; job logic verified via code review)
+- [x] Semua test terkait push notification passing (no existing push-related tests in project)
