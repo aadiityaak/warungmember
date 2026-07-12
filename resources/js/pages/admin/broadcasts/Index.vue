@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { dashboard } from '@/routes/admin';
 import { create as createBroadcast } from '@/routes/admin/broadcasts';
 import type { BreadcrumbItem } from '@/types';
@@ -26,6 +26,12 @@ const { broadcasts: broadcastsData } = defineProps<{
         }>;
     };
 }>();
+
+function resend(broadcastId: number) {
+    router.post(route('admin.broadcasts.resend', broadcastId), {}, {
+        preserveScroll: true,
+    });
+}
 
 function formatDate(d: string) {
     return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -55,6 +61,12 @@ function formatDate(d: string) {
                                 <span>{{ formatDate(b.sent_at ?? b.created_at) }}</span>
                             </div>
                         </div>
+                        <button
+                            @click="resend(b.id)"
+                            class="shrink-0 rounded-full border border-[#dadad3] bg-white px-3 py-1.5 text-xs font-bold text-[#62625b] hover:bg-[#f6f6f3] transition-colors"
+                        >
+                            Kirim Ulang
+                        </button>
                     </div>
                 </div>
             </div>

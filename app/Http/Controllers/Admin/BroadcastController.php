@@ -145,6 +145,42 @@ class BroadcastController extends Controller
             ->with('toast', ['type' => 'success', 'message' => "Broadcast terkirim ke {$sentCount} member."]);
     }
 
+    public function resend(Broadcast $broadcast): RedirectResponse
+    {
+        $segment = $broadcast->data['segment'] ?? 'all';
+        $segmentValue = $broadcast->data['segment_value'] ?? null;
+
+        $query = Member::query()->with('user');
+
+        if ($segment === 'points_above') {
+            $val = $segmentValue ?: 5000;
+            $query->where('total_points', '>', $val);
+        } elseif ($segment === 'new_member') {
+            $days = $segmentValue ?: 30;
+            $query->where('created_at', '>=', now()->subDays($days));
+        } elseif ($segment === 'deposit_above') {
+            $val = $segmentValue ?: 0;
+            $query->where('deposit_balance', '>', $val);
+        }
+
+        $members = $query->get();
+
+        $pushPayload = [
+            'title'   => $broadcast->title,
+            'body'    => $broadcast->body,
+            'type'    => 'umum',
+            'icon'    => '/pwa-icons/pwa-192x192.png',
+            'url'     => route('member.notifications'),
+        ];
+
+        foreach ($members as $member) {
+            dispatch(new SendPushNotification($member, $pushPayload));
+        }
+
+        return redirect()->route('admin.broadcasts.index')
+            ->with('toast', ['type' => 'success', 'message' => "Push notification dikirim ulang ke {$members->count()} member."]);
+    }
+
     public function estimateCount(Request $request): JsonResponse
     {
         $segment = $request->input('segment', 'all');

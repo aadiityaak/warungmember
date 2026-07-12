@@ -104,6 +104,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('broadcasts', [BroadcastController::class, 'index'])->name('broadcasts.index');
         Route::get('broadcasts/create', [BroadcastController::class, 'create'])->name('broadcasts.create');
         Route::post('broadcasts', [BroadcastController::class, 'store'])->name('broadcasts.store');
+        Route::post('broadcasts/{broadcast}/resend', [BroadcastController::class, 'resend'])->name('broadcasts.resend');
         Route::post('broadcasts/estimate', [BroadcastController::class, 'estimateCount'])->name('broadcasts.estimate');
     });
 });
