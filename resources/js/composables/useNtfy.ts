@@ -137,8 +137,26 @@ export function useNtfy() {
 
         eventSource.onmessage = (event) => {
             try {
-                const data = JSON.parse(event.data);
-                handleNotification(data);
+                const raw = JSON.parse(event.data);
+
+                // Skip non-message events (open, keepalive, etc.)
+                if (raw.event !== 'message') return;
+
+                // Ntfy nests payload inside raw.message as a JSON string.
+                // Try inner-parse; fall back to raw string as body.
+                let payload: Record<string, any> = {};
+                if (typeof raw.message === 'string') {
+                    try {
+                        payload = JSON.parse(raw.message);
+                    } catch {
+                        payload = { message: raw.message };
+                    }
+                } else {
+                    payload = raw;
+                }
+
+                console.log('[useNtfy] SSE received — payload', payload);
+                handleNotification(payload);
             } catch {
                 // ignore non-JSON events
             }
