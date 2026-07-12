@@ -1,4 +1,4 @@
-import { ref, onUnmounted } from 'vue';
+import { ref, reactive, onUnmounted } from 'vue';
 import { router } from '@inertiajs/vue3';
 
 export function useNtfy() {
@@ -199,5 +199,5 @@ export function useNtfy() {
         disconnectSse();
     });
 
-    return { supported, subscribed, loading, error, checkStatus, init, subscribe, unsubscribe };
+    return reactive({ supported, subscribed, loading, error, checkStatus, init, subscribe, unsubscribe });
 }
