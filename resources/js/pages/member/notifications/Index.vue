@@ -10,6 +10,7 @@ defineOptions({ layout: MemberLayout });
 const ntfy = useNtfy();
 
 onMounted(async () => {
+    // init push notifikasi — check status dari server
     await ntfy.init();
 });
 
@@ -101,23 +102,9 @@ function parseBody(body: string): Array<{ text: string; highlight: boolean }> {
             <p class="mt-1 text-sm leading-[1.4] text-[#62625b]">Pusat pemberitahuan & info terbaru</p>
         </div>
 
-        <!-- Push Notification Status - Skeleton (loading) -->
-        <div v-if="ntfy.supported && ntfy.loading" class="rounded-2xl border border-[#dadad3] bg-white px-4 py-3.5 animate-pulse">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 rounded-full bg-[#f6f6f3]" />
-                    <div class="space-y-2">
-                        <div class="h-4 w-36 rounded bg-[#f6f6f3]" />
-                        <div class="h-3 w-56 rounded bg-[#f6f6f3]" />
-                    </div>
-                </div>
-                <div class="h-7 w-20 rounded-full bg-[#f6f6f3]" />
-            </div>
-        </div>
-
-        <!-- Push Notification Status - Real content (loaded) -->
+        <!-- Push Notification Status v2 -->
         <div
-            v-if="ntfy.supported && !ntfy.loading"
+            v-if="ntfy.supported"
             class="rounded-2xl border px-4 py-3.5"
             :class="ntfy.subscribed ? 'border-[#22c55e] bg-[#f0fdf4]' : 'border-[#dadad3] bg-white'"
         >
@@ -144,7 +131,7 @@ function parseBody(body: string): Array<{ text: string; highlight: boolean }> {
                     </div>
                     <div>
                         <p class="text-sm font-semibold leading-[1.4] text-[#000000]">
-                            {{ ntfy.subscribed ? 'Notifikasi Aktif' : 'Notifikasi Belum Aktif' }}
+                            {{ ntfy.subscribed ? 'Notifikasi Aktif' : 'Belum Aktif' }}
                         </p>
                         <p v-if="ntfy.subscribed" class="text-xs leading-[1.4] text-[#62625b] mt-0.5">
                             Kamu akan menerima notifikasi langsung di perangkat ini
