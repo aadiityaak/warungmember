@@ -9,7 +9,7 @@ class Notification extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['member_id', 'type', 'title', 'body', 'data', 'read_at'];
+    protected $fillable = ['member_id', 'broadcast_id', 'type', 'title', 'body', 'data', 'read_at'];
 
     protected function casts(): array
     {
@@ -23,5 +23,10 @@ class Notification extends Model
     public function member(): BelongsTo
     {
         return $this->belongsTo(Member::class);
+    }
+
+    public function broadcast(): BelongsTo
+    {
+        return $this->belongsTo(Broadcast::class);
     }
 }

@@ -19,6 +19,18 @@ class BroadcastController extends Controller
     {
         $broadcasts = Broadcast::latest()->paginate(20);
 
+        $broadcasts->through(fn ($b) => [
+            'id' => $b->id,
+            'type' => $b->type,
+            'title' => $b->title,
+            'body' => $b->body,
+            'sent_count' => $b->sent_count,
+            'delivery_log' => $b->delivery_log,
+            'read_count' => $b->getReadCount(),
+            'sent_at' => $b->sent_at,
+            'created_at' => $b->created_at,
+        ]);
+
         return inertia('admin/broadcasts/Index', [
             'broadcasts' => $broadcasts,
         ]);
@@ -92,6 +104,37 @@ class BroadcastController extends Controller
                 ];
             }
 
+            $broadcast = Broadcast::create([
+                'type' => $validated['type'],
+                'title' => $validated['title'],
+                'body' => $validated['body'],
+                'data' => [
+                    'segment' => $validated['segment'],
+                    'segment_value' => $validated['segment_value'] ?? null,
+                ],
+                'delivery_log' => [
+                    'total_push_attempts' => 0,
+                    'ntfy_success' => 0,
+                    'ntfy_failed' => 0,
+                ],
+                'sent_count' => 0,
+                'sent_at' => now(),
+            ]);
+
+            $notifications = [];
+            foreach ($members as $member) {
+                $notifications[] = [
+                    'member_id' => $member->id,
+                    'broadcast_id' => $broadcast->id,
+                    'type' => $validated['icon'] ?? 'umum',
+                    'title' => $validated['title'],
+                    'body' => $validated['body'],
+                    'data' => null,
+                    'read_at' => null,
+                    'created_at' => now(),
+                ];
+            }
+
             if (! empty($notifications)) {
                 Notification::insert($notifications);
             }
@@ -106,11 +149,23 @@ class BroadcastController extends Controller
                 'url' => route('member.notifications'),
             ];
             foreach ($members as $member) {
-                dispatch(new SendPushNotification($member, $pushPayload));
+                dispatch(new SendPushNotification($member, $pushPayload, $broadcast->id));
             }
         }
 
         if ($validated['type'] === 'email') {
+            $broadcast = Broadcast::create([
+                'type' => $validated['type'],
+                'title' => $validated['title'],
+                'body' => $validated['body'],
+                'data' => [
+                    'segment' => $validated['segment'],
+                    'segment_value' => $validated['segment_value'] ?? null,
+                ],
+                'sent_count' => 0,
+                'sent_at' => now(),
+            ]);
+
             foreach ($members as $member) {
                 if ($member->user?->email) {
                     try {
@@ -129,17 +184,7 @@ class BroadcastController extends Controller
             }
         }
 
-        Broadcast::create([
-            'type' => $validated['type'],
-            'title' => $validated['title'],
-            'body' => $validated['body'],
-            'data' => [
-                'segment' => $validated['segment'],
-                'segment_value' => $validated['segment_value'] ?? null,
-            ],
-            'sent_count' => $sentCount,
-            'sent_at' => now(),
-        ]);
+        $broadcast->update(['sent_count' => $sentCount]);
 
         return redirect()->route('admin.broadcasts.index')
             ->with('toast', ['type' => 'success', 'message' => "Broadcast terkirim ke {$sentCount} member."]);
@@ -147,6 +192,15 @@ class BroadcastController extends Controller
 
     public function resend(Broadcast $broadcast): RedirectResponse
     {
+        // Reset delivery log
+        $broadcast->update([
+            'delivery_log' => [
+                'total_push_attempts' => 0,
+                'ntfy_success' => 0,
+                'ntfy_failed' => 0,
+            ],
+        ]);
+
         $segment = $broadcast->data['segment'] ?? 'all';
         $segmentValue = $broadcast->data['segment_value'] ?? null;
 
@@ -174,7 +228,7 @@ class BroadcastController extends Controller
         ];
 
         foreach ($members as $member) {
-            dispatch(new SendPushNotification($member, $pushPayload));
+            dispatch(new SendPushNotification($member, $pushPayload, $broadcast->id));
         }
 
         return redirect()->route('admin.broadcasts.index')

@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\Broadcast;
 use App\Models\Member;
 use App\Models\PushSubscription;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -15,6 +16,7 @@ class SendPushNotification implements ShouldQueue
     public function __construct(
         public Member $member,
         public array $payload,
+        public ?int $broadcastId = null,
     ) {}
 
     public function handle(): void
@@ -44,7 +46,7 @@ class SendPushNotification implements ShouldQueue
                 $headers['Authorization'] = 'Bearer ' . $secret;
             }
 
-            Http::withHeaders($headers)->post(rtrim($server, '/') . '/' . $subscription->ntfy_topic, [
+            $response = Http::withHeaders($headers)->post(rtrim($server, '/') . '/' . $subscription->ntfy_topic, [
                 'topic' => $subscription->ntfy_topic,
                 'title' => $this->payload['title'] ?? 'WarungMember',
                 'message' => $this->payload['body'] ?? '',
@@ -53,8 +55,40 @@ class SendPushNotification implements ShouldQueue
                 'click' => $this->payload['url'] ?? route('member.notifications'),
                 'icon' => $this->payload['icon'] ?? asset('pwa-icons/pwa-192x192.png'),
             ]);
+
+            $this->logDelivery(result: $response->successful());
         } catch (\Throwable $e) {
+            $this->logDelivery(result: false);
+
             report($e);
         }
+    }
+
+    private function logDelivery(bool $result): void
+    {
+        if (! $this->broadcastId) {
+            return;
+        }
+
+        $broadcast = Broadcast::find($this->broadcastId);
+        if (! $broadcast) {
+            return;
+        }
+
+        $log = $broadcast->delivery_log ?? [
+            'total_push_attempts' => 0,
+            'ntfy_success' => 0,
+            'ntfy_failed' => 0,
+        ];
+
+        $log['total_push_attempts']++;
+
+        if ($result) {
+            $log['ntfy_success']++;
+        } else {
+            $log['ntfy_failed']++;
+        }
+
+        $broadcast->update(['delivery_log' => $log]);
     }
 }
