@@ -93,7 +93,7 @@ class OutletSeeder extends Seeder
                 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&h=600&fit=crop',
             ];
             $randKeys = array_rand($galleryItems, rand(3, 5));
-            $data['gallery'] = array_map(fn($k) => $galleryItems[$k], $randKeys);
+            $data['gallery'] = array_map(fn ($k) => $galleryItems[$k], $randKeys);
 
             Outlet::create($data);
         }

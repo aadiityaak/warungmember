@@ -1,9 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin\BroadcastController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DepositController;
 use App\Http\Controllers\Admin\KasirController;
-use App\Http\Controllers\Admin\BroadcastController;
 use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\OutletController;
@@ -23,6 +23,10 @@ use App\Http\Controllers\Member\ProfileController;
 use App\Http\Controllers\Member\PushSubscriptionController;
 use App\Http\Controllers\Member\RewardController as MemberRewardController;
 use App\Http\Controllers\Member\VoucherController as MemberVoucherController;
+use App\Http\Middleware\HandleInertiaRequests;
+use App\Models\Member;
+use App\Models\Outlet;
+use App\Models\Product;
 use Illuminate\Support\Facades\Route;
 
 // Serve service worker - picks dev-dist in dev, public/build in prod
@@ -36,7 +40,28 @@ Route::get('sw.js', function () {
     return response()->file($file, ['Content-Type' => 'application/javascript']);
 });
 
-Route::inertia('/', 'Welcome')->name('home');
+Route::get('/', function () {
+    $featuredProducts = Product::where('is_active', true)
+        ->whereNotNull('image')
+        ->take(4)
+        ->get()
+        ->map(fn (Product $p) => [
+            'id' => $p->id,
+            'name' => $p->name,
+            'price' => $p->price,
+            'current_price' => $p->current_price,
+            'image' => $p->image,
+            'is_on_discount' => $p->is_on_discount,
+        ]);
+
+    return inertia('Welcome', [
+        'featuredProducts' => $featuredProducts,
+        'stats' => [
+            'total_members' => Member::count(),
+            'total_outlets' => Outlet::where('is_active', true)->count(),
+        ],
+    ]);
+})->name('home');
 
 Route::get('manifest.webmanifest', ManifestController::class)->name('manifest');
 
@@ -78,7 +103,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Push notification endpoints (JSON API — excludes Inertia middleware)
-    Route::withoutMiddleware([\App\Http\Middleware\HandleInertiaRequests::class])->group(function () {
+    Route::withoutMiddleware([HandleInertiaRequests::class])->group(function () {
         Route::middleware(['auth', 'verified', 'role:member'])->prefix('member')->name('member.')->group(function () {
             Route::post('push/subscribe', [PushSubscriptionController::class, 'subscribe'])->name('push.subscribe');
             Route::post('push/unsubscribe', [PushSubscriptionController::class, 'unsubscribe'])->name('push.unsubscribe');

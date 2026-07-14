@@ -19,7 +19,7 @@ class Broadcast extends Model
 
     public function getReadCount(): int
     {
-        return \App\Models\Notification::where('broadcast_id', $this->id)
+        return Notification::where('broadcast_id', $this->id)
             ->whereNotNull('read_at')
             ->count();
     }

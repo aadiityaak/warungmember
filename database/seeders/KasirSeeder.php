@@ -33,8 +33,8 @@ class KasirSeeder extends Seeder
         // Generate 25 more kasir (static data, no faker dependency)
         for ($i = 0; $i < 25; $i++) {
             User::create([
-                'name' => 'Kasir ' . ($i + 6),
-                'email' => 'kasir' . ($i + 6) . '@warungmember.test',
+                'name' => 'Kasir '.($i + 6),
+                'email' => 'kasir'.($i + 6).'@warungmember.test',
                 'password' => bcrypt('password'),
                 'role' => 'kasir',
                 'email_verified_at' => now(),
