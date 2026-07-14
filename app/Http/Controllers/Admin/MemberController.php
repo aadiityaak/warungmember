@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Member;
+use App\Models\Outlet;
 use App\Models\PushSubscription;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -25,11 +26,18 @@ class MemberController extends Controller
             $direction = 'desc';
         }
 
+        $outlets = Outlet::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+
         $members = User::where('role', 'member')
             ->when($request->search, fn ($q, $search) => $q->where(fn ($q) => $q->where('name', 'like', "%{$search}%")
                 ->orWhere('email', 'like', "%{$search}%")
             )
             )
+            ->when($request->status === 'active', fn ($q) => $q->whereNull('deleted_at'))
+            ->when($request->status === 'inactive', fn ($q) => $q->whereNotNull('deleted_at'))
+            ->when($request->outlet_id, fn ($q, $outletId) => $q->whereHas('member', fn ($q) => $q->where('last_outlet_id', $outletId)))
+            ->when($request->date_from, fn ($q, $date) => $q->whereDate('created_at', '>=', $date))
+            ->when($request->date_to, fn ($q, $date) => $q->whereDate('created_at', '<=', $date))
             ->with('member')
             ->when($sort === 'total_points', fn ($q) => $q->leftJoin('members', 'users.id', '=', 'members.user_id')
                 ->orderBy('members.total_points', $direction)
@@ -41,7 +49,8 @@ class MemberController extends Controller
 
         return inertia('admin/members/Index', [
             'members' => $members,
-            'filters' => $request->only('search', 'sort', 'direction'),
+            'filters' => $request->only('search', 'sort', 'direction', 'outlet_id', 'date_from', 'date_to', 'status'),
+            'outlets' => $outlets,
         ]);
     }
 

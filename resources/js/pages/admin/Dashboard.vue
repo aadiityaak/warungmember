@@ -69,9 +69,7 @@ const { stats, recent_orders, top_spenders, chart } = defineProps<{
 }>();
 
 function formatNumber(n: number): string {
-    const result = new Intl.NumberFormat('id-ID').format(n);
-    console.log('[Dashboard] formatNumber:', n, '→', result, 'type:', typeof n);
-    return result;
+    return new Intl.NumberFormat('id-ID').format(n);
 }
 
 const statusLabels: Record<string, string> = {

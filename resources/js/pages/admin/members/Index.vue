@@ -15,13 +15,18 @@ defineOptions({
     },
 });
 
-const { members, filters } = defineProps<{
+const { members, filters, outlets } = defineProps<{
     members: { data: User[]; current_page: number; last_page: number; from: number; to: number; total: number };
-    filters: { search?: string; sort?: string; direction?: string };
+    filters: { search?: string; sort?: string; direction?: string; outlet_id?: string; date_from?: string; date_to?: string; status?: string };
+    outlets: { id: number; name: string }[];
 }>();
 
 const form = useForm({
     search: filters.search ?? '',
+    outlet_id: filters.outlet_id ?? '',
+    date_from: filters.date_from ?? '',
+    date_to: filters.date_to ?? '',
+    status: filters.status ?? '',
 });
 
 const deleteForm = useForm({});
@@ -35,6 +40,10 @@ const currentDirection = filters.direction ?? 'desc';
 function sortUrl(column: string): string {
     const params: Record<string, string | number> = {};
     if (form.search) params.search = form.search;
+    if (form.outlet_id) params.outlet_id = form.outlet_id;
+    if (form.date_from) params.date_from = form.date_from;
+    if (form.date_to) params.date_to = form.date_to;
+    if (form.status) params.status = form.status;
     params.sort = column;
     params.direction = currentSort === column && currentDirection === 'asc' ? 'desc' : 'asc';
     return route('admin.members.index', params);
@@ -95,14 +104,43 @@ const paginationPages = computed(() => {
             </p>
         </header>
 
-        <div class="mb-6 flex items-center gap-3">
-            <form @submit.prevent="submit" class="flex-1">
+        <div class="mb-6 flex flex-wrap items-center gap-3">
+            <form @submit.prevent="submit" class="min-w-[200px] flex-1">
                 <input
                     v-model="form.search"
                     placeholder="Cari nama atau email..."
                     class="w-full rounded-full border-0 bg-[#f6f6f3] px-4 py-3 text-sm leading-[1.4] text-[#000000] placeholder:text-[#91918c] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#c8c8c1]"
                 />
             </form>
+            <select
+                v-model="form.outlet_id"
+                @change="submit"
+                class="rounded-full border-0 bg-[#f6f6f3] px-4 py-3 text-sm leading-[1.4] text-[#000000] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#c8c8c1]"
+            >
+                <option value="">Semua Outlet</option>
+                <option v-for="outlet in outlets" :key="outlet.id" :value="outlet.id">{{ outlet.name }}</option>
+            </select>
+            <select
+                v-model="form.status"
+                @change="submit"
+                class="rounded-full border-0 bg-[#f6f6f3] px-4 py-3 text-sm leading-[1.4] text-[#000000] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#c8c8c1]"
+            >
+                <option value="">Semua Status</option>
+                <option value="active">Aktif</option>
+                <option value="inactive">Nonaktif</option>
+            </select>
+            <input
+                v-model="form.date_from"
+                type="date"
+                @change="submit"
+                class="rounded-full border-0 bg-[#f6f6f3] px-4 py-3 text-sm leading-[1.4] text-[#000000] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#c8c8c1]"
+            />
+            <input
+                v-model="form.date_to"
+                type="date"
+                @change="submit"
+                class="rounded-full border-0 bg-[#f6f6f3] px-4 py-3 text-sm leading-[1.4] text-[#000000] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#c8c8c1]"
+            />
             <Button as="child">
                 <Link :href="route('admin.members.create')">+ Tambah</Link>
             </Button>
@@ -181,7 +219,7 @@ const paginationPages = computed(() => {
                         </span>
                         <Link
                             v-else
-                            :href="route('admin.members.index', { page, search: filters.search, sort: currentSort, direction: currentDirection })"
+                            :href="route('admin.members.index', { page, search: filters.search, sort: currentSort, direction: currentDirection, outlet_id: filters.outlet_id, date_from: filters.date_from, date_to: filters.date_to, status: filters.status })"
                             :class="[
                                 'inline-flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold leading-[1] transition-colors',
                                 page === members.current_page
