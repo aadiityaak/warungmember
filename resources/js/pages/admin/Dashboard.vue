@@ -68,6 +68,12 @@ const { stats, recent_orders, top_spenders, chart } = defineProps<{
     };
 }>();
 
+function formatNumber(n: number): string {
+    const result = new Intl.NumberFormat('id-ID').format(n);
+    console.log('[Dashboard] formatNumber:', n, '→', result, 'type:', typeof n);
+    return result;
+}
+
 const statusLabels: Record<string, string> = {
     pending: 'Menunggu',
     processing: 'Diproses',
@@ -160,7 +166,7 @@ const chartOptions = {
                     <span class="text-sm leading-[1.4] text-[#62625b]">Member</span>
                 </div>
                 <span class="text-[28px] font-bold leading-[1.2] tracking-[-1.2px] text-[#000000]">
-                    {{ stats.total_members }}
+                    {{ formatNumber(stats.total_members) }}
                 </span>
             </div>
 
@@ -170,7 +176,7 @@ const chartOptions = {
                     <span class="text-sm leading-[1.4] text-[#62625b]">Outlet</span>
                 </div>
                 <span class="text-[28px] font-bold leading-[1.2] tracking-[-1.2px] text-[#000000]">
-                    {{ stats.total_outlets }}
+                    {{ formatNumber(stats.total_outlets) }}
                 </span>
             </div>
 
@@ -180,7 +186,7 @@ const chartOptions = {
                     <span class="text-sm leading-[1.4] text-[#62625b]">Produk</span>
                 </div>
                 <span class="text-[28px] font-bold leading-[1.2] tracking-[-1.2px] text-[#000000]">
-                    {{ stats.total_products }}
+                    {{ formatNumber(stats.total_products) }}
                 </span>
             </div>
 
@@ -190,7 +196,7 @@ const chartOptions = {
                     <span class="text-sm leading-[1.4] text-[#62625b]">Voucher</span>
                 </div>
                 <span class="text-[28px] font-bold leading-[1.2] tracking-[-1.2px] text-[#000000]">
-                    {{ stats.total_vouchers }}
+                    {{ formatNumber(stats.total_vouchers) }}
                 </span>
             </div>
 
@@ -200,7 +206,7 @@ const chartOptions = {
                     <span class="text-sm leading-[1.4] text-[#62625b]">Pesanan</span>
                 </div>
                 <span class="text-[28px] font-bold leading-[1.2] tracking-[-1.2px] text-[#000000]">
-                    {{ stats.total_orders }}
+                    {{ stats.total_orders.toLocaleString('id-ID') }}
                 </span>
             </div>
         </div>
@@ -210,28 +216,28 @@ const chartOptions = {
             <div class="flex flex-col gap-1 rounded-2xl bg-white border border-[#dadad3] px-5 py-5">
                 <span class="text-sm leading-[1.4] text-[#62625b]">Poin Beredar</span>
                 <span class="text-[28px] font-bold leading-[1.2] tracking-[-1.2px] text-[#000000]">
-                    {{ stats.total_points.toLocaleString('id-ID') }}
+                    {{ formatNumber(stats.total_points) }}
                 </span>
             </div>
 
             <div class="flex flex-col gap-1 rounded-2xl bg-white border border-[#dadad3] px-5 py-5">
                 <span class="text-sm leading-[1.4] text-[#62625b]">Total Deposit</span>
                 <span class="text-[28px] font-bold leading-[1.2] tracking-[-1.2px] text-[#000000]">
-                    Rp {{ stats.total_deposit.toLocaleString('id-ID') }}
+                    Rp {{ formatNumber(stats.total_deposit) }}
                 </span>
             </div>
 
             <div class="flex flex-col gap-1 rounded-2xl bg-white border border-[#dadad3] px-5 py-5">
                 <span class="text-sm leading-[1.4] text-[#62625b]">Pesanan Selesai</span>
                 <span class="text-[28px] font-bold leading-[1.2] tracking-[-1.2px] text-green-600">
-                    {{ stats.completed_orders }}
+                    {{ formatNumber(stats.completed_orders) }}
                 </span>
             </div>
 
             <div class="flex flex-col gap-1 rounded-2xl bg-white border border-[#dadad3] px-5 py-5">
                 <span class="text-sm leading-[1.4] text-[#62625b]">Pesanan Menunggu</span>
                 <span class="text-[28px] font-bold leading-[1.2] tracking-[-1.2px] text-yellow-600">
-                    {{ stats.pending_orders }}
+                    {{ formatNumber(stats.pending_orders) }}
                 </span>
             </div>
         </div>

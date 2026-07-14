@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import JsBarcode from 'jsbarcode';
 import MemberLayout from '@/layouts/MemberLayout.vue';
 
@@ -52,13 +52,6 @@ const menuItems: MenuItem[] = [
         external: true,
     },
     {
-        title: 'Install Aplikasi',
-        subtitle: 'Pasang WarungMember di layar depan',
-        icon: 'install',
-        href: '#',
-        method: 'get',
-    },
-    {
         title: 'Syarat & Ketentuan',
         subtitle: 'Baca aturan program loyalitas',
         icon: 'file',
@@ -98,33 +91,6 @@ function formatRupiah(n: number): string {
 
 const barcodeRef = ref<HTMLOrSVGImageElement | null>(null);
 
-// PWA Install
-const deferredPrompt = ref<any>(null);
-const isInstallable = ref(false);
-const isStandalone = ref(window.matchMedia('(display-mode: standalone)').matches);
-
-function onBeforeInstallPrompt(e: Event) {
-    e.preventDefault();
-    deferredPrompt.value = e;
-    isInstallable.value = true;
-}
-
-function onAppInstalled() {
-    isInstallable.value = false;
-    deferredPrompt.value = null;
-}
-
-function installApp() {
-    if (!deferredPrompt.value) return;
-    deferredPrompt.value.prompt();
-    deferredPrompt.value.userChoice.then((result: { outcome: string }) => {
-        if (result.outcome === 'accepted') {
-            isInstallable.value = false;
-        }
-        deferredPrompt.value = null;
-    });
-}
-
 onMounted(() => {
     if (profile.member_code && barcodeRef.value) {
         JsBarcode(barcodeRef.value, profile.member_code, {
@@ -138,13 +104,6 @@ onMounted(() => {
         });
     }
 
-    window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt);
-    window.addEventListener('appinstalled', onAppInstalled);
-});
-
-onUnmounted(() => {
-    window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt);
-    window.removeEventListener('appinstalled', onAppInstalled);
 });
 </script>
 
@@ -225,8 +184,7 @@ onUnmounted(() => {
         <div class="overflow-hidden rounded-2xl border border-[#dadad3] bg-white">
             <template v-for="(item, idx) in menuItems" :key="item.title">
                 <button
-                    v-if="item.icon !== 'install' || (isInstallable && !isStandalone)"
-                    @click="item.icon === 'install' ? installApp() : openMenuItem(item)"
+                    @click="openMenuItem(item)"
                     class="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-[#fbfbf9]"
                     :class="{ 'border-t border-[#e5e5e0]': idx > 0 }"
                 >

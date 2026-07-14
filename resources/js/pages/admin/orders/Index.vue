@@ -735,7 +735,7 @@ const paginationPages = computed(() => {
                     class="fixed inset-0 bg-black/40"
                 />
                 <div
-                    class="relative mx-4 w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+                    class="relative mx-4 w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl"
                 >
                     <h3 class="mb-4 text-lg font-bold text-[#000000]">
                         Buat Pesanan Baru
@@ -923,7 +923,8 @@ const paginationPages = computed(() => {
                             <div class="relative">
                                 <span
                                     class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm font-semibold text-[#91918c]"
-                                >Rp</span>
+                                    >Rp</span
+                                >
                                 <input
                                     v-model="createForm.paid_amount"
                                     type="number"
@@ -939,31 +940,68 @@ const paginationPages = computed(() => {
                                 {{ createForm.errors.paid_amount }}
                             </p>
                             <p
-                                v-if="createForm.payment_method === 'cash' && createForm.paid_amount && totalCreateAmount > 0"
+                                v-if="
+                                    createForm.payment_method === 'cash' &&
+                                    createForm.paid_amount &&
+                                    totalCreateAmount > 0
+                                "
                                 class="mt-1 text-xs"
-                                :class="Number(createForm.paid_amount) >= totalCreateAmount ? 'text-green-600' : 'text-red-500'"
+                                :class="
+                                    Number(createForm.paid_amount) >=
+                                    totalCreateAmount
+                                        ? 'text-green-600'
+                                        : 'text-red-500'
+                                "
                             >
-                                Kembalian: Rp{{ (Math.max(0, Number(createForm.paid_amount) - totalCreateAmount)).toLocaleString('id-ID') }}
+                                Kembalian: Rp{{
+                                    Math.max(
+                                        0,
+                                        Number(createForm.paid_amount) -
+                                            totalCreateAmount,
+                                    ).toLocaleString('id-ID')
+                                }}
                             </p>
                         </div>
 
                         <!-- Deposit Info -->
                         <div v-if="createForm.payment_method === 'deposit'">
-                            <div class="rounded-xl border border-[#dadad3] bg-[#f6f6f3] p-3">
+                            <div
+                                class="rounded-xl border border-[#dadad3] bg-[#f6f6f3] p-3"
+                            >
                                 <p class="text-xs font-semibold text-[#62625b]">
                                     Saldo Deposit Member
                                 </p>
-                                <p class="mt-1 text-lg font-bold text-[#000000]">
-                                    Rp{{ (selectedMember?.member?.deposit_balance ?? 0).toLocaleString('id-ID') }}
+                                <p
+                                    class="mt-1 text-lg font-bold text-[#000000]"
+                                >
+                                    Rp{{
+                                        (
+                                            selectedMember?.member
+                                                ?.deposit_balance ?? 0
+                                        ).toLocaleString('id-ID')
+                                    }}
                                 </p>
                                 <p
-                                    v-if="selectedMember && selectedMember.member && selectedMember.member.deposit_balance < totalCreateAmount"
+                                    v-if="
+                                        selectedMember &&
+                                        selectedMember.member &&
+                                        selectedMember.member.deposit_balance <
+                                            totalCreateAmount
+                                    "
                                     class="mt-1 text-xs text-red-500"
                                 >
-                                    Saldo tidak cukup untuk total belanja Rp{{ totalCreateAmount.toLocaleString('id-ID') }}
+                                    Saldo tidak cukup untuk total belanja Rp{{
+                                        totalCreateAmount.toLocaleString(
+                                            'id-ID',
+                                        )
+                                    }}
                                 </p>
                                 <p
-                                    v-else-if="selectedMember && selectedMember.member && totalCreateAmount > 0"
+                                    v-else-if="
+                                        selectedMember &&
+                                        selectedMember.member &&
+                                        totalCreateAmount > 0
+                                    "
                                     class="mt-1 text-xs text-green-600"
                                 >
                                     Saldo cukup
@@ -1063,7 +1101,9 @@ const paginationPages = computed(() => {
                                 >
                                     Pilih Produk
                                 </p>
-                                <div class="grid grid-cols-3 gap-2 max-h-[50vh] overflow-y-auto">
+                                <div
+                                    class="grid max-h-[50vh] grid-cols-3 gap-2 overflow-y-auto"
+                                >
                                     <button
                                         v-for="p in products"
                                         :key="p.id"
@@ -1189,7 +1229,7 @@ const paginationPages = computed(() => {
                     class="fixed inset-0 bg-black/40"
                 />
                 <div
-                    class="relative mx-4 w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+                    class="relative mx-4 w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl"
                 >
                     <h3 class="mb-4 text-lg font-bold text-[#000000]">
                         Edit Pesanan #{{ editingOrder?.id }}
@@ -1307,7 +1347,9 @@ const paginationPages = computed(() => {
                                 >
                                     Pilih Produk
                                 </p>
-                                <div class="grid grid-cols-3 gap-2 max-h-[50vh] overflow-y-auto">
+                                <div
+                                    class="grid max-h-[50vh] grid-cols-3 gap-2 overflow-y-auto"
+                                >
                                     <button
                                         v-for="p in products"
                                         :key="p.id"
