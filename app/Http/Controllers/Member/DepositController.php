@@ -18,6 +18,7 @@ class DepositController extends Controller
         return inertia('member/deposits/Index', [
             'transactions' => $transactions,
             'balance' => $member?->deposit_balance ?? 0,
+            'memberCode' => $member?->member_code ?? '',
         ]);
     }
 }

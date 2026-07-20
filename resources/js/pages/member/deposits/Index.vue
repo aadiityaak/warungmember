@@ -7,7 +7,7 @@ defineOptions({ layout: MemberLayout });
 
 const page = usePage();
 
-const { transactions, balance } = defineProps<{
+const { transactions, balance, memberCode } = defineProps<{
     transactions: {
         data: Array<{
             id: number;
@@ -18,6 +18,7 @@ const { transactions, balance } = defineProps<{
         }>;
     } | null;
     balance: number;
+    memberCode: string;
 }>();
 
 const showDepositInfo = ref(false);
@@ -28,6 +29,9 @@ const waUrl = 'https://wa.me/' + whatsappNumber.replace(/^0/, '62') + '?text=Hal
 function formatRupiah(n: number): string {
     return 'Rp' + n.toLocaleString('id-ID');
 }
+
+const chunks = memberCode.match(/.{1,3}/g) ?? [];
+const displayCardNumber = chunks.join('  ');
 
 const typeConfig: Record<string, { label: string; sign: string; color: string }> = {
     topup: { label: 'Top-up', sign: '+', color: 'text-green-600' },
@@ -59,15 +63,54 @@ const typeConfig: Record<string, { label: string; sign: string; color: string }>
             </button>
         </div>
 
-        <!-- Balance Card -->
-        <div class="rounded-2xl bg-[#f6f6f3] px-5 py-5">
-            <p class="text-xs font-semibold leading-[1.4] text-[#62625b]">Saldo Deposit</p>
-            <p class="mt-1 text-[28px] font-bold leading-[1.2] tracking-tight text-[#000000]">
+        <!-- Balance Card - Credit Card Style -->
+        <div
+            class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] px-6 py-6 text-white shadow-xl"
+        >
+            <!-- Top row: label + chip -->
+            <div class="flex items-start justify-between">
+                <p class="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/60">
+                    Saldo Deposit
+                </p>
+                <!-- Chip icon -->
+                <svg class="h-7 w-7 text-yellow-400/80" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20v2"/><path d="M12 2v2"/><path d="M17 20v2"/><path d="M17 2v2"/><path d="M2 12h2"/><path d="M2 17h2"/><path d="M2 7h2"/><path d="M20 12h2"/><path d="M20 17h2"/><path d="M20 7h2"/><path d="M7 20v2"/><path d="M7 2v2"/><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="8" y="8" width="8" height="8" rx="1"/>
+                </svg>
+            </div>
+
+            <!-- Member ID -->
+            <p class="mt-5 font-mono text-lg tracking-[0.18em] text-white/70">
+                {{ displayCardNumber }}
+            </p>
+
+            <!-- Balance -->
+            <p class="mt-3 text-[30px] font-bold leading-[1.1] tracking-tight text-white">
                 {{ formatRupiah(balance) }}
             </p>
-            <p class="mt-1 text-xs leading-[1.4] text-[#91918c]">
-                Siap digunakan untuk pembayaran pesanan
-            </p>
+
+            <!-- Bottom row -->
+            <div class="mt-4 flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] uppercase tracking-[0.1em] text-white/40">Member sejak</p>
+                    <p class="text-xs font-semibold text-white/80">
+                        {{ new Date($page.props.auth?.user?.created_at ?? Date.now()).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' }) }}
+                    </p>
+                </div>
+                <div class="text-right">
+                    <p class="text-[10px] uppercase tracking-[0.1em] text-white/40">Status</p>
+                    <p class="text-xs font-semibold text-green-400">Aktif</p>
+                </div>
+            </div>
+
+            <!-- Brand -->
+            <div class="mt-4 flex items-center justify-between border-t border-white/10 pt-3">
+                <span class="text-xs font-bold tracking-wider text-white/50">
+                    {{ $page.props.branding?.app_name ?? 'WARUNGMEMBER' }}
+                </span>
+                <svg class="h-5 w-5 text-white/50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/>
+                </svg>
+            </div>
         </div>
 
         <!-- History Title -->
